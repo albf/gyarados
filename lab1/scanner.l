@@ -10,25 +10,23 @@ ANY_CHAR .
 %%
 
 {WHITESPACE} /* ignore */ ;
-"\begin"    {return T_SELECT;}
-"\end"      {return T_FROM; }
-"\documentclass"    {return T_CREATE;}
-"\title"     {return T_TABLE;}
-"\author"    {return T_INSERT;}
-"\maketitle"      {return T_INTO;}
-"\textbf"    {return T_VALUES;}
-"\textit"         {return '(';}
-"\includegraphics"         {return ')';}
-"document"
-"itemize"
+"\begin"            {return T_BEGIN;}
+"\end"              {return T_END; }
+"\documentclass"    {return T_DOCCLASS;}
+"\title"            {return T_TITLE;}
+"\author"           {return T_AUTHOR;}
+"\maketitle"        {return T_MAKETITLE;}
+"\textbf"           {return T_TXTBF;}
+"\textit"           {return T_TXTIT;}
+"\includegraphics"  {return T_INGRAPH;}
 
-"\\\\"         {return '*';}
-"{"
-"}"
-"["
-"]"
+"\\\\"              {return NEWLINE;}
+"{"                 {return LBRACE;}
+"}"                 {return RBRACE;}
+"["                 {return LBRACKET;}
+"]"                 {return RBRACKET;}
 
-"\cite{ref"         {return ',';}
+"\cite{ref"         {return OPENCITE;}
 
 {STRING}    {  
                 yylval.str = (char *) strdup(yytext);
@@ -36,9 +34,12 @@ ANY_CHAR .
             }
 
 
-{NUM}
-
-{ANY_CHAR}  {
-                 printf ("Caracter %c (ASCII=%d) inesperado\n", yytext[0], yytext[0]);
+{NUM}       {
+                yylval.intval = atoi(yytext);
+                return T_NUM;
             }
 
+{ANY_CHAR}  {
+                 printf ("Caracter %c (ASCII=%d) inesperado\n",
+                         yytext[0], yytext[0]);
+            }
