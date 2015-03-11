@@ -4,14 +4,14 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX 1000
+/*#define MAX 1000
 
 char table[MAX][MAX][MAX];
 
 char *concat(int count, ...);
 void selectPrime(char *);
 void selectField(char *, char *);
-void sucess(int *, int);
+void sucess(int *, int);*/
 
 %}
  
@@ -21,13 +21,22 @@ void sucess(int *, int);
 }
 
 %token <str> T_STRING
-%token T_SELECT
-%token T_FROM
-%token T_CREATE
-%token T_TABLE
-%token T_INSERT
-%token T_INTO
-%token T_VALUES
+%token <intval> T_NUM
+%token T_BEGIN
+%token T_END
+%token T_DOCCLASS
+%token T_TITLE
+%token T_AUTHOR
+%token T_MAKETITLE
+%token T_TXTBF
+%token T_TXTIT
+%token T_INGRAPH
+%token T_OPENCITE;
+%token NEWLINE
+%token LBRACE
+%token RBRACE
+%token LBRACKET
+%token RBRACKET
 
 %type <str> create_stmt insert_stmt select_stmt col_list values_list 
 

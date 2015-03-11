@@ -9,7 +9,7 @@ ANY_CHAR .
 
 %%
 
-{WHITESPACE} /* ignore */ ;
+{WHITESPACE}        /* ignore */ ;
 "\begin"            {return T_BEGIN;}
 "\end"              {return T_END; }
 "\documentclass"    {return T_DOCCLASS;}
@@ -19,6 +19,7 @@ ANY_CHAR .
 "\textbf"           {return T_TXTBF;}
 "\textit"           {return T_TXTIT;}
 "\includegraphics"  {return T_INGRAPH;}
+"\cite{ref"         {return T_OPENCITE;}
 
 "\\\\"              {return NEWLINE;}
 "{"                 {return LBRACE;}
@@ -26,7 +27,6 @@ ANY_CHAR .
 "["                 {return LBRACKET;}
 "]"                 {return RBRACKET;}
 
-"\cite{ref"         {return OPENCITE;}
 
 {STRING}    {  
                 yylval.str = (char *) strdup(yytext);
