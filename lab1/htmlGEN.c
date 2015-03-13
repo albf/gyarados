@@ -12,9 +12,11 @@ int htmlGEN_counter;                    // Current line counter.
 int htmlGEN_size;                       // Current size of vectors.
 int htmlGEN_is_there_bib;               // Indicate if there is bib.
 char ** htmlGEN_ref_bank;               // Bank of refs.
-int * htmlGEN_ref_index;                // Ref index from ref_bank.
+char ** htmlGEN_ref_index;              // Ref index from ref_bank.
 int htmlGEN_ref_counter;                // Current number of refs.
 int htmlGEN_ref_size;                   // Current size of ref vectors.
+
+const char htmlGEN_ref_symbol [] = "\\cite{"; 
 
 /* Fenctions: Interface for using this wonderfull lib. */
 
@@ -24,8 +26,8 @@ void htmlGEN_free();
 void htmlGEN_add_string(char * string, int is_there_ref);
 void htmlGEN_print_all();
 int htmlGEN_create_bib(int size);
-char * htmlGEN_get_ref(int index);
-int htmlGEN_add_ref(char * new_ref, int new_index);
+char * htmlGEN_get_ref(char * index);
+int htmlGEN_add_ref(char * new_index, char * new_ref);
 
 // Example function
 int main () {
@@ -43,10 +45,10 @@ int main () {
     htmlGEN_create_bib(2);
 
     // Add ref
-    htmlGEN_add_ref("ABC\n", 1);
+    htmlGEN_add_ref("1", "ABC\n");
 
     // Add first ref as a string, for test.
-    htmlGEN_add_string(htmlGEN_get_ref(1), 0);
+    htmlGEN_add_string(htmlGEN_get_ref("1"), 0);
 
     // Print all the strings inserted.
     htmlGEN_print_all();
@@ -109,13 +111,29 @@ int htmlGEN_check_size(){
 
 // Free memory used by htmlGEN
 void htmlGEN_free() {
+    int i;
+
+    if(htmlGEN_is_init == 0) {
+        printf("htmlGEN was not initialized.\n");
+        return; 
+    }
+
+    for (i=0; i<htmlGEN_counter; i++) {
+        free(htmlGEN_result[i]);
+    }
+
     free(htmlGEN_result);
     free(htmlGEN_is_there_ref); 
 
     if(htmlGEN_is_there_bib > 0) {
+        for (i=0; i<htmlGEN_ref_counter; i++) {
+            free(htmlGEN_ref_bank[i]);
+            free(htmlGEN_ref_index[i]);
+        }
         free(htmlGEN_ref_bank);
         free(htmlGEN_ref_index);
     }
+    return;
 }
 
 // Add string to htmlGEN
@@ -123,6 +141,10 @@ void htmlGEN_add_string(char * string, int is_there_ref) {
     // Check if there is space available
     if(htmlGEN_check_size() < 0) {
             return; 
+    }
+    if(string == NULL) {
+        printf("Null string passed to htmlGEN.");
+        return;
     }
 
     // Copy string and ref flag. Update counter after that. 
@@ -150,7 +172,7 @@ int htmlGEN_create_bib(int size) {
     }
 
     htmlGEN_ref_bank = (char **) malloc (sizeof(char *)*size); 
-    htmlGEN_ref_index = (int *) malloc (sizeof(int)*size);
+    htmlGEN_ref_index = (char **) malloc (sizeof(char *)*size);
     htmlGEN_ref_counter = 0;
     htmlGEN_ref_size = size;
     htmlGEN_is_there_bib = 1;
@@ -164,13 +186,13 @@ int htmlGEN_create_bib(int size) {
 }
 
 // Get ref using index, NULL if don't exist. Assume that there each index is unique.
-char * htmlGEN_get_ref(int index) {
+char * htmlGEN_get_ref(char * index) {
     char * ref = NULL; 
     int i;
 
     if(htmlGEN_is_there_bib > 0) {
         for(i=0; i<htmlGEN_ref_counter; i++) {
-            if(htmlGEN_ref_index[i] == index) {
+            if(strcmp(htmlGEN_ref_index[i],index)==0) {
                 ref = htmlGEN_ref_bank[i];
                 break;
             }
@@ -182,21 +204,22 @@ char * htmlGEN_get_ref(int index) {
 
 // Add ref to htmlGEN
 // Return : 0 - Okay ; -1 - Memory error ; -2 - Repeated entry. 
-int htmlGEN_add_ref(char * new_ref, int new_index) {
+int htmlGEN_add_ref(char * new_index, char * new_ref) {
     // Check if there is space available
     if(htmlGEN_check_size() < 0) {
             return -1; 
     }
 
     if(htmlGEN_get_ref(new_index)!=NULL) {
-        printf("Repeated entry (Ref%d) in bib.\n", new_index);
+        printf("Repeated reference (%s) in bib.\n", new_index);
         return -2;
     }
 
     // Copy string and ref flag. Update counter after that. 
     htmlGEN_ref_bank[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_ref)); 
     strcpy (htmlGEN_ref_bank[htmlGEN_ref_counter], new_ref);
-    htmlGEN_ref_index[htmlGEN_ref_counter] = new_index;
+    htmlGEN_ref_index[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_index)); 
+    strcpy (htmlGEN_ref_index[htmlGEN_ref_counter], new_index);
     htmlGEN_ref_counter++;
     return 0;
 }
