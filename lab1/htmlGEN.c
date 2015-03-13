@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
@@ -8,6 +9,10 @@
 int htmlGEN_is_init = 0;                // Indicate if init was already called.
 char ** htmlGEN_result;                 // Vector of HTML strings, will print all in order as final result.
 int * htmlGEN_is_there_ref;             // Indicates if nth line has a ref (1) or not (0).
+int * htmlGEN_is_bold;                  // Indicates if nth line has is bold (1) or not (0).
+int * htmlGEN_is_italic;                // Indicates if nth line has is italic (1) or not (0).
+int * htmlGEN_is_par_start;             // Indicates if nth line start a paragraph (1) or not (0).
+int * htmlGEN_is_par_end;               // Indicates if nth line end a paragraph (1) or not (0).
 int htmlGEN_counter;                    // Current line counter.
 int htmlGEN_size;                       // Current size of vectors.
 int htmlGEN_is_there_bib;               // Indicate if there is bib.
@@ -16,14 +21,26 @@ char ** htmlGEN_ref_index;              // Ref index from ref_bank.
 int htmlGEN_ref_counter;                // Current number of refs.
 int htmlGEN_ref_size;                   // Current size of ref vectors.
 
-const char htmlGEN_ref_symbol [] = "\\cite{"; 
+const char htmlGEN_ref_symbol_start [] = "\\cite{"; 
+const char htmlGEN_ref_symbol_end [] = "}";
+const char htmlGEN_header [] = "<!DOCTYPE html>\n<html>\n<body>\n";
+const char htmlGEN_footer [] = "</body>\n</html>";
 
-/* Fenctions: Interface for using this wonderfull lib. */
+const char htmlGEN_par_html_start [] = "<p>";
+const char htmlGEN_par_html_end [] = "</p>";
+
+const char htmlGEN_bold_html_start [] = "<b>";
+const char htmlGEN_bold_html_end [] = "</b>";
+
+const char htmlGEN_italic_html_start [] = "<i>";
+const char htmlGEN_italic_html_end [] = "</i>";
+
+/* Functions: Interface for using this wonderfull lib. */
 
 int htmlGEN_init(int size);
 int htmlGEN_check_size();
 void htmlGEN_free();
-void htmlGEN_add_string(char * string, int is_there_ref);
+void htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_start, int is_par_end);
 void htmlGEN_print_all();
 int htmlGEN_create_bib(int size);
 char * htmlGEN_get_ref(char * index);
@@ -35,11 +52,11 @@ int main () {
     htmlGEN_init(2);
 
     // Add string as they come. 
-    htmlGEN_add_string("Hi there\n", 0);
-    htmlGEN_add_string("My name is Brian\n", 0);
-    htmlGEN_add_string("I will graduate next semesters,", 0);
-    htmlGEN_add_string(" at least I think so.", 0);
-    htmlGEN_add_string("\n", 0);
+    htmlGEN_add_string("Hi there\n", 0, 0, 0, 0);
+    htmlGEN_add_string("My name is Brian\n", 0, 0, 0, 0);
+    htmlGEN_add_string("I will graduate next semesters,", 0, 0, 0, 0);
+    htmlGEN_add_string(" at least I think so.", 0, 0, 0, 0);
+    htmlGEN_add_string("\n", 0, 0, 0, 0);
 
     // Create bib
     htmlGEN_create_bib(2);
@@ -48,7 +65,7 @@ int main () {
     htmlGEN_add_ref("1", "ABC\n");
 
     // Add first ref as a string, for test.
-    htmlGEN_add_string(htmlGEN_get_ref("1"), 0);
+    htmlGEN_add_string(htmlGEN_get_ref("1"), 0, 0, 0, 0);
 
     // Print all the strings inserted.
     htmlGEN_print_all();
@@ -69,6 +86,10 @@ int htmlGEN_init(int size) {
 
     htmlGEN_result = (char **) malloc (sizeof(char *)*size); 
     htmlGEN_is_there_ref = (int *) malloc (sizeof(int)*size);
+    htmlGEN_is_bold = (int *) malloc (sizeof(int)*size);
+    htmlGEN_is_italic = (int *) malloc (sizeof(int)*size);
+    htmlGEN_is_par_start = (int *) malloc (sizeof(int)*size);
+    htmlGEN_is_par_end = (int *) malloc (sizeof(int)*size);
     htmlGEN_counter = 0;
     htmlGEN_size = size;
     htmlGEN_is_there_bib = 0;
@@ -88,6 +109,8 @@ int htmlGEN_check_size(){
         htmlGEN_size = htmlGEN_size*2;
         htmlGEN_result = realloc (htmlGEN_result, sizeof(char *)*htmlGEN_size); 
         htmlGEN_is_there_ref = realloc (htmlGEN_is_there_ref, sizeof(int)*htmlGEN_size);
+        htmlGEN_is_bold = realloc (htmlGEN_is_bold, sizeof(int)*htmlGEN_size);
+        htmlGEN_is_italic = realloc (htmlGEN_is_italic, sizeof(int)*htmlGEN_size);
 
         if((htmlGEN_result == NULL) || (htmlGEN_is_there_ref == NULL)) {
                 printf("Problem allocating memory for htmlGEN #1.\n");
@@ -137,7 +160,10 @@ void htmlGEN_free() {
 }
 
 // Add string to htmlGEN
-void htmlGEN_add_string(char * string, int is_there_ref) {
+void htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_start, int is_par_end) {
+    int is_there_ref = 0;
+    int i;
+    
     // Check if there is space available
     if(htmlGEN_check_size() < 0) {
             return; 
@@ -146,21 +172,50 @@ void htmlGEN_add_string(char * string, int is_there_ref) {
         printf("Null string passed to htmlGEN.");
         return;
     }
+    
+    if(strstr(string, htmlGEN_ref_symbol_start) != NULL) {
+        is_there_ref = 1;
+    }
 
     // Copy string and ref flag. Update counter after that. 
     htmlGEN_result[htmlGEN_counter] = (char *) malloc (sizeof(char)*strlen(string)); 
     strcpy (htmlGEN_result[htmlGEN_counter], string);
     htmlGEN_is_there_ref[htmlGEN_counter] = is_there_ref;
+    htmlGEN_is_bold[htmlGEN_counter] = is_bold;
+    htmlGEN_is_italic[htmlGEN_counter] = is_italic;
     htmlGEN_counter++;
 }
 
 // Print all strings.
 void htmlGEN_print_all() {
     int i;
+    
+    // Print header
+    printf("%s", htmlGEN_header);
 
     for(i=0; i<htmlGEN_counter; i++) {
+            // Print italic and bold HTML code if they are required, and the text itself.
+            if(htmlGEN_is_bold[i]>0) {
+                printf("%s", htmlGEN_bold_html_start);
+            }
+            if (htmlGEN_is_italic[i]>0) {
+                printf("%s", htmlGEN_italic_html_start);
+            }
+            
             printf("%s", htmlGEN_result[i]);
+            
+            if(htmlGEN_is_bold[i]>0) {
+                printf("%s", htmlGEN_bold_html_end);
+            }
+            if (htmlGEN_is_italic[i]>0) {
+                printf("%s", htmlGEN_italic_html_end);
+            }
     }
+    
+    // Print end
+    printf("%s", htmlGEN_ref_symbol_end);
+    printf("\n");
+    
 }
 
 // Initialize the bib, size is just initial size.
