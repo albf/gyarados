@@ -149,17 +149,18 @@ void htmlGEN_free() {
 }
 
 // Add string to htmlGEN
-void htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_start, int is_par_end) {
+// Return : 0 - Okay ; -1 ; Memory problem ; -2 : Null string passed, not allowed.
+int htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_start, int is_par_end) {
     int is_there_ref = 0;
     int i;
     
     // Check if there is space available
     if(htmlGEN_check_size() < 0) {
-            return; 
+            return -1; 
     }
     if(string == NULL) {
         printf("Null string passed to htmlGEN.");
-        return;
+        return -2;
     }
     
     if(strstr(string, htmlGEN_ref_symbol_start) != NULL) {
@@ -173,10 +174,13 @@ void htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_st
     htmlGEN_is_bold[htmlGEN_counter] = is_bold;
     htmlGEN_is_italic[htmlGEN_counter] = is_italic;
     htmlGEN_counter++;
+
+    return 0;
 }
 
 // Print all strings.
-void htmlGEN_print_all() {
+// Return : 0 - okay ; -1 : Can't find ref ; -2 Bib not createad.
+int htmlGEN_print_all() {
     int i;
     
     // Fix Refs
@@ -185,10 +189,12 @@ void htmlGEN_print_all() {
             if(htmlGEN_is_there_bib > 0) {
                 if(htmlGEN_replace_ref(i) < 0) {
                     printf("Can't solve ref in: %s\n", htmlGEN_result[i]);
+                    return -1;
                 } 
             }
             else {
                 printf("Bib not created, can't solve ref in : %s\n", htmlGEN_result[i]);
+                return -2;
             }
         }
     }
@@ -218,7 +224,7 @@ void htmlGEN_print_all() {
     // Print end
     printf("%s", htmlGEN_ref_symbol_end);
     printf("\n");
-    
+    return 0;    
 }
 
 // Initialize the bib, size is just initial size.
@@ -296,45 +302,58 @@ int htmlGEN_replace_ref(int index) {
     char * new_str;
     char * old_str;
 
+    // get first ref.
     n_cit = strstr(htmlGEN_result[index],htmlGEN_ref_symbol_start);
     while(n_cit != NULL) {
+        // Point to ref start with tk.
         tk = n_cit + (sizeof(char)*strlen(htmlGEN_ref_symbol_start));
 
+        // Count its size, looking for termination char.
         tk_size = 0;
         for(i=0; tk[i] != '}'; i++) {
             tk_size++; 
         }
 
+        // Alloc size in auxiliar pointer to get key used.
         key = (char *) malloc(sizeof(char)*((int) tk_size+1)); 
         key = strncpy(key, tk, tk_size);
         key[tk_size] = '\0';
 
+        // Get ref value from bibi initializated.
         ref = htmlGEN_get_ref(key);
+        // If it doesn't exist, quit.
         if(ref == NULL) {
             printf("Reference: %s not found in the bib.\n", key);
             return -1;
         }
-       
+        // Put termination char \0 to allow getting the first parte of the string.
         n_cit[0] = '\0'; 
         s_len = (sizeof(char)*(tk_size)) + (sizeof(char)*(strlen(htmlGEN_ref_symbol_start)+strlen(htmlGEN_ref_symbol_end)));
         n_cit = n_cit + s_len;
+        // At this point, n_cit points to what's exactly after the cite.
 
         new_size = strlen(htmlGEN_result[index]); 
         new_size += strlen(ref);
         new_size += strlen(n_cit);
 
+        // Alloc the size of the new transformed line.
         new_str = (char *) malloc(sizeof(char)*((int) new_size+1)); 
         new_str[0] = '\0';
 
+        // Put what was before, the ref and what was later.
         new_str = strcat(new_str, htmlGEN_result[index]);
         new_str = strcat(new_str, ref);
         new_str = strcat(new_str, n_cit);
     
+        // Substitute the old string.
         old_str = htmlGEN_result[index];
         htmlGEN_result[index] = new_str;
 
+        // Free memory allocated and not used anymore.
         free(old_str);
         free(key);
+
+        // Continue checking for new members. 
         n_cit = strstr(htmlGEN_result[index],htmlGEN_ref_symbol_start);
     }
 
