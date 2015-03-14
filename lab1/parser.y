@@ -20,18 +20,20 @@ void sucess(int *, int);*/
     int  *intval;
 }
 
-%token <str> T_STRING
-%token <intval> T_NUM
-%token T_BEGIN
-%token T_END
-%token T_DOCCLASS
-%token T_TITLE
-%token T_AUTHOR
-%token T_MAKETITLE
-%token T_TXTBF
-%token T_TXTIT
-%token T_INGRAPH
-%token T_OPENCITE;
+%token <str> STRING
+%token <intval> NUM
+%token <str> CHAR
+%token BEGIN
+%token END
+%token DOCCLASS
+%token USEPKG
+%token TITLE
+%token AUTHOR
+%token MAKETITLE
+%token TXTBF
+%token TXTIT
+%token INGRAPH
+%token CITE;
 %token NEWLINE
 %token LBRACE
 %token RBRACE

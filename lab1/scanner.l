@@ -2,7 +2,7 @@
 #include "parser.h"
 %}
 
-STRING  [a-z][a-z0-9_]*
+STRING  [a-z][a-z0-9]*
 WHITESPACE [ \n\r\t]+
 NUM  [0-9]+
 ANY_CHAR .
@@ -10,36 +10,37 @@ ANY_CHAR .
 %%
 
 {WHITESPACE}        /* ignore */ ;
-"\begin"            {return T_BEGIN;}
-"\end"              {return T_END; }
-"\documentclass"    {return T_DOCCLASS;}
-"\title"            {return T_TITLE;}
-"\author"           {return T_AUTHOR;}
-"\maketitle"        {return T_MAKETITLE;}
-"\textbf"           {return T_TXTBF;}
-"\textit"           {return T_TXTIT;}
-"\includegraphics"  {return T_INGRAPH;}
-"\cite{ref"         {return T_OPENCITE;}
+"\begin"            {return BEGIN;}
+"\end"              {return END; }
+"\documentclass"    {return DOCCLASS;}
+"\usepackage"       {return USEPKG;}
+"\title"            {return TITLE;}
+"\author"           {return AUTHOR;}
+"\maketitle"        {return MAKETITLE;}
+"\textbf"           {return TXTBF;}
+"\textit"           {return TXTIT;}
+"\includegraphics"  {return INGRAPH;}
+"\cite"             {return CITE;}
+"\bibitem"          {return BBITEM;}
 
 "\\\\"              {return NEWLINE;}
+"\$"                {return DOLLAR;}
 "{"                 {return LBRACE;}
 "}"                 {return RBRACE;}
 "["                 {return LBRACKET;}
 "]"                 {return RBRACKET;}
 
-
 {STRING}    {  
                 yylval.str = (char *) strdup(yytext);
-                return T_STRING;
+                return STRING;
             }
-
 
 {NUM}       {
                 yylval.intval = atoi(yytext);
-                return T_NUM;
+                return NUM;
             }
 
 {ANY_CHAR}  {
-                 printf ("Caracter %c (ASCII=%d) inesperado\n",
-                         yytext[0], yytext[0]);
+                yylval.str = (char *) strdup(yytext);
+                return CHAR;
             }
