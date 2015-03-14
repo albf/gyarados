@@ -9,9 +9,15 @@ ANY_CHAR .
 
 %%
 
-{WHITESPACE}        /* ignore */ ;
-"\begin"            {return T_BEGIN;}
-"\end"              {return T_END; }
+{WHITESPACE}                    /* ignore */ ;
+"\begin{document}"              {return BEGIN_DOC;}
+"\end{document}"                {return END_DOC; }
+"\begin{itemize}"               {return BEGIN_ITEM;}
+"\end{itemize}"                 {return END_ITEM;}
+"\begin{thebibliography}"       {return BEGIN_BIB;}
+"\end{thebibliography}"         {return END_BIB;}
+
+
 "\documentclass"    {return DOCCLASS;}
 "\usepackage"       {return USEPKG;}
 "\title"            {return TITLE;}
@@ -24,12 +30,14 @@ ANY_CHAR .
 "\bibitem"          {return BBITEM;}
 "\item"             {return ITEM;}
 
+
 "\\\\"              {return NEWLINE;}
 "\$"                {return DOLLAR;}
 "{"                 {return LBRACE;}
 "}"                 {return RBRACE;}
 "["                 {return LBRACKET;}
 "]"                 {return RBRACKET;}
+
 
 {STRING}    {  
                 yylval.str = (char *) strdup(yytext);

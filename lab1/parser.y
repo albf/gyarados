@@ -23,8 +23,16 @@ void sucess(int *, int);*/
 %token <str> STRING
 %token <intval> NUM
 %token <str> CHAR
-%token T_BEGIN
-%token T_END
+
+
+%token BEGIN_DOC
+%token END_DOC
+%token BEGIN_ITEM
+%token END_ITEM
+%token BEGIN_BIB
+%token END_BIB
+
+
 %token DOCCLASS
 %token USEPKG
 %token TITLE
@@ -36,6 +44,8 @@ void sucess(int *, int);*/
 %token CITE;
 %token BBITEM
 %token ITEM
+
+
 %token NEWLINE
 %token DOLLAR
 %token LBRACE
@@ -54,22 +64,20 @@ latex:
     ;
 
 preamble:
-    DOCCLASS header_list
+    DOCCLASS LBRACE normal_t RBRACE header_list
+    | DOCCLASS LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE header_list
     ;
 
 header_list:
-    header_list USEPKG
+    header_list USEPKG LBRACE normal_t RBRACE
+    | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE
     | header_list TITLE
     | header_list AUTHOR
     |
     ;
 
 document:
-    T_BEGIN LBRACE key_wrd RBRACE body T_END LBRACE key_wrd RBRACE
-    ;
-
-key_wrd:
-    STRING
+    BEGIN_DOC body END_DOC
     ;
 
 body:
@@ -80,14 +88,10 @@ body:
 
 command:
     MAKETITLE
-    | itemize
-    | INGRAPH LBRACE key_wrd RBRACE
-    | CITE LBRACE NUM RBRACE
-    | key_wrd
-    ;
-
-itemize:
-    T_BEGIN LBRACE key_wrd RBRACE item_list T_END LBRACE key_wrd RBRACE
+    | BEGIN_ITEM item_list END_ITEM
+    | INGRAPH LBRACE normal_t RBRACE
+    | CITE LBRACE normal_t RBRACE
+    | BEGIN_BIB bib_list END_BIB
     ;
 
 item_list:
@@ -95,26 +99,30 @@ item_list:
     | item_list ITEM text
     ;
 
+bib_list:
+    BBITEM LBRACE normal_t RBRACE normal_t
+    | bib_list BBITEM LBRACE normal_t RBRACE normal_t
+
 text:
-    normal_t
+    normal_t 
     | italic_t
-    | bold_t
-    |
+    | bold_t 
     ;
 
 normal_t:
     STRING
     | CHAR
-    | normal_t CHAR
-    | normal_t STRING
+    | normal_t CHAR NEWLINE
+    | normal_t STRING NEWLINE
+    |
     ;
 
 bold_t:
-    TXTBF LBRACE normal_t RBRACE
+    TXTBF LBRACE text RBRACE
     ;
 
 italic_t:
-    TXTIT LBRACE normal_t RBRACE
+    TXTIT LBRACE text RBRACE
     ;
 
     
