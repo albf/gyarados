@@ -10,8 +10,8 @@ ANY_CHAR .
 %%
 
 {WHITESPACE}        /* ignore */ ;
-"\begin"            {return BEGIN;}
-"\end"              {return END; }
+"\begin"            {return T_BEGIN;}
+"\end"              {return T_END; }
 "\documentclass"    {return DOCCLASS;}
 "\usepackage"       {return USEPKG;}
 "\title"            {return TITLE;}
@@ -22,6 +22,7 @@ ANY_CHAR .
 "\includegraphics"  {return INGRAPH;}
 "\cite"             {return CITE;}
 "\bibitem"          {return BBITEM;}
+"\item"             {return ITEM;}
 
 "\\\\"              {return NEWLINE;}
 "\$"                {return DOLLAR;}
