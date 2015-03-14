@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
-
+#include "htmlGEN.h" 
 
 /* Global Variables: One should not touch these outside this file. */
 
@@ -35,17 +35,6 @@ const char htmlGEN_bold_html_end [] = "</b>";
 const char htmlGEN_italic_html_start [] = "<i>";
 const char htmlGEN_italic_html_end [] = "</i>";
 
-/* Functions: Interface for using this wonderfull lib. */
-
-int htmlGEN_init(int size);
-int htmlGEN_check_size();
-void htmlGEN_free();
-void htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_start, int is_par_end);
-void htmlGEN_print_all();
-int htmlGEN_create_bib(int size);
-char * htmlGEN_get_ref(char * index);
-int htmlGEN_add_ref(char * new_index, char * new_ref);
-
 // Example function
 int main () {
     // Initialize
@@ -56,16 +45,16 @@ int main () {
     htmlGEN_add_string("My name is Brian\n", 0, 0, 0, 0);
     htmlGEN_add_string("I will graduate next semesters,", 0, 0, 0, 0);
     htmlGEN_add_string(" at least I think so.", 0, 0, 0, 0);
-    htmlGEN_add_string("\n", 0, 0, 0, 0);
+    htmlGEN_add_string("\n\n", 0, 0, 0, 0);
 
     // Create bib
     htmlGEN_create_bib(2);
 
     // Add ref
-    htmlGEN_add_ref("1", "ABC\n");
+    htmlGEN_add_ref("ref1", "ABC");
 
-    // Add first ref as a string, for test.
-    htmlGEN_add_string(htmlGEN_get_ref("1"), 0, 0, 0, 0);
+    // String with ref
+    htmlGEN_add_string("Brian sings: \\cite{ref1} from MJ \n",0,0,0,0);
 
     // Print all the strings inserted.
     htmlGEN_print_all();
@@ -190,6 +179,20 @@ void htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_st
 void htmlGEN_print_all() {
     int i;
     
+    // Fix Refs
+    for(i=0; i<htmlGEN_counter; i++) {
+        if(htmlGEN_is_there_ref[i] > 0) {
+            if(htmlGEN_is_there_bib > 0) {
+                if(htmlGEN_replace_ref(i) < 0) {
+                    printf("Can't solve ref in: %s\n", htmlGEN_result[i]);
+                } 
+            }
+            else {
+                printf("Bib not created, can't solve ref in : %s\n", htmlGEN_result[i]);
+            }
+        }
+    }
+
     // Print header
     printf("%s", htmlGEN_header);
 
@@ -278,3 +281,63 @@ int htmlGEN_add_ref(char * new_index, char * new_ref) {
     htmlGEN_ref_counter++;
     return 0;
 }
+
+// Replace cite in string from result. Index is the position of the line to check.
+// Return : 0 - Okay ; -1 - Key not found
+int htmlGEN_replace_ref(int index) {
+    char * n_cit; 
+    int s_len;
+    char * tk;
+    size_t tk_size;
+    char * key;
+    char * ref;
+    int i;
+    int new_size;
+    char * new_str;
+    char * old_str;
+
+    n_cit = strstr(htmlGEN_result[index],htmlGEN_ref_symbol_start);
+    while(n_cit != NULL) {
+        tk = n_cit + (sizeof(char)*strlen(htmlGEN_ref_symbol_start));
+
+        tk_size = 0;
+        for(i=0; tk[i] != '}'; i++) {
+            tk_size++; 
+        }
+
+        key = (char *) malloc(sizeof(char)*((int) tk_size+1)); 
+        key = strncpy(key, tk, tk_size);
+        key[tk_size] = '\0';
+
+        ref = htmlGEN_get_ref(key);
+        if(ref == NULL) {
+            printf("Reference: %s not found in the bib.\n", key);
+            return -1;
+        }
+       
+        n_cit[0] = '\0'; 
+        s_len = (sizeof(char)*(tk_size)) + (sizeof(char)*(strlen(htmlGEN_ref_symbol_start)+strlen(htmlGEN_ref_symbol_end)));
+        n_cit = n_cit + s_len;
+
+        new_size = strlen(htmlGEN_result[index]); 
+        new_size += strlen(ref);
+        new_size += strlen(n_cit);
+
+        new_str = (char *) malloc(sizeof(char)*((int) new_size+1)); 
+        new_str[0] = '\0';
+
+        new_str = strcat(new_str, htmlGEN_result[index]);
+        new_str = strcat(new_str, ref);
+        new_str = strcat(new_str, n_cit);
+    
+        old_str = htmlGEN_result[index];
+        htmlGEN_result[index] = new_str;
+
+        free(old_str);
+        free(key);
+        n_cit = strstr(htmlGEN_result[index],htmlGEN_ref_symbol_start);
+    }
+
+    return 0;
+}
+
