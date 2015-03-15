@@ -4,7 +4,7 @@ CFLAGS=-g
 BISON=bison
 FLEX=flex
  
-parser: parser.o scanner.o
+parser: clean parser.o scanner.o
 	$(CC) -o parser scanner.o parser.o -g
  
 parser.c: parser.y

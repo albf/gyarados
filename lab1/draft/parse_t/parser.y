@@ -16,6 +16,7 @@ char *concat(int count, ...);
 
 %token <str>    WORD 
 %token NEWLINE
+%token ITALIC
 
 %type <str> phrase paragraph parag_list
 
@@ -24,7 +25,7 @@ char *concat(int count, ...);
 %%
 
 text:
-    parag_list                      {   printf("%s", $1); }
+    parag_list                      {   printf("%s", $1);   }
     ;
 
 phrase:

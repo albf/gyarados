@@ -10,11 +10,6 @@ WORD        [^ \n\r\t]+
 {WHITESPACE}    ;
 
 "\\\\"          {return NEWLINE; }
-"{"             {return '{';}
-"}"             {return '}';}
-
-"\textbf"       {return BOLD;}
-"\textit"       {return ITALIC;}
 
 {WORD}          {
                     yylval.str = (char *) strdup(yytext);

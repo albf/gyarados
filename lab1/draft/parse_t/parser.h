@@ -45,9 +45,9 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    STRING = 258,
-    CHAR = 259,
-    NEWLINE = 260
+    WORD = 258,
+    NEWLINE = 259,
+    ITALIC = 260
   };
 #endif
 
@@ -56,12 +56,11 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 12 "parser.y" /* yacc.c:1909  */
+#line 13 "parser.y" /* yacc.c:1909  */
 
     char *str;
-    char alfa;
 
-#line 65 "parser.h" /* yacc.c:1909  */
+#line 64 "parser.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

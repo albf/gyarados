@@ -378,25 +378,25 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[11] =
     {   0,
-        0,    0,    5,    3,    4,    2,    3,    2,    1,    0
+        0,    0,    5,    3,    1,    3,    3,    1,    2,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
     {   0,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    2,
+        1,    1,    1,    1,    1,    1,    1,    1,    2,    2,
+        1,    1,    2,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    2,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    3,    3,    3,
-        3,    3,    3,    3,    3,    3,    3,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    4,    1,    1,    1,    1,    3,    3,    3,    3,
+        1,    3,    1,    1,    1,    1,    1,    1,    1,    1,
 
-        3,    3,    3,    3,    3,    3,    3,    3,    3,    3,
-        3,    3,    3,    3,    3,    3,    3,    3,    3,    3,
-        3,    3,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -413,33 +413,33 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int32_t yy_meta[5] =
+static yyconst flex_int32_t yy_meta[4] =
     {   0,
-        1,    1,    2,    3
+        1,    2,    1
     } ;
 
 static yyconst flex_int16_t yy_base[13] =
     {   0,
-        0,    0,    7,    8,    8,    0,    0,    0,    8,    8,
+        0,    0,    7,    0,    0,    3,    0,    0,    0,    8,
         4,    2
     } ;
 
 static yyconst flex_int16_t yy_def[13] =
     {   0,
-       10,    1,   10,   10,   10,   11,   12,   11,   10,    0,
+       10,    1,   10,   11,   12,   11,   11,   12,   11,    0,
        10,   10
     } ;
 
-static yyconst flex_int16_t yy_nxt[13] =
+static yyconst flex_int16_t yy_nxt[12] =
     {   0,
-        4,    5,    6,    7,    9,    8,   10,    3,   10,   10,
-       10,   10
+        4,    5,    6,    8,    7,    9,   10,    3,   10,   10,
+       10
     } ;
 
-static yyconst flex_int16_t yy_chk[13] =
+static yyconst flex_int16_t yy_chk[12] =
     {   0,
-        1,    1,    1,    1,   12,   11,    3,   10,   10,   10,
-       10,   10
+        1,    1,    1,   12,   11,    6,    3,   10,   10,   10,
+       10
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -646,7 +646,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 9 "scanner.l"
+#line 8 "scanner.l"
 
 
 #line 653 "scanner.c"
@@ -733,32 +733,30 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
+/* rule 1 can match eol */
 YY_RULE_SETUP
-#line 11 "scanner.l"
-{ return NEWLINE; }
+#line 10 "scanner.l"
+;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 13 "scanner.l"
-{  
-                yylval.str = (char *) strdup(yytext);
-                return STRING;
-            }
+#line 12 "scanner.l"
+{return NEWLINE; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 19 "scanner.l"
+#line 14 "scanner.l"
 {
-                yylval.alfa = *(yytext);
-                return CHAR;
-            }
+                    yylval.str = (char *) strdup(yytext);
+                    return WORD;
+                }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 23 "scanner.l"
+#line 19 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 762 "scanner.c"
+#line 760 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1756,4 +1754,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 23 "scanner.l"
+#line 19 "scanner.l"
