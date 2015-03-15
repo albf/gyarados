@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#define YYDEBUG 1
 
 char *concat(int count, ...);
 
@@ -11,32 +12,42 @@ char *concat(int count, ...);
 
 %union {
     char *str;
-    char alfa;
 }
 
-%token <str>    STRING
-%token <alfa>   CHAR
+%token <str>    WORD 
 %token NEWLINE
 
-%type <str> phrase paragraph
+%type <str> phrase paragraph parag_list
 
 %start text
 
 %%
 
 text:
-    phrase                          {printf("%s\n", $1);}
-    | paragraph text                {printf("%s\n", $1);}
+    parag_list                      {   printf("%s", $1); }
     ;
 
 phrase:
-    CHAR phrase                     {$$ = concat(2, $1, $2);}
-    | STRING phrase                 {$$ = concat(2, $1, $2);}
-    |                               {$$ = "";}
+    WORD phrase                     {
+                                        $$ = concat(3, $1, " ", $2);
+                                    }
+    |                               {   $$ = "";    }
     ;
 
 paragraph:
-    phrase NEWLINE                  {$$ = concat(2, $1, '\n');}
+    phrase NEWLINE                  {
+                                        $$ = $1;
+                                    }
+    ;
+
+parag_list:
+    paragraph parag_list            {
+                                        $$ = concat(3, $1, "\n", $2);
+                                    }
+    | phrase                        {
+                                        $$ = $1;
+                                    }
+    ;
 
 %%
 
@@ -49,6 +60,7 @@ int yywrap(void) { return 1; }
  
 int main(int argc, char** argv)
 {
+     yydebug = 1;
      yyparse();
      return 0;
 }
@@ -77,4 +89,13 @@ char* concat(int count, ...)
     va_end(ap);
 
     return result;
+}
+
+
+static void yyprint (file, type, value)
+        FILE *file;
+        int type;
+        YYSTYPE value;
+{
+        fprintf (file, " %s", value.str);
 }

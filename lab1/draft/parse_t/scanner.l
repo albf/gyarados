@@ -2,21 +2,22 @@
 #include "parser.h"
 %}
 
-STRING  [a-z0-9]+
-WHITESPACE [ \n\r\t]+
-ANY_CHAR .
+WHITESPACE  [ \n\r\t]+
+WORD        [^ \n\r\t]+
 
 %%
 
-"\\\\"      { return NEWLINE; }
+{WHITESPACE}    ;
 
-{STRING}    {  
-                yylval.str = (char *) strdup(yytext);
-                return STRING;
-            }
+"\\\\"          {return NEWLINE; }
+"{"             {return '{';}
+"}"             {return '}';}
 
+"\textbf"       {return BOLD;}
+"\textit"       {return ITALIC;}
 
-{ANY_CHAR}  {
-                yylval.alfa = *(yytext);
-                return CHAR;
-            }
+{WORD}          {
+                    yylval.str = (char *) strdup(yytext);
+                    return WORD;
+                }
+                    

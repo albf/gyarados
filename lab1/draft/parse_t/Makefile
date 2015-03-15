@@ -4,8 +4,6 @@ CFLAGS=-g
 BISON=bison
 FLEX=flex
  
-all: parser
-
 parser: parser.o scanner.o
 	$(CC) -o parser scanner.o parser.o -g
  
@@ -16,4 +14,4 @@ scanner.c: scanner.l
 	$(FLEX)  -o scanner.c scanner.l
 
 clean:
-	rm -f scanner.c scanner.o parser.c parser.o parser.h parser parser.output
+	rm -f scanner.c scanner.o parser.c parser.o parser.h parser parser.output out
