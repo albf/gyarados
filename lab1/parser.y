@@ -6,14 +6,10 @@
 #include "log.h"
 #include "htmlGEN.h"
 
-/*#define MAX 1000
-
-char table[MAX][MAX][MAX];
-
 char *concat(int count, ...);
-void selectPrime(char *);
-void selectField(char *, char *);
-void sucess(int *, int);*/
+
+// Indicate if it is paragrah start.
+int is_p_start;
 
 %}
  
@@ -55,6 +51,8 @@ void sucess(int *, int);*/
 %token RBRACE
 %token LBRACKET
 %token RBRACKET
+
+%type <str> normal_t
 
 %start latex
 
@@ -111,15 +109,29 @@ bib_list:
     | bib_list BBITEM LBRACE normal_t RBRACE normal_t  { debug("Parser: bib_list"); } 
 
 text:
-    normal_t       { debug("Parser: text"); } 
+    normal_t       { debug("Parser: text"); 
+                     if(is_p_start==1) {
+                         debug("Parser: Start <P>");
+                         htmlGEN_add_string($1, 0, 0, 1, 0);
+                         is_p_start=0;
+                     }
+                     else {
+                         htmlGEN_add_string(concat(2, " ", $1), 0, 0, 0, 0);
+                     }
+
+                   } 
     | italic_t     { debug("Parser: text"); } 
     | bold_t       { debug("Parser: text"); } 
     | NEWLINES     { debug("Parser: text"); }
     ;
 
 normal_t:
-    STRING         { debug("Parser: normal_t"); } 
-    | CHAR         { debug("Parser: normal_t"); } 
+    STRING         { debug("Parser: normal_t"); 
+                     $$ = $1;
+                   } 
+    | CHAR         { debug("Parser: normal_t"); 
+                     $$ = $1; 
+                   } 
     ;
 
 bold_t:
@@ -200,7 +212,10 @@ int main(int argc, char** argv)
 {
     info("Latex-HTML start.");
     htmlGEN_init(2); 
-   
+    
+    // Define flag to start paragraph at first chance.
+    is_p_start = 1;   
+
     yyparse();
 
     htmlGEN_print_all();

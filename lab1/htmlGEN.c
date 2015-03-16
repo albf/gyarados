@@ -101,6 +101,8 @@ int htmlGEN_check_size(){
         htmlGEN_is_there_ref = realloc (htmlGEN_is_there_ref, sizeof(int)*htmlGEN_size);
         htmlGEN_is_bold = realloc (htmlGEN_is_bold, sizeof(int)*htmlGEN_size);
         htmlGEN_is_italic = realloc (htmlGEN_is_italic, sizeof(int)*htmlGEN_size);
+        htmlGEN_is_par_start = realloc(htmlGEN_is_par_start, sizeof(int)*htmlGEN_size);
+        htmlGEN_is_par_end = realloc(htmlGEN_is_par_end, sizeof(int)*htmlGEN_size);
 
         if((htmlGEN_result == NULL) || (htmlGEN_is_there_ref == NULL)) {
                 error("Problem allocating memory for htmlGEN #1.\n");
@@ -174,6 +176,8 @@ int htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_sta
     htmlGEN_is_there_ref[htmlGEN_counter] = is_there_ref;
     htmlGEN_is_bold[htmlGEN_counter] = is_bold;
     htmlGEN_is_italic[htmlGEN_counter] = is_italic;
+    htmlGEN_is_par_start[htmlGEN_counter] = is_par_start;
+    htmlGEN_is_par_end[htmlGEN_counter] = is_par_end;
     htmlGEN_counter++;
 
     return 0;
@@ -211,6 +215,9 @@ int htmlGEN_print_all() {
             if (htmlGEN_is_italic[i]>0) {
                 printf("%s", htmlGEN_italic_html_start);
             }
+            if (htmlGEN_is_par_start[i]>0) {
+                printf("%s", htmlGEN_par_html_start);
+            }
             
             printf("%s", htmlGEN_result[i]);
             
@@ -219,6 +226,9 @@ int htmlGEN_print_all() {
             }
             if (htmlGEN_is_italic[i]>0) {
                 printf("%s", htmlGEN_italic_html_end);
+            }
+            if (htmlGEN_is_par_end[i]>0) {
+                printf("%s", htmlGEN_par_html_end);
             }
     }
     
