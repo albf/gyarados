@@ -21,20 +21,6 @@ char ** htmlGEN_ref_index;              // Ref index from ref_bank.
 int htmlGEN_ref_counter;                // Current number of refs.
 int htmlGEN_ref_size;                   // Current size of ref vectors.
 
-const char htmlGEN_ref_symbol_start [] = "\\cite{"; 
-const char htmlGEN_ref_symbol_end [] = "}";
-const char htmlGEN_header [] = "<!DOCTYPE html>\n<html>\n<body>\n";
-const char htmlGEN_footer [] = "</body>\n</html>";
-
-const char htmlGEN_par_html_start [] = "<p>";
-const char htmlGEN_par_html_end [] = "</p>";
-
-const char htmlGEN_bold_html_start [] = "<b>";
-const char htmlGEN_bold_html_end [] = "</b>";
-
-const char htmlGEN_italic_html_start [] = "<i>";
-const char htmlGEN_italic_html_end [] = "</i>";
-
 // Example function
 /*
 int main () {

@@ -33,4 +33,19 @@ int htmlGEN_check_size();
 char * htmlGEN_get_ref(char * index);
 int htmlGEN_replace_ref(int index);
 
+// HTML constants
+#define htmlGEN_ref_symbol_start "\\cite{" 
+#define htmlGEN_ref_symbol_end "}"
+#define htmlGEN_header "<!DOCTYPE html>\n<html>\n<body>\n"
+#define htmlGEN_footer "</body>\n</html>"
+
+#define htmlGEN_par_html_start "<p>"
+#define htmlGEN_par_html_end "</p>"
+
+#define htmlGEN_bold_html_start "<b>"
+#define htmlGEN_bold_html_end "</b>"
+
+#define htmlGEN_italic_html_start "<i>"
+#define htmlGEN_italic_html_end "</i>"
+
 #endif //__htmlGEN_H__ 

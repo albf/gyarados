@@ -11,6 +11,11 @@ char *concat(int count, ...);
 // Indicate if it is paragrah start.
 int is_p_start;
 
+// Avoid cycle
+int is_bold;
+int is_italic;
+
+
 %}
  
 %union{
@@ -52,7 +57,7 @@ int is_p_start;
 %token LBRACKET
 %token RBRACKET
 
-%type <str> normal_t
+%type <str> normal_t bold_text bold_t italic_text italic_t
 
 %start latex
 
@@ -73,8 +78,8 @@ preamble:
 header_list:
      header_list USEPKG LBRACE normal_t RBRACE                                          { debug("Parser: header_list"); } 
     | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE              { debug("Parser: header_list"); } 
-    | header_list TITLE                                                                 { debug("Parser: header_list"); } 
-    | header_list AUTHOR                                                                { debug("Parser: header_list"); } 
+    | header_list TITLE  LBRACE normal_t RBRACE                                         { debug("Parser: header_list"); } 
+    | header_list AUTHOR LBRACE normal_t RBRACE                                         { debug("Parser: header_list"); } 
     | header_list NEWLINES                                                              { debug("Parser: header_list"); }
     |                                                                                   { debug("Parser: header_list"); } 
     ;
@@ -118,12 +123,45 @@ text:
                          is_p_start=0;
                      }
                      else {
-                         htmlGEN_add_string(concat(2, " ", $1), 0, 0, 0, 0);
+                         if(htmlGEN_add_string(concat(2, " ", $1), 0, 0, 0, 0)<0) {
+                            return -1;
+                         }
                      }
 
                    } 
-    | italic_t     { debug("Parser: text"); } 
-    | bold_t       { debug("Parser: text"); } 
+    | italic_t     { debug("Parser: text"); 
+                     if(is_p_start==1) {
+                         debug("Parser: Start <P>");
+                         if(htmlGEN_add_string($1, 0, 1, 1, 0)<0) {
+                            return -1;
+                         }
+                         is_p_start=0;
+                     }
+                     else {
+                         if(htmlGEN_add_string(concat(2, " ", $1), 0, 1, 0, 0)<0) {
+                            return -1;
+                         }
+                     }
+                     is_italic = 0;
+                     is_bold = 0;
+                   } 
+    | bold_t       { debug("Parser: text"); 
+                     if(is_p_start==1) {
+                         debug("Parser: Start <P>");
+                         if(htmlGEN_add_string($1, 1, 0, 1, 0)<0) {
+                            return -1;
+                         }
+                         is_p_start=0;
+                     }
+                     else {
+                         if(htmlGEN_add_string(concat(2, " ", $1), 1, 0, 0, 0)<0) {
+                            return -1;
+                         }
+                     }
+                     is_italic=0;
+                     is_bold = 0;
+                    } 
+
     | NEWLINES     { debug("Parser: text"); 
                      if(is_p_start==0) {
                          is_p_start=1;
@@ -142,41 +180,67 @@ normal_t:
                    } 
     ;
 
-bold_t:
-    bold_exp                                            { debug("Parser: bold_t"); }
-    | TXTIT LBRACE bold_exp RBRACE                      { debug("Parser: bold_t"); }   
-    | TXTIT LBRACE CHAR bold_exp RBRACE                 { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE STRING bold_exp RBRACE               { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE bold_exp CHAR RBRACE                 { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE CHAR bold_exp CHAR RBRACE            { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE STRING bold_exp CHAR RBRACE          { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE bold_exp STRING RBRACE               { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE CHAR bold_exp STRING RBRACE          { debug("Parser: bold_t"); } 
-    | TXTIT LBRACE STRING bold_exp STRING RBRACE        { debug("Parser: bold_t"); } 
+bold_text:
+    STRING                     { debug("Parser: bold_text"); 
+                                 $$ = $1;
+                               } 
+    | CHAR                     { debug("Parser: bold_text"); 
+                                 $$ = $1;
+                               } 
+    | italic_t                 { debug("Parser: bold_text"); 
+                                 $$ = concat(3, htmlGEN_italic_html_start, $1, htmlGEN_italic_html_start); 
+                               } 
+    | bold_text STRING         { debug("Parser: bold_text"); 
+                                 $$ = concat(3, $1," ", $2);
+                               } 
+    | bold_text CHAR           { debug("Parser: bold_text"); 
+                                 $$ = concat(3, $1," ", $2);
+                               } 
+    | bold_text italic_t       { debug("Parser: bold_text"); 
+                                 $$ = concat(5, $1," ", htmlGEN_italic_html_start, $2, htmlGEN_italic_html_start); 
+                               } 
     ;
 
-bold_exp:
-    TXTBF LBRACE STRING RBRACE                          { debug("Parser: bold_exp"); }  
-    | TXTBF LBRACE CHAR RBRACE                          { debug("Parser: bold_exp"); }
+bold_t:
+    TXTBF LBRACE bold_text RBRACE                          { debug("Parser: bold_t");
+                                                             if(is_bold == 1) {
+                                                                error("Trying to insert bold twice. Not allowed here.");
+                                                                return -1;
+                                                             }
+                                                             is_bold = 1;                                
+                                                             $$ = $3;
+                                                           }  
     ;
+
+italic_text:
+    STRING                     { debug("Parser: italic_text"); 
+                                 $$ = $1;
+                               }     
+    | CHAR                     { debug("Parser: italic_text"); 
+                                 $$ = $1;
+                               }     
+    | bold_t                   { debug("Parser: italic_text"); 
+                                 $$ = concat(3, htmlGEN_bold_html_start, $1, htmlGEN_bold_html_start); 
+                               }
+    | italic_text STRING       { debug("Parser: italic_text"); 
+                                 $$ = concat(3, $1," ", $2);
+                               }
+    | italic_text CHAR         { debug("Parser: italic_text"); 
+                                 $$ = concat(3, $1," ", $2);
+                               }
+    | italic_text bold_t       { debug("Parser: italic_text"); 
+                                 $$ = concat(5, $1," ", htmlGEN_bold_html_start, $2, htmlGEN_bold_html_start); 
+                               }
 
 italic_t:
-    italic_exp                                          { debug("Parser: italic_t"); }
-    | TXTBF LBRACE italic_exp RBRACE                    { debug("Parser: italic_t"); }
-    | TXTBF LBRACE CHAR italic_exp RBRACE               { debug("Parser: italic_t"); }
-    | TXTBF LBRACE STRING italic_exp RBRACE             { debug("Parser: italic_t"); }
-    | TXTBF LBRACE italic_exp CHAR RBRACE               { debug("Parser: italic_t"); }
-    | TXTBF LBRACE CHAR italic_exp CHAR RBRACE          { debug("Parser: italic_t"); }
-    | TXTBF LBRACE STRING italic_exp CHAR RBRACE        { debug("Parser: italic_t"); }
-    | TXTBF LBRACE italic_exp STRING RBRACE             { debug("Parser: italic_t"); }
-    | TXTBF LBRACE CHAR italic_exp STRING RBRACE        { debug("Parser: italic_t"); }
-    | TXTBF LBRACE STRING italic_exp STRING RBRACE      { debug("Parser: italic_t"); }
-    ;
-
-
-italic_exp:
-    TXTIT LBRACE STRING RBRACE { debug("Parser: italic_exp"); }
-    | TXTIT LBRACE CHAR RBRACE { debug("Parser: italic_exp"); }
+    TXTIT LBRACE italic_text RBRACE                        { debug("Parser: italic_t"); 
+                                                             if(is_italic == 1) {
+                                                                error("Trying to insert italic twice. Not allowed here.");
+                                                                return -1;
+                                                             }
+                                                             is_italic = 1;                                
+                                                             $$ = $3;
+                                                           }
     ;
 
     
@@ -225,7 +289,10 @@ int main(int argc, char** argv)
     
     // Define flag to start paragraph at first chance.
     is_p_start = 1;   
-    is_error = 0; 
+
+    // Avoid cycles.
+    is_bold = 0;
+    is_italic = 0;
 
     is_error = yyparse();
 
