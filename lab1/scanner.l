@@ -39,7 +39,7 @@ ANY_CHAR .
 "["                 {return LBRACKET;}
 "]"                 {return RBRACKET;}
 
-{NEWLINES}          { debug("RECEIVED ENTER"); return NEWLINES; }
+{NEWLINES}          { return NEWLINES; }
 
 
 {STRING}    {  

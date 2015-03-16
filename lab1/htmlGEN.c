@@ -70,7 +70,7 @@ int main () {
 // 0 - Okay ; -1 - Malloc error ; -2 - Second call for this function, not allowed.
 int htmlGEN_init(int size) {
     if(htmlGEN_is_init > 0) {
-        printf("Only one htmlGEN_init is allowed.\n");   
+        error("Only one htmlGEN_init is allowed.\n");   
         return -2;
     }
 
@@ -86,7 +86,7 @@ int htmlGEN_init(int size) {
     htmlGEN_is_init = 1;
 
     if((htmlGEN_result == NULL) || (htmlGEN_is_there_ref == NULL)) {
-            printf("Problem allocating memory for htmlGEN. #0\n");
+            error("Problem allocating memory for htmlGEN. #0\n");
             return -1;
     }
 
@@ -103,7 +103,7 @@ int htmlGEN_check_size(){
         htmlGEN_is_italic = realloc (htmlGEN_is_italic, sizeof(int)*htmlGEN_size);
 
         if((htmlGEN_result == NULL) || (htmlGEN_is_there_ref == NULL)) {
-                printf("Problem allocating memory for htmlGEN #1.\n");
+                error("Problem allocating memory for htmlGEN #1.\n");
                 return -1;
         }
     }
@@ -114,7 +114,7 @@ int htmlGEN_check_size(){
             htmlGEN_ref_index = realloc (htmlGEN_ref_index, sizeof(int)*htmlGEN_ref_size);
 
             if((htmlGEN_ref_bank == NULL) || (htmlGEN_ref_index == NULL)) {
-                    printf("Problem allocating memory for htmlGEN #2.\n");
+                    error("Problem allocating memory for htmlGEN #2.\n");
                     return -1;
             }
         }
@@ -127,7 +127,7 @@ void htmlGEN_free() {
     int i;
 
     if(htmlGEN_is_init == 0) {
-        printf("htmlGEN was not initialized.\n");
+        error("htmlGEN was not initialized.\n");
         return; 
     }
 
@@ -160,7 +160,7 @@ int htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_sta
             return -1; 
     }
     if(string == NULL) {
-        printf("Null string passed to htmlGEN.");
+        error("Null string passed to htmlGEN.");
         return -2;
     }
     
@@ -189,12 +189,12 @@ int htmlGEN_print_all() {
         if(htmlGEN_is_there_ref[i] > 0) {
             if(htmlGEN_is_there_bib > 0) {
                 if(htmlGEN_replace_ref(i) < 0) {
-                    printf("Can't solve ref in: %s\n", htmlGEN_result[i]);
+                    error("Can't solve ref in: %s\n", htmlGEN_result[i]);
                     return -1;
                 } 
             }
             else {
-                printf("Bib not created, can't solve ref in : %s\n", htmlGEN_result[i]);
+                error("Bib not created, can't solve ref in : %s\n", htmlGEN_result[i]);
                 return -2;
             }
         }
@@ -232,7 +232,7 @@ int htmlGEN_print_all() {
 // Returns : 0 - Okay ; -1 - Malloc error ; -2 - Second function call, only one bib should be created. 
 int htmlGEN_create_bib(int size) {
     if(htmlGEN_is_there_bib > 1) {
-        printf("Only one bib is allowed.\n");
+        error("Only one bib is allowed.\n");
         return -2;
     }
 
@@ -243,7 +243,7 @@ int htmlGEN_create_bib(int size) {
     htmlGEN_is_there_bib = 1;
 
     if((htmlGEN_ref_bank == NULL) || (htmlGEN_ref_index == NULL)) {
-            printf("Problem allocating memory for htmlGEN. #3\n");
+            error("Problem allocating memory for htmlGEN. #3\n");
             return -1;
     }
 
@@ -276,7 +276,7 @@ int htmlGEN_add_ref(char * new_index, char * new_ref) {
     }
 
     if(htmlGEN_get_ref(new_index)!=NULL) {
-        printf("Repeated reference (%s) in bib.\n", new_index);
+        error("Repeated reference (%s) in bib.\n", new_index);
         return -2;
     }
 
@@ -324,7 +324,7 @@ int htmlGEN_replace_ref(int index) {
         ref = htmlGEN_get_ref(key);
         // If it doesn't exist, quit.
         if(ref == NULL) {
-            printf("Reference: %s not found in the bib.\n", key);
+            error("Reference: %s not found in the bib.\n", key);
             return -1;
         }
         // Put termination char \0 to allow getting the first parte of the string.
