@@ -64,6 +64,7 @@ void sucess(int *, int);*/
 
 latex:
     preamble document               { debug ("latex"); }
+    | preamble document NEWLINES    { debug ("latex"); }
     ;
 
 preamble:
