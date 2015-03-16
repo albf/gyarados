@@ -36,6 +36,7 @@ const char htmlGEN_italic_html_start [] = "<i>";
 const char htmlGEN_italic_html_end [] = "</i>";
 
 // Example function
+/*
 int main () {
     // Initialize
     htmlGEN_init(2);
@@ -63,7 +64,7 @@ int main () {
     htmlGEN_free();
 
     return 0;
-}
+} */
 
 // Initialize data structures
 // 0 - Okay ; -1 - Malloc error ; -2 - Second call for this function, not allowed.

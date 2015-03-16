@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include "log.h"
 
 /*#define MAX 1000
 

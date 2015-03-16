@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 
-extern int LOG_LEVEL;
+#define LOG_LEVEL 2
 
 enum color {
 	RED,
