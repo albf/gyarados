@@ -223,7 +223,7 @@ int htmlGEN_print_all() {
     }
     
     // Print end
-    printf("%s", htmlGEN_ref_symbol_end);
+    printf("%s", htmlGEN_footer);
     printf("\n");
     return 0;    
 }

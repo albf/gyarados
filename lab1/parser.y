@@ -47,7 +47,9 @@ void sucess(int *, int);*/
 %token ITEM
 
 
-%token NEWLINE
+%token LATEX_NEWLINE
+%token NEWLINES
+
 %token DOLLAR
 %token LBRACE
 %token RBRACE
@@ -61,7 +63,7 @@ void sucess(int *, int);*/
 %%
 
 latex:
-    preamble document   { debug ("latex"); }
+    preamble document               { debug ("latex"); }
     ;
 
 preamble:
@@ -70,11 +72,12 @@ preamble:
     ;
 
 header_list:
-    header_list USEPKG LBRACE normal_t RBRACE                                  { debug("header_list"); } 
-    | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE     { debug("header_list"); } 
-    | header_list TITLE                                                        { debug("header_list"); } 
-    | header_list AUTHOR                                                       { debug("header_list"); } 
-    |                                                                          { debug("header_list"); } 
+     header_list USEPKG LBRACE normal_t RBRACE                                          { debug("header_list"); } 
+    | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE              { debug("header_list"); } 
+    | header_list TITLE                                                                 { debug("header_list"); } 
+    | header_list AUTHOR                                                                { debug("header_list"); } 
+    | header_list NEWLINES                                                              { debug("header_list"); }
+    |                                                                                   { debug("header_list"); } 
     ;
 
 document:
@@ -110,6 +113,7 @@ text:
     normal_t       { debug("text"); } 
     | italic_t     { debug("text"); } 
     | bold_t       { debug("text"); } 
+    | NEWLINES     { debug("text"); }
     ;
 
 normal_t:

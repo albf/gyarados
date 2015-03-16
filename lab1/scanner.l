@@ -4,7 +4,8 @@
 %}
 
 STRING  [A-Za-z0-9]+
-WHITESPACE [ \n\r\t]+
+WHITESPACE [ \r\t]+
+NEWLINES [\n]+
 ANY_CHAR .
 
 %%
@@ -31,12 +32,14 @@ ANY_CHAR .
 "\\item"             {return ITEM;}
 
 
-"\\\\"              {return NEWLINE;}
+"\\\\"              {return LATEX_NEWLINE;}
 "\$"                {return DOLLAR;}
 "{"                 {return LBRACE;}
 "}"                 {return RBRACE;}
 "["                 {return LBRACKET;}
 "]"                 {return RBRACKET;}
+
+{NEWLINES}          { debug("RECEIVED ENTER"); return NEWLINES; }
 
 
 {STRING}    {  
