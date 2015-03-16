@@ -3,7 +3,7 @@
 #include "log.h"
 %}
 
-STRING  [A-Za-z0-9]+
+STRING  [A-Za-z0-9.,?!]+
 WHITESPACE [ \r\t]+
 NEWLINES [\n]+
 ANY_CHAR .
@@ -44,13 +44,13 @@ ANY_CHAR .
 
 {STRING}    {  
                 yylval.str = (char *) strdup(yytext);
-                debug("String received: %s", yylval.str);
+                debug("Lexer: String received: %s", yylval.str);
                 return STRING;
             }
 
 
 {ANY_CHAR}  {
                 yylval.str = (char *) strdup(yytext);
-                debug("Char received: %s", yylval.str);
+                debug("Lexe: Char received: %s", yylval.str);
                 return CHAR;
             }

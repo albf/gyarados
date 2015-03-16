@@ -112,7 +112,9 @@ text:
     normal_t       { debug("Parser: text"); 
                      if(is_p_start==1) {
                          debug("Parser: Start <P>");
-                         htmlGEN_add_string($1, 0, 0, 1, 0);
+                         if(htmlGEN_add_string($1, 0, 0, 1, 0)<0) {
+                            return -1;
+                         }
                          is_p_start=0;
                      }
                      else {
@@ -122,7 +124,13 @@ text:
                    } 
     | italic_t     { debug("Parser: text"); } 
     | bold_t       { debug("Parser: text"); } 
-    | NEWLINES     { debug("Parser: text"); }
+    | NEWLINES     { debug("Parser: text"); 
+                     if(is_p_start==0) {
+                         is_p_start=1;
+                         htmlGEN_add_string("", 0, 0, 0, 1);
+                         htmlGEN_add_string("\n", 0, 0, 0, 0);
+                     }
+                   }
     ;
 
 normal_t:
@@ -210,15 +218,20 @@ int yywrap(void) { return 1; }
  
 int main(int argc, char** argv)
 {
+    int is_error;
+
     info("Latex-HTML start.");
     htmlGEN_init(2); 
     
     // Define flag to start paragraph at first chance.
     is_p_start = 1;   
+    is_error = 0; 
 
-    yyparse();
+    is_error = yyparse();
 
-    htmlGEN_print_all();
+    if(is_error >= 0) {
+        htmlGEN_print_all();
+    }
     htmlGEN_free();
     info("Latex-HTML end.");
     return 0;
