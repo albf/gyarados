@@ -49,7 +49,7 @@ void info(const char *msg, ...)
 	
 	va_list ap;
 	va_start(ap, msg);
-	vmessage(stdout, msg, "info:", BLUE, ap);
+	vmessage(stderr, msg, "info:", BLUE, ap);
 	va_end(ap);
 }
 
@@ -60,7 +60,7 @@ void debug(const char *msg, ...)
 	
 	va_list ap;
 	va_start(ap, msg);
-	vmessage(stdout, msg, "debug:", GREEN, ap);
+	vmessage(stderr, msg, "debug:", GREEN, ap);
 	va_end(ap);
 }
 

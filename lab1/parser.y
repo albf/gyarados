@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "log.h"
+#include "htmlGEN.h"
 
 /*#define MAX 1000
 
@@ -22,7 +23,6 @@ void sucess(int *, int);*/
 }
 
 %token <str> STRING
-%token <intval> NUM
 %token <str> CHAR
 
 
@@ -61,97 +61,97 @@ void sucess(int *, int);*/
 %%
 
 latex:
-    preamble document
+    preamble document   { debug ("latex"); }
     ;
 
 preamble:
-    DOCCLASS LBRACE normal_t RBRACE header_list
-    | DOCCLASS LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE header_list
+    DOCCLASS LBRACE normal_t RBRACE header_list                                { debug("preamble"); } 
+    | DOCCLASS LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE header_list   { debug("preamble"); } 
     ;
 
 header_list:
-    header_list USEPKG LBRACE normal_t RBRACE
-    | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE
-    | header_list TITLE
-    | header_list AUTHOR
-    |
+    header_list USEPKG LBRACE normal_t RBRACE                                  { debug("header_list"); } 
+    | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE     { debug("header_list"); } 
+    | header_list TITLE                                                        { debug("header_list"); } 
+    | header_list AUTHOR                                                       { debug("header_list"); } 
+    |                                                                          { debug("header_list"); } 
     ;
 
 document:
-    BEGIN_DOC body END_DOC
-    | BEGIN_DOC END_DOC
+    BEGIN_DOC body END_DOC     { debug("document"); } 
+    | BEGIN_DOC END_DOC        { debug("document"); } 
     ;
 
 body:
-    body text
-    | body command
-    | text
-    | command
+    body text          { debug("body"); } 
+    | body command     { debug("body"); } 
+    | text             { debug("body"); } 
+    | command          { debug("body"); } 
     ;
 
 command:
-    MAKETITLE
-    | BEGIN_ITEM item_list END_ITEM
-    | INGRAPH LBRACE normal_t RBRACE
-    | CITE LBRACE normal_t RBRACE
-    | BEGIN_BIB bib_list END_BIB
+    MAKETITLE                          { debug("command"); } 
+    | BEGIN_ITEM item_list END_ITEM    { debug("command"); } 
+    | INGRAPH LBRACE normal_t RBRACE   { debug("command"); } 
+    | CITE LBRACE normal_t RBRACE      { debug("command"); } 
+    | BEGIN_BIB bib_list END_BIB       { debug("command"); } 
     ;
 
-item_list:
-    ITEM text
-    | item_list ITEM text
+item_list:                      
+    ITEM text                  { debug("item_list"); } 
+    | item_list ITEM text      { debug("item_list"); } 
     ;
 
 bib_list:
-    BBITEM LBRACE normal_t RBRACE normal_t
-    | bib_list BBITEM LBRACE normal_t RBRACE normal_t
+    BBITEM LBRACE normal_t RBRACE normal_t             { debug("bib_list"); } 
+    | bib_list BBITEM LBRACE normal_t RBRACE normal_t  { debug("bib_list"); } 
 
 text:
-    normal_t 
-    | italic_t
-    | bold_t 
+    normal_t       { debug("text"); } 
+    | italic_t     { debug("text"); } 
+    | bold_t       { debug("text"); } 
     ;
 
 normal_t:
-    STRING
-    | CHAR
+    STRING         { debug("normal_t"); } 
+    | CHAR         { debug("normal_t"); } 
     ;
 
 bold_t:
-    bold_exp
-    | TXTIT LBRACE bold_exp RBRACE
-    | TXTIT LBRACE CHAR bold_exp RBRACE
-    | TXTIT LBRACE STRING bold_exp RBRACE
-    | TXTIT LBRACE bold_exp CHAR RBRACE
-    | TXTIT LBRACE CHAR bold_exp CHAR RBRACE
-    | TXTIT LBRACE STRING bold_exp CHAR RBRACE
-    | TXTIT LBRACE bold_exp STRING RBRACE
-    | TXTIT LBRACE CHAR bold_exp STRING RBRACE
-    | TXTIT LBRACE STRING bold_exp STRING RBRACE
+    bold_exp                                            { debug("bold_t"); }
+    | TXTIT LBRACE bold_exp RBRACE                      { debug("bold_t"); }   
+    | TXTIT LBRACE CHAR bold_exp RBRACE                 { debug("bold_t"); } 
+    | TXTIT LBRACE STRING bold_exp RBRACE               { debug("bold_t"); } 
+    | TXTIT LBRACE bold_exp CHAR RBRACE                 { debug("bold_t"); } 
+    | TXTIT LBRACE CHAR bold_exp CHAR RBRACE            { debug("bold_t"); } 
+    | TXTIT LBRACE STRING bold_exp CHAR RBRACE          { debug("bold_t"); } 
+    | TXTIT LBRACE bold_exp STRING RBRACE               { debug("bold_t"); } 
+    | TXTIT LBRACE CHAR bold_exp STRING RBRACE          { debug("bold_t"); } 
+    | TXTIT LBRACE STRING bold_exp STRING RBRACE        { debug("bold_t"); } 
     ;
 
 bold_exp:
-    TXTBF LBRACE STRING RBRACE
-    | TXTBF LBRACE CHAR RBRACE
+    TXTBF LBRACE STRING RBRACE                          { debug("bold_exp"); }  
+    | TXTBF LBRACE CHAR RBRACE                          { debug("bold_exp"); }
     ;
 
 italic_t:
-    italic_exp
-    | TXTBF LBRACE italic_exp RBRACE
-    | TXTBF LBRACE CHAR italic_exp RBRACE
-    | TXTBF LBRACE STRING italic_exp RBRACE
-    | TXTBF LBRACE italic_exp CHAR RBRACE
-    | TXTBF LBRACE CHAR italic_exp CHAR RBRACE
-    | TXTBF LBRACE STRING italic_exp CHAR RBRACE
-    | TXTBF LBRACE italic_exp STRING RBRACE
-    | TXTBF LBRACE CHAR italic_exp STRING RBRACE
-    | TXTBF LBRACE STRING italic_exp STRING RBRACE
+    italic_exp                                          { debug("italic_t"); }
+    | TXTBF LBRACE italic_exp RBRACE                    { debug("italic_t"); }
+    | TXTBF LBRACE CHAR italic_exp RBRACE               { debug("italic_t"); }
+    | TXTBF LBRACE STRING italic_exp RBRACE             { debug("italic_t"); }
+    | TXTBF LBRACE italic_exp CHAR RBRACE               { debug("italic_t"); }
+    | TXTBF LBRACE CHAR italic_exp CHAR RBRACE          { debug("italic_t"); }
+    | TXTBF LBRACE STRING italic_exp CHAR RBRACE        { debug("italic_t"); }
+    | TXTBF LBRACE italic_exp STRING RBRACE             { debug("italic_t"); }
+    | TXTBF LBRACE CHAR italic_exp STRING RBRACE        { debug("italic_t"); }
+    | TXTBF LBRACE STRING italic_exp STRING RBRACE      { debug("italic_t"); }
     ;
 
 
 italic_exp:
-    TXTIT LBRACE STRING RBRACE
-    | TXTIT LBRACE CHAR RBRACE
+    TXTIT LBRACE STRING RBRACE { debug("italic_exp"); }
+    | TXTIT LBRACE CHAR RBRACE { debug("italic_exp"); }
     ;
 
     
@@ -193,7 +193,12 @@ int yywrap(void) { return 1; }
  
 int main(int argc, char** argv)
 {
-     yyparse();
-     return 0;
+    htmlGEN_init(2); 
+   
+    yyparse();
+
+    htmlGEN_print_all();
+    htmlGEN_free();
+    return 0;
 }
 
