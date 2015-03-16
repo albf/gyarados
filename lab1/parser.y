@@ -78,12 +78,14 @@ header_list:
 
 document:
     BEGIN_DOC body END_DOC
+    | BEGIN_DOC END_DOC
     ;
 
 body:
-    body command
-    | body text
-    |
+    body text
+    | body command
+    | text
+    | command
     ;
 
 command:
@@ -112,17 +114,16 @@ text:
 normal_t:
     STRING
     | CHAR
-    | normal_t CHAR NEWLINE
-    | normal_t STRING NEWLINE
-    |
     ;
 
 bold_t:
-    TXTBF LBRACE text RBRACE
+    TXTBF LBRACE STRING RBRACE
+    | TXTBF LBRACE CHAR RBRACE
     ;
 
 italic_t:
-    TXTIT LBRACE text RBRACE
+    TXTIT LBRACE STRING RBRACE
+    | TXTIT LBRACE CHAR RBRACE
     ;
 
     
