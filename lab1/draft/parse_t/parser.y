@@ -18,14 +18,23 @@ char *concat(int count, ...);
 %token NEWLINE
 %token ITALIC
 
-%type <str> phrase paragraph parag_list
+%type <str> phrase paragraph parag_list text italic_t
 
-%start text
+%start body
 
 %%
 
+body:
+    text                            {   printf("%s", $1);   }
+    | italic_t                      {   printf("%s", $1);   }
+    ;
+
+italic_t:
+    ITALIC '{' parag_list '}'       {   $$ = concat(3, "italico(", $3, ")");   }
+    ;
+
 text:
-    parag_list                      {   printf("%s", $1);   }
+    parag_list                      {   $$ = $1;   }
     ;
 
 phrase:

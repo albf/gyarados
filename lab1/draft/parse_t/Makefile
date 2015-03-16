@@ -15,3 +15,6 @@ scanner.c: scanner.l
 
 clean:
 	rm -f scanner.c scanner.o parser.c parser.o parser.h parser parser.output out
+
+run: parser
+	./parser < text 2> out
