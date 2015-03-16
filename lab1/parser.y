@@ -117,11 +117,38 @@ normal_t:
     ;
 
 bold_t:
+    bold_exp
+    | TXTIT LBRACE bold_exp RBRACE
+    | TXTIT LBRACE CHAR bold_exp RBRACE
+    | TXTIT LBRACE STRING bold_exp RBRACE
+    | TXTIT LBRACE bold_exp CHAR RBRACE
+    | TXTIT LBRACE CHAR bold_exp CHAR RBRACE
+    | TXTIT LBRACE STRING bold_exp CHAR RBRACE
+    | TXTIT LBRACE bold_exp STRING RBRACE
+    | TXTIT LBRACE CHAR bold_exp STRING RBRACE
+    | TXTIT LBRACE STRING bold_exp STRING RBRACE
+    ;
+
+bold_exp:
     TXTBF LBRACE STRING RBRACE
     | TXTBF LBRACE CHAR RBRACE
     ;
 
 italic_t:
+    italic_exp
+    | TXTBF LBRACE italic_exp RBRACE
+    | TXTBF LBRACE CHAR italic_exp RBRACE
+    | TXTBF LBRACE STRING italic_exp RBRACE
+    | TXTBF LBRACE italic_exp CHAR RBRACE
+    | TXTBF LBRACE CHAR italic_exp CHAR RBRACE
+    | TXTBF LBRACE STRING italic_exp CHAR RBRACE
+    | TXTBF LBRACE italic_exp STRING RBRACE
+    | TXTBF LBRACE CHAR italic_exp STRING RBRACE
+    | TXTBF LBRACE STRING italic_exp STRING RBRACE
+    ;
+
+
+italic_exp:
     TXTIT LBRACE STRING RBRACE
     | TXTIT LBRACE CHAR RBRACE
     ;
