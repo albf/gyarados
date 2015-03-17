@@ -15,6 +15,7 @@ void free_list_init();
 
 // Indicate if it is paragrah start.
 int is_p_start;
+int avoid_p;
 
 // Avoid cycle
 int is_bold;
@@ -95,7 +96,11 @@ header_list:
 
 document:
     BEGIN_DOC body END_DOC     { debug("Parser: document"); } 
-    | BEGIN_DOC END_DOC        { debug("Parser: document"); } 
+    | BEGIN_DOC END_DOC        { debug("Parser: document"); 
+                                 if(is_p_start==0) {
+                                    htmlGEN_add_string("", 0, 0, 0, 1);
+                                 }
+                               } 
     ;
 
 body:
@@ -196,6 +201,7 @@ special_symbol:
     BEGIN_ITEM          { debug("Parser: special_symbol");
                           list_level++;
                           $$ = concat(1, htmlGEN_list_start);
+                          avoid_p = 1;
                         }
     | END_ITEM          { debug("Parser: special_symbol");
                           set_list_init(0, list_level);
@@ -204,6 +210,7 @@ special_symbol:
                             error("Closing list that doesn't exist.");
                             return -1;
                           }
+                          avoid_p = 1;
                           $$ = concat(1, htmlGEN_list_end);
                         }
     | ITEM              { debug("Parser: special_symbol");
@@ -220,6 +227,7 @@ special_symbol:
                               set_list_init(1, list_level);
                               $$ = concat(2, "\n", htmlGEN_item_start);
                             }
+                            avoid_p = 1;
                         }
 
 text:
@@ -272,10 +280,13 @@ text:
                     } 
 
     | NEWLINES     { debug("Parser: text"); 
-                     if(is_p_start==0) {
+                     if((is_p_start==0)&&(avoid_p==0)) {
                          is_p_start=1;
                          htmlGEN_add_string("", 0, 0, 0, 1);
                          htmlGEN_add_string("\n", 0, 0, 0, 0);
+                     }
+                     if(avoid_p == 1) {
+                        avoid_p = 0;
                      }
                    }
     ;
@@ -288,7 +299,7 @@ normal_t:
                         $$ = $1; 
                       } 
     | special_symbol  { debug("Parser: normal_t"); 
-                        $$ = ""; 
+                        $$ = $1; 
                       }
     ;
 
@@ -401,6 +412,7 @@ int main(int argc, char** argv)
     
     // Define flag to start paragraph at first chance.
     is_p_start = 1;   
+    avoid_p = 0;
 
     // Avoid cycles.
     is_bold = 0;
@@ -415,6 +427,7 @@ int main(int argc, char** argv)
     if(is_error >= 0) {
         if(list_level == 0) {
             htmlGEN_print_all();
+            info("HTML generated sucessfully.");
         }
         else {
             error("There are %d lists not closed.", list_level);
