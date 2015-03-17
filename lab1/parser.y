@@ -91,11 +91,27 @@ document:
     ;
 
 body:
-    body text          { debug("Parser: body"); } 
-    | body command     { debug("Parser: body"); } 
-    | text             { debug("Parser: body"); } 
-    | command          { debug("Parser: body"); } 
+    body text           { debug("Parser: body"); } 
+    | body command      { debug("Parser: body"); } 
+	| body math 		{ debug("Parser: body"); }
+    | text              { debug("Parser: body"); } 
+    | command           { debug("Parser: body"); } 
+	| math 				{ debug("Parser: body"); }
     ;
+
+math:
+	DOLLAR math_exp DOLLAR { debug("Parser: math"); }
+
+math_exp:
+	| math_exp STRING 		{ debug("Parser: math_exp"); }
+	| math_exp CHAR 		{ debug("Parser: math_exp"); }
+	| math_exp LBRACE 		{ debug("Parser: math_exp"); }
+	| math_exp RBRACE 		{ debug("Parser: math_exp"); }
+	| STRING 				{ debug("Parser: math_exp"); }
+	| CHAR 					{ debug("Parser: math_exp"); }
+	| LBRACE 				{ debug("Parser: math_exp"); }
+	| RBRACE 				{ debug("Parser: math_exp"); }
+	;
 
 command:
     MAKETITLE                          { debug("Parser: command"); } 

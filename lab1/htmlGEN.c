@@ -6,6 +6,9 @@
 
 /* Global Variables: One should not touch these outside this file. */
 
+/* CURINTIA TOCOU O TERROR AQUI */
+int htmlGEN_is_there_math;              // Indicate if there is any math text to be printed
+
 int htmlGEN_is_init = 0;                // Indicate if init was already called.
 char ** htmlGEN_result;                 // Vector of HTML strings, will print all in order as final result.
 int * htmlGEN_is_there_ref;             // Indicates if nth line has a ref (1) or not (0).
@@ -20,6 +23,7 @@ char ** htmlGEN_ref_bank;               // Bank of refs.
 char ** htmlGEN_ref_index;              // Ref index from ref_bank.
 int htmlGEN_ref_counter;                // Current number of refs.
 int htmlGEN_ref_size;                   // Current size of ref vectors.
+
 
 // Example function
 /*
@@ -70,6 +74,9 @@ int htmlGEN_init(int size) {
     htmlGEN_size = size;
     htmlGEN_is_there_bib = 0;
     htmlGEN_is_init = 1;
+
+    /* CURINTIA ESTEVE AQUI */
+    htmlGEN_is_there_math = 0;
 
     if((htmlGEN_result == NULL) || (htmlGEN_is_there_ref == NULL)) {
             error("Problem allocating memory for htmlGEN. #0\n");
@@ -191,7 +198,11 @@ int htmlGEN_print_all() {
     }
 
     // Print header
-    printf("%s", htmlGEN_header);
+    if (htmlGEN_is_there_math == 0) {
+        printf("%s", htmlGEN_header);
+    } else {
+        printf("%s", htmlGEN_math_header);
+    }
 
     for(i=0; i<htmlGEN_counter; i++) {
             // Print italic and bold HTML code if they are required, and the text itself.

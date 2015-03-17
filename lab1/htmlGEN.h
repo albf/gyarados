@@ -7,7 +7,6 @@
 // 0 - Okay ; -1 - Malloc error ; -2 - Second call for this function, not allowed.
 int htmlGEN_init(int size);
 
-
 // Add string to htmlGEN
 // Return : 0 - Okay ; -1 ; Memory problem ; -2 : Null string passed, not allowed.
 int htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_start, int is_par_end);
@@ -51,5 +50,8 @@ int htmlGEN_replace_ref(int index);
 #define htmlGEN_image_html_start "<img src=\""
 #define htmlGEN_image_html_middle "\" alt=\""
 #define htmlGEN_image_html_end "\">"
+
+/* CURINTIA ESTEVE AQUI */
+#define htmlGEN_math_header "<!DOCTYPE html>\n<html>\n<head>\n<!-- Copyright (c) 2009-2015 The MathJax Consortium -->\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n<!-- VERY IMPORTANT SCRIPTS-->\n<script type=\"text/x-mathjax-config\">\nMathJax.Hub.Config({\nextensions: [\"tex2jax.js\"],\njax: [\"input/TeX\",\"output/HTML-CSS\"],\ntex2jax: {inlineMath: [[\"$\",\"$\"],[\"\\(\",\"\\)\"]]}\n});\n</script>\n<script type=\"text/javascript\" src=\"../MathJax.js\">\nMathJax.Hub.Config({\ntex2jax: {\ninlineMath: [['$','$'], ['\\(','\\)']],\nprocessEscapes: true\n}\n});\n</script>\n</head>\n<body>"
 
 #endif //__htmlGEN_H__
