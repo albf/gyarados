@@ -16,6 +16,9 @@ int is_p_start;
 int is_bold;
 int is_italic;
 
+// Iteminize
+int list_level;
+int item_level;
 
 %}
  
@@ -370,6 +373,10 @@ int main(int argc, char** argv)
     // Avoid cycles.
     is_bold = 0;
     is_italic = 0;
+
+    // Control of itemize.
+    list_level = 0;
+    item_level = 0;
 
     is_error = yyparse();
 
