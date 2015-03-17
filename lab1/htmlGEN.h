@@ -48,4 +48,8 @@ int htmlGEN_replace_ref(int index);
 #define htmlGEN_italic_html_start "<i>"
 #define htmlGEN_italic_html_end "</i>"
 
+#define htmlGEN_image_html_start "<img src=\""
+#define htmlGEN_image_html_middle "\" alt=\""
+#define htmlGEN_image_html_end "\">"
+
 #endif //__htmlGEN_H__ 

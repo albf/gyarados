@@ -99,7 +99,11 @@ body:
 command:
     MAKETITLE                          { debug("Parser: command"); } 
     | BEGIN_ITEM item_list END_ITEM    { debug("Parser: command"); } 
-    | INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); } 
+    | INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); 
+                                         htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
+                                            htmlGEN_image_html_middle, $3, htmlGEN_image_html_end), 0, 0, 0, 0);
+                                         htmlGEN_add_string(" ", 0, 0, 0, 0);
+                                       } 
     | CITE LBRACE normal_t RBRACE      { debug("Parser: command"); } 
     | BEGIN_BIB bib_list END_BIB       { debug("Parser: command"); } 
     ;
