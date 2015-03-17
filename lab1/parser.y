@@ -198,6 +198,7 @@ special_symbol:
                           $$ = concat(1, htmlGEN_list_start);
                         }
     | END_ITEM          { debug("Parser: special_symbol");
+                          set_list_init(0, list_level);
                           list_level--;
                           if(list_level < 0) {
                             error("Closing list that doesn't exist.");
@@ -210,12 +211,14 @@ special_symbol:
                                 error("Adding item in a non-list. Declare the list first.");
                                 return -1;
                             } 
-
-                            if(list_level > 1) {
+                            // Verify if the list is already started.
+                            if(get_list_init(list_level) == 1) {
                               $$ = concat(3, htmlGEN_item_end, "\n", htmlGEN_item_start);
                             }
                             else {
-                              $$ = concat(3, htmlGEN_item_end, "\n", htmlGEN_item_start);
+                              // if not, just add the \n and the item start.
+                              set_list_init(1, list_level);
+                              $$ = concat(2, "\n", htmlGEN_item_start);
                             }
                         }
 
@@ -284,6 +287,9 @@ normal_t:
     | CHAR            { debug("Parser: normal_t"); 
                         $$ = $1; 
                       } 
+    | special_symbol  { debug("Parser: normal_t"); 
+                        $$ = ""; 
+                      }
     ;
 
 bold_text:
@@ -407,7 +413,12 @@ int main(int argc, char** argv)
     is_error = yyparse();
 
     if(is_error >= 0) {
-        htmlGEN_print_all();
+        if(list_level == 0) {
+            htmlGEN_print_all();
+        }
+        else {
+            error("There are %d lists not closed.", list_level);
+        }
     }
     htmlGEN_free();
     free_list_init();
