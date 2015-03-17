@@ -8,6 +8,9 @@
 #include "htmlGEN.h"
 
 char *concat(int count, ...);
+int push_list_init(int value, int level);
+int init_list_init(int size);
+void free_list_init();
 
 // Indicate if it is paragrah start.
 int is_p_start;
@@ -18,7 +21,8 @@ int is_italic;
 
 // Iteminize
 int list_level;
-int item_level;
+int * is_list_init;
+int is_list_init_size;
 
 %}
  
@@ -61,7 +65,7 @@ int item_level;
 %token LBRACKET
 %token RBRACKET
 
-%type <str> normal_t bold_text bold_t italic_text italic_t
+%type <str> normal_t bold_text bold_t italic_text italic_t special_symbol
 
 %start latex
 
@@ -106,7 +110,7 @@ math:
 	DOLLAR math_exp DOLLAR { debug("Parser: math"); }
 
 math_exp:
-	| math_exp STRING 		{ debug("Parser: math_exp"); }
+	 math_exp STRING 		{ debug("Parser: math_exp"); }
 	| math_exp CHAR 		{ debug("Parser: math_exp"); }
 	| math_exp LBRACE 		{ debug("Parser: math_exp"); }
 	| math_exp RBRACE 		{ debug("Parser: math_exp"); }
@@ -118,7 +122,6 @@ math_exp:
 
 command:
     MAKETITLE                          { debug("Parser: command"); } 
-    | BEGIN_ITEM item_list END_ITEM    { debug("Parser: command"); } 
     | INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); 
                                          if(access ($3, F_OK) != -1) {
                                              if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
@@ -188,10 +191,32 @@ bib_list:
                                                        } 
 
 
-item_list:                      
-    ITEM text                  { debug("Parser: item_list"); } 
-    | item_list ITEM text      { debug("Parser: item_list"); } 
-    ;
+special_symbol:
+    BEGIN_ITEM          { debug("Parser: special_symbol");
+                          list_level++;
+                          $$ = concat(1, htmlGEN_list_start);
+                        }
+    | END_ITEM          { debug("Parser: special_symbol");
+                          list_level--;
+                          if(list_level < 0) {
+                            error("Closing list that doesn't exist.");
+                            return -1;
+                          }
+                          $$ = concat(1, htmlGEN_list_start);
+                        }
+    | ITEM              { debug("Parser: special_symbol");
+                            if(list_level <= 0) {
+                                error("Adding item in a non-list. Declare the list first.");
+                                return -1;
+                            } 
+
+                            if(list_level > 1) {
+                              $$ = concat(3, htmlGEN_item_end, "\n", htmlGEN_item_start);
+                            }
+                            else {
+                              $$ = concat(3, htmlGEN_item_end, "\n", htmlGEN_item_start);
+                            }
+                        }
 
 text:
     normal_t       { debug("Parser: text"); 
@@ -376,7 +401,7 @@ int main(int argc, char** argv)
 
     // Control of itemize.
     list_level = 0;
-    item_level = 0;
+    init_list_init(2);
 
     is_error = yyparse();
 
@@ -384,7 +409,35 @@ int main(int argc, char** argv)
         htmlGEN_print_all();
     }
     htmlGEN_free();
+    free_list_init();
     info("Latex-HTML end.");
     return 0;
 }
 
+int push_list_init(int value, int level) {
+    if( level > (is_list_init_size-1)) {
+        while(level > (is_list_init_size-1)) {
+            is_list_init_size = is_list_init_size*2;
+        }
+        is_list_init = realloc(is_list_init, is_list_init_size);  
+        if(is_list_init == NULL) {
+            error("Error during the realloc of push_list_init");
+            return -1;
+        }
+    }
+    is_list_init[level] = value;
+    return 0;
+}
+
+int init_list_init(int size) {
+    is_list_init_size = size; 
+    is_list_init = (int *) malloc(sizeof(int)*is_list_init_size); 
+    if(is_list_init == NULL) {
+        return - 1;
+    }
+    return 0;
+}
+
+void free_list_init() {
+    free(is_list_init);
+}
