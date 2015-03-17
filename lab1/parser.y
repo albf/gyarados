@@ -355,7 +355,7 @@ char* concat(int count, ...)
 
 int yyerror(const char* errmsg)
 {
-    printf("\n*** Erro: %s\n", errmsg);
+    error("Error: %s\n", errmsg);
 }
  
 int yywrap(void) { return 1; }
