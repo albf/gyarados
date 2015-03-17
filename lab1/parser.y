@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "log.h"
 #include "htmlGEN.h"
 
@@ -100,15 +101,29 @@ command:
     MAKETITLE                          { debug("Parser: command"); } 
     | BEGIN_ITEM item_list END_ITEM    { debug("Parser: command"); } 
     | INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); 
-                                         if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
-                                            htmlGEN_image_html_middle, $3, htmlGEN_image_html_end), 0, 0, 0, 0)<0) ||
-                                             (htmlGEN_add_string(" ", 0, 0, 0, 0)<0)) {
-                                            return -1;
+                                         if(access ($3, F_OK) != -1) {
+                                             if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
+                                                htmlGEN_image_html_middle, $3, htmlGEN_image_html_end), 0, 0, 0, 0)<0) ||
+                                                 (htmlGEN_add_string(" ", 0, 0, 0, 0)<0)) {
+                                                return -1;
+                                             }
+                                         }
+                                         else {
+                                             error("Coulnd't find file: %s", $3);
+                                             return -1;
                                          }
                                        } 
     | CITE LBRACE normal_t RBRACE      { debug("Parser: command"); 
-                                         if(htmlGEN_add_string(concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end), 0, 0 ,0 ,0)<0) {
-                                            return -1;
+                                         if(is_p_start==1) {
+                                           is_p_start = 0;
+                                             if(htmlGEN_add_string(concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end), 0, 0 ,1 ,0)<0) {
+                                                return -1;
+                                             }
+                                         }
+                                         else {
+                                             if(htmlGEN_add_string(concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end), 0, 0 ,0 ,0)<0) {
+                                                return -1;
+                                             }
                                          }
                                        } 
     | start_bib bib_list END_BIB       { debug("Parser: command"); } 
