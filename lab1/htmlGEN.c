@@ -276,6 +276,8 @@ int htmlGEN_add_ref(char * new_index, char * new_ref) {
         return -2;
     }
 
+    debug("Adding reference: bib[%s] = %s", new_index, new_ref);
+
     // Copy string and ref flag. Update counter after that. 
     htmlGEN_ref_bank[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_ref)); 
     strcpy (htmlGEN_ref_bank[htmlGEN_ref_counter], new_ref);

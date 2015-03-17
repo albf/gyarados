@@ -100,22 +100,64 @@ command:
     MAKETITLE                          { debug("Parser: command"); } 
     | BEGIN_ITEM item_list END_ITEM    { debug("Parser: command"); } 
     | INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); 
-                                         htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
-                                            htmlGEN_image_html_middle, $3, htmlGEN_image_html_end), 0, 0, 0, 0);
-                                         htmlGEN_add_string(" ", 0, 0, 0, 0);
+                                         if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
+                                            htmlGEN_image_html_middle, $3, htmlGEN_image_html_end), 0, 0, 0, 0)<0) ||
+                                             (htmlGEN_add_string(" ", 0, 0, 0, 0)<0)) {
+                                            return -1;
+                                         }
                                        } 
-    | CITE LBRACE normal_t RBRACE      { debug("Parser: command"); } 
-    | BEGIN_BIB bib_list END_BIB       { debug("Parser: command"); } 
+    | CITE LBRACE normal_t RBRACE      { debug("Parser: command"); 
+                                         if(htmlGEN_add_string(concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end), 0, 0 ,0 ,0)<0) {
+                                            return -1;
+                                         }
+                                       } 
+    | start_bib bib_list END_BIB       { debug("Parser: command"); } 
     ;
+
+start_bib:
+    BEGIN_BIB                           { debug("Parser: start_bib"); 
+                                          if(htmlGEN_create_bib(2)<0) {
+                                            return -1;
+                                          }
+                                        }
+
+bib_list:
+    BBITEM LBRACE normal_t RBRACE normal_t             { debug("Parser: bib_list"); 
+                                                         if(htmlGEN_add_ref($3, $5)<0) {
+                                                            return -1;
+                                                         }
+                                                       } 
+    | BBITEM LBRACE normal_t RBRACE italic_t           { debug("Parser: bib_list"); 
+                                                         if(htmlGEN_add_ref($3, concat(3, htmlGEN_italic_html_start, $5, htmlGEN_italic_html_end))<0) {
+                                                            return -1;
+                                                         }
+                                                       } 
+    | BBITEM LBRACE normal_t RBRACE bold_t             { debug("Parser: bib_list"); 
+                                                         if(htmlGEN_add_ref($3, concat(3, htmlGEN_bold_html_start, $5, htmlGEN_bold_html_end))<0) {
+                                                            return -1;
+                                                         }
+                                                       } 
+    | bib_list BBITEM LBRACE normal_t RBRACE normal_t  { debug("Parser: bib_list"); 
+                                                         if(htmlGEN_add_ref($4, $6)<0) {
+                                                            return -1;
+                                                         }
+                                                       } 
+    | bib_list BBITEM LBRACE normal_t RBRACE italic_t  { debug("Parser: bib_list"); 
+                                                         if(htmlGEN_add_ref($4, concat(3, htmlGEN_italic_html_start, $6, htmlGEN_italic_html_end))<0) {
+                                                            return -1;
+                                                         }
+                                                       } 
+    | bib_list BBITEM LBRACE normal_t RBRACE bold_t    { debug("Parser: bib_list"); 
+                                                         if(htmlGEN_add_ref($4, concat(3, htmlGEN_bold_html_start, $6, htmlGEN_bold_html_end))<0) {
+                                                            return -1;
+                                                         }
+                                                       } 
+
 
 item_list:                      
     ITEM text                  { debug("Parser: item_list"); } 
     | item_list ITEM text      { debug("Parser: item_list"); } 
     ;
-
-bib_list:
-    BBITEM LBRACE normal_t RBRACE normal_t             { debug("Parser: bib_list"); } 
-    | bib_list BBITEM LBRACE normal_t RBRACE normal_t  { debug("Parser: bib_list"); } 
 
 text:
     normal_t       { debug("Parser: text"); 

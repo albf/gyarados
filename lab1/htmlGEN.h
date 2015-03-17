@@ -52,4 +52,4 @@ int htmlGEN_replace_ref(int index);
 #define htmlGEN_image_html_middle "\" alt=\""
 #define htmlGEN_image_html_end "\">"
 
-#endif //__htmlGEN_H__ 
+#endif //__htmlGEN_H__
