@@ -26,6 +26,9 @@ int list_level;
 int * is_list_init;
 int is_list_init_size;
 
+// Indicate error of sintax
+int is_yyerror;
+
 %}
  
 %union{
@@ -292,15 +295,15 @@ text:
     ;
 
 normal_t:
-    STRING            { debug("Parser: normal_t"); 
-                        $$ = $1;
-                      } 
-    | CHAR            { debug("Parser: normal_t"); 
-                        $$ = $1; 
-                      } 
-    | special_symbol  { debug("Parser: normal_t"); 
-                        $$ = $1; 
-                      }
+    STRING                       { debug("Parser: normal_t"); 
+                                   $$ = $1;
+                                 } 
+    | CHAR                       { debug("Parser: normal_t"); 
+                                   $$ = $1; 
+                                 } 
+    | special_symbol             { debug("Parser: normal_t"); 
+                                   $$ = $1; 
+                                 } 
     ;
 
 bold_text:
@@ -310,8 +313,14 @@ bold_text:
     | CHAR                     { debug("Parser: bold_text"); 
                                  $$ = $1;
                                } 
+    | special_symbol           { debug("Parser: bold_text"); 
+                                 $$ = $1;
+                               } 
     | italic_t                 { debug("Parser: bold_text"); 
-                                 $$ = concat(3, htmlGEN_italic_html_start, $1, htmlGEN_italic_html_start); 
+                                 $$ = concat(3, htmlGEN_italic_html_start, $1, htmlGEN_italic_html_end); 
+                               } 
+    | NEWLINES                 { debug("Parser: bold_text"); 
+                                 $$ = ""; 
                                } 
     | bold_text STRING         { debug("Parser: bold_text"); 
                                  $$ = concat(3, $1," ", $2);
@@ -320,8 +329,14 @@ bold_text:
                                  $$ = concat(3, $1," ", $2);
                                } 
     | bold_text italic_t       { debug("Parser: bold_text"); 
-                                 $$ = concat(5, $1," ", htmlGEN_italic_html_start, $2, htmlGEN_italic_html_start); 
+                                 $$ = concat(5, $1," ", htmlGEN_italic_html_start, $2, htmlGEN_italic_html_end); 
                                } 
+    | bold_text special_symbol { debug("Parser: bold_text"); 
+                                 $$ = concat(3, $1," ", $2);
+                               } 
+    | bold_text NEWLINES       { debug("Parser: bold_text");
+                                 $$ = $1;
+                               }
     ;
 
 bold_t:
@@ -336,24 +351,36 @@ bold_t:
     ;
 
 italic_text:
-    STRING                     { debug("Parser: italic_text"); 
-                                 $$ = $1;
-                               }     
-    | CHAR                     { debug("Parser: italic_text"); 
-                                 $$ = $1;
-                               }     
-    | bold_t                   { debug("Parser: italic_text"); 
-                                 $$ = concat(3, htmlGEN_bold_html_start, $1, htmlGEN_bold_html_start); 
-                               }
-    | italic_text STRING       { debug("Parser: italic_text"); 
-                                 $$ = concat(3, $1," ", $2);
-                               }
-    | italic_text CHAR         { debug("Parser: italic_text"); 
-                                 $$ = concat(3, $1," ", $2);
-                               }
-    | italic_text bold_t       { debug("Parser: italic_text"); 
-                                 $$ = concat(5, $1," ", htmlGEN_bold_html_start, $2, htmlGEN_bold_html_start); 
-                               }
+    STRING                              { debug("Parser: italic_text"); 
+                                          $$ = $1;
+                                        }     
+    | CHAR                              { debug("Parser: italic_text"); 
+                                          $$ = $1;
+                                        }     
+    | special_symbol                    { debug("Parser: italic_text"); 
+                                          $$ = $1;
+                                        } 
+    | bold_t                            { debug("Parser: italic_text"); 
+                                          $$ = concat(3, htmlGEN_bold_html_start, $1, htmlGEN_bold_html_end); 
+                                        }
+    | NEWLINES                          { debug("Parser: italic_text"); 
+                                          $$ = ""; 
+                                        } 
+    | italic_text STRING                { debug("Parser: italic_text"); 
+                                          $$ = concat(3, $1," ", $2);
+                                        }
+    | italic_text CHAR                  { debug("Parser: italic_text"); 
+                                          $$ = concat(3, $1," ", $2);
+                                        }
+    | italic_text bold_t                { debug("Parser: italic_text"); 
+                                          $$ = concat(5, $1," ", htmlGEN_bold_html_start, $2, htmlGEN_bold_html_end); 
+                                        }
+    | italic_text special_symbol        { debug("Parser: italic_text"); 
+                                          $$ = concat(3, $1," ", $2);
+                                        } 
+    | italic_text NEWLINES              { debug("Parser: italic_text");
+                                          $$ = $1;
+                                        }
 
 italic_t:
     TXTIT LBRACE italic_text RBRACE                        { debug("Parser: italic_t"); 
@@ -399,6 +426,7 @@ char* concat(int count, ...)
 int yyerror(const char* errmsg)
 {
     error("Error: %s\n", errmsg);
+    is_yyerror = 1;
 }
  
 int yywrap(void) { return 1; }
@@ -422,9 +450,12 @@ int main(int argc, char** argv)
     list_level = 0;
     init_list_init(2);
 
+    // Sintax error
+    is_yyerror = 0;
+
     is_error = yyparse();
 
-    if(is_error >= 0) {
+    if((is_error >= 0)&&(is_yyerror == 0)) {
         if(list_level == 0) {
             htmlGEN_print_all();
             info("HTML generated sucessfully.");
