@@ -1,0 +1,52 @@
+\documentclass{article}
+
+\begin{document}
+\textbf{\textit{Introdução}}
+
+Para o projeto 1, foi proposta a criação de uma gramática, bem como sua implementação, a qual receberia como entrada um arquivo no formato de LaTeX, comumente utilizada para criação de papers e artigos científicos, e o converteria para um arquivo simples no formato HTML, utilizado principalmente para criação de páginas web.
+Para isso, foi criada uma gramática do tipo LALR(1), que utiliza um autômato de pilha para fazer o parsing. A implementação da gramática foi feita com o uso das ferramentas Flex e Bison, um analisador léxico e um parser respectivamente, popularmente utilizados para este fim. O desafio era que alguns comandos básicos do LaTex deveriam ser interpretados, apesar de nem todos terem efeito de fato na saída, de maneira a suportar certas funcionalidades LaTex para o HTML.
+
+Comandos Suportados
+
+A lista de comandos que foram implementados, bem como os seus respectivos resultados no HTML são os seguintes:
+
+\begin{itemzie}
+
+	\item \textbf{a) Comandos de cabeçalho:}
+		\begin{itemize}
+			 \item documentclass[...]{nomedocumento}: não exerce efeito sobre o HTML, apesar de ser reconhecido;
+			 \item usepackage[...]{nomepacote}:  não exerce efeito sobre o código HTML, apesar de ser reconhecido;
+			 \item title{titulo}: guarda o Título do documento LaTex, para que seja mostrado no HTML caso o comando \textbf{maketitle} seja dado;
+			 \item author{nomeautor}: não exerce efeito sobre o código HTML, apesar de ser reconhecido;
+		\end{itemize}
+
+	\item \textbf{b) Comandos de documento:}
+		\begin{itemize}
+	 		\item \textit{begin{document}:} demarca o início do corpo do documento LaTex;
+	 		\item \textit{end{document}:} demarca o final do documento LaTex;
+	 		\item \textit{maketitle: mostra o} título descrito pelo comando \"title\" no cabeçalho (supõe-se que para que sempre que o comando é dado, existe um título definido para o documento na seção de cabeçalho);
+	 		\item \textit{textbf{texto1}:} aplica negrito em texto1;
+	 		\item \textit{textit{texto1}:} aplica itálico em texto1;
+	 		\item \textit{begin{itemize}:} demarca e gera uma lista não enumerada com os itens (pode haver encadeamento de lista);
+	 		\item \textit{item texto1: inclui} texto1 como um item dentro de uma lista de itens; 
+	 		\item \textit{end{itemize}:} demarca o final da lista de itens;
+	 		\item \textit{includegraphics{figura1}:} mostrar a imagem figura1;
+	 		\item \textit{cite{ref1}:} adiciona o número da referência ref1, que se encontra na seção de \'thebibliography\';
+	 		\item \textit{begin{thebibliography}:} inicia uma seção de bibliografias com uma lista de referências;
+	 		\item \textit{bibitem{ref1}:} define um item de referência;
+	 		\item \textit{end{thebibliography}:} adiciona as referências bibliográficas (o corpo do documento poderá conter apenas uma seção \'thebibliography\');
+	 		\item \textit{\$\$: o texto entre} dois caracteres dólar serve para fazer a marcação de um ambiente matemático;
+		\end{itemize}
+
+\end{itemize}
+
+\textit{\textbf{Gramática Desenvolvida}}
+
+Em LaTex, apesar de haver uma certa ordem com a qual aluguns comandos estão sujeitos, em geral o texto que deve ser impresso no documento final está misturado com comandos que servem para formatar esse texto (como por exemplo os comandos de texto em negrito e itálico). Buscou-se fazer uma gramática que fosse simples o suficiente para não gerar conflitos e ao mesmo tempo tivesse a capacidade de analisar comandos e textos misturados, bem como modos de formatação (texto normal ou matemático, através do marcador \$).
+
+[FOTO DA GRAMÁTICA SEGUE AQUI]
+
+Para lídar com o modo matemático, contou-se com o auxílio da biblioteca MathJax. Através um processamento de texto HTML de duas fases, a biblioteca realiza na primeira fase uma analise do conteúdo do arquivo HTML em busca de marcadores de ambiente matemático, e após isso, realiza a devida substituição do texto não formatado em ambiente matemático (demarcado por dois caracteres \'\$\' no caso do projeto) para fórmulas.
+
+Comandos Para a Execução
+\end{document}
