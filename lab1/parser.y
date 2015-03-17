@@ -8,7 +8,8 @@
 #include "htmlGEN.h"
 
 char *concat(int count, ...);
-int push_list_init(int value, int level);
+int set_list_init(int value, int level);
+int get_list_init(int level);
 int init_list_init(int size);
 void free_list_init();
 
@@ -202,7 +203,7 @@ special_symbol:
                             error("Closing list that doesn't exist.");
                             return -1;
                           }
-                          $$ = concat(1, htmlGEN_list_start);
+                          $$ = concat(1, htmlGEN_list_end);
                         }
     | ITEM              { debug("Parser: special_symbol");
                             if(list_level <= 0) {
@@ -277,12 +278,12 @@ text:
     ;
 
 normal_t:
-    STRING         { debug("Parser: normal_t"); 
-                     $$ = $1;
-                   } 
-    | CHAR         { debug("Parser: normal_t"); 
-                     $$ = $1; 
-                   } 
+    STRING            { debug("Parser: normal_t"); 
+                        $$ = $1;
+                      } 
+    | CHAR            { debug("Parser: normal_t"); 
+                        $$ = $1; 
+                      } 
     ;
 
 bold_text:
@@ -414,7 +415,9 @@ int main(int argc, char** argv)
     return 0;
 }
 
-int push_list_init(int value, int level) {
+int check_list_init(int level) {
+    int original_size = is_list_init_size;
+    int i;
     if( level > (is_list_init_size-1)) {
         while(level > (is_list_init_size-1)) {
             is_list_init_size = is_list_init_size*2;
@@ -424,9 +427,27 @@ int push_list_init(int value, int level) {
             error("Error during the realloc of push_list_init");
             return -1;
         }
+        for(i=original_size; i<is_list_init_size; i++) {
+            is_list_init[i] = 0;
+        }
+    }
+    return 0;
+}
+
+
+int set_list_init(int value, int level) {
+    if(check_list_init(level) < 0 ) {
+        return -1;
     }
     is_list_init[level] = value;
     return 0;
+}
+
+int get_list_init(int level) {
+    if(check_list_init(level) < 0 ) {
+        return -1;
+    }
+    return is_list_init[level];
 }
 
 int init_list_init(int size) {
