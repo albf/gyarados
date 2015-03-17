@@ -77,7 +77,6 @@ int htmlGEN_init(int size) {
     htmlGEN_is_init = 1;
     htmlGEN_title = NULL;
 
-    /* CURINTIA ESTEVE AQUI */
     htmlGEN_is_there_math = 0;
 
     if((htmlGEN_result == NULL) || (htmlGEN_is_there_ref == NULL)) {
@@ -388,4 +387,8 @@ int htmlGEN_set_title (char * title) {
     }
 
     return 0;
+}
+
+void htmlGEN_include_math() {	
+    htmlGEN_is_there_math = 1;
 }

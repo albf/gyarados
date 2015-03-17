@@ -70,7 +70,7 @@ int is_yyerror;
 %token LBRACKET
 %token RBRACKET
 
-%type <str> normal_t bold_text bold_t italic_text italic_t special_symbol
+%type <str> normal_t bold_text bold_t italic_text italic_t special_symbol math_exp math
 
 %start latex
 
@@ -109,25 +109,9 @@ document:
 body:
     body text           { debug("Parser: body"); } 
     | body command      { debug("Parser: body"); } 
-	| body math 		{ debug("Parser: body"); }
     | text              { debug("Parser: body"); } 
     | command           { debug("Parser: body"); } 
-	| math 				{ debug("Parser: body"); }
     ;
-
-math:
-	DOLLAR math_exp DOLLAR { debug("Parser: math"); }
-
-math_exp:
-	 math_exp STRING 		{ debug("Parser: math_exp"); }
-	| math_exp CHAR 		{ debug("Parser: math_exp"); }
-	| math_exp LBRACE 		{ debug("Parser: math_exp"); }
-	| math_exp RBRACE 		{ debug("Parser: math_exp"); }
-	| STRING 				{ debug("Parser: math_exp"); }
-	| CHAR 					{ debug("Parser: math_exp"); }
-	| LBRACE 				{ debug("Parser: math_exp"); }
-	| RBRACE 				{ debug("Parser: math_exp"); }
-	;
 
 command:
     MAKETITLE                          { debug("Parser: command"); } 
@@ -292,7 +276,54 @@ text:
                         avoid_p = 0;
                      }
                    }
+    | math         { debug("Parser: text");
+                      if(is_p_start==1) {
+                         if(htmlGEN_add_string($1, 0, 0, 1, 0)<0) {
+                            return -1;
+                         }
+                         is_p_start=0;
+                     }
+                     else {
+                         if(htmlGEN_add_string(concat(2, " ", $1), 0, 0, 0, 0)<0) {
+                            return -1;
+                         }
+                     }                    
+                   } 
     ;
+
+math:
+	DOLLAR math_exp DOLLAR { debug("Parser: math"); 
+                                htmlGEN_include_math();
+                                $$ = concat(3, "$ ", $2, " $");
+                           }
+
+math_exp:
+	 math_exp STRING 		{ debug("Parser: math_exp"); 
+                                $$ = concat(3, $1," ", $2);
+                            }
+	| math_exp CHAR 		{ debug("Parser: math_exp"); 
+                                $$ = concat(3, $1," ", $2);
+                            }
+	| math_exp LBRACE 		{ debug("Parser: math_exp"); 
+                                $$ = concat(2, $1, "{");
+                            }
+	| math_exp RBRACE 		{ debug("Parser: math_exp"); 
+                                $$ = concat(2, $1, "}");
+                            }
+	| STRING 				{ debug("Parser: math_exp"); 
+                                $$ = $1; 
+                            }
+	| CHAR 					{ debug("Parser: math_exp"); 
+                                $$ = $1; 
+                            }
+	| LBRACE 				{ debug("Parser: math_exp"); 
+                                $$ = "{";
+                            }
+	| RBRACE 				{ debug("Parser: math_exp"); 
+                                $$ = "}";
+                            }
+	;
+
 
 normal_t:
     STRING                       { debug("Parser: normal_t"); 
