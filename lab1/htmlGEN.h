@@ -23,6 +23,10 @@ int htmlGEN_add_ref(char * new_index, char * new_ref);
 // Return : 0 - okay ; -1 : Can't find ref ; -2 Bib not createad.
 int htmlGEN_print_all();
 
+// Set title from latex document.
+// Return : 0 - okay ; -1 Can't allocate string ; -2 Error on strcopy
+int htmlGEN_set_title (char * title);
+
 // Free memory used by htmlGEN
 void htmlGEN_free();
 

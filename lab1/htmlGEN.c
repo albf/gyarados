@@ -23,6 +23,7 @@ char ** htmlGEN_ref_bank;               // Bank of refs.
 char ** htmlGEN_ref_index;              // Ref index from ref_bank.
 int htmlGEN_ref_counter;                // Current number of refs.
 int htmlGEN_ref_size;                   // Current size of ref vectors.
+char * htmlGEN_title;                   // Title of the latex document
 
 
 // Example function
@@ -74,6 +75,7 @@ int htmlGEN_init(int size) {
     htmlGEN_size = size;
     htmlGEN_is_there_bib = 0;
     htmlGEN_is_init = 1;
+    htmlGEN_title = NULL;
 
     /* CURINTIA ESTEVE AQUI */
     htmlGEN_is_there_math = 0;
@@ -140,6 +142,10 @@ void htmlGEN_free() {
         }
         free(htmlGEN_ref_bank);
         free(htmlGEN_ref_index);
+    }
+
+    if(htmlGEN_title != NULL) {
+        free(htmlGEN_title);
     }
     return;
 }
@@ -370,3 +376,16 @@ int htmlGEN_replace_ref(int index) {
     return 0;
 }
 
+int htmlGEN_set_title (char * title) {
+    htmlGEN_title = (char *) malloc(sizeof(char)*(strlen(title)+1));
+    if(htmlGEN_title == NULL) {
+        error("Can't allocate memory for title.");
+        return -1;
+    }
+    if(strcpy(htmlGEN_title, title) == NULL) {
+        error("Can't copy string.");
+        return -2;
+    }
+
+    return 0;
+}
