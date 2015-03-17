@@ -70,7 +70,7 @@ int is_yyerror;
 %token LBRACKET
 %token RBRACKET
 
-%type <str> normal_t bold_text bold_t italic_text italic_t special_symbol math_exp math
+%type <str> normal_t bold_text bold_t italic_text italic_t special_symbol math_exp math header_text
 
 %start latex
 
@@ -89,12 +89,12 @@ preamble:
     ;
 
 header_list:
-     header_list USEPKG LBRACE normal_t RBRACE                                          { debug("Parser: header_list"); } 
-    | header_list USEPKG LBRACKET normal_t RBRACKET LBRACE normal_t RBRACE              { debug("Parser: header_list"); } 
-    | header_list TITLE  LBRACE normal_t RBRACE                                         { debug("Parser: header_list"); } 
-    | header_list AUTHOR LBRACE normal_t RBRACE                                         { debug("Parser: header_list"); } 
-    | header_list NEWLINES                                                              { debug("Parser: header_list"); }
-    |                                                                                   { debug("Parser: header_list"); } 
+     header_list USEPKG LBRACE header_text RBRACE                                              { debug("Parser: header_list"); } 
+    | header_list USEPKG LBRACKET header_text RBRACKET LBRACE normal_t RBRACE                  { debug("Parser: header_list"); } 
+    | header_list TITLE  LBRACE header_text RBRACE                                             { debug("Parser: header_list"); } 
+    | header_list AUTHOR LBRACE header_text RBRACE                                             { debug("Parser: header_list"); } 
+    | header_list NEWLINES                                                                     { debug("Parser: header_list"); }
+    |                                                                                          { debug("Parser: header_list"); } 
     ;
 
 document:
@@ -216,6 +216,26 @@ special_symbol:
                             }
                             avoid_p = 1;
                         }
+
+header_text:
+    normal_t                { debug("Parser: header_text");
+                              $$ = $1;
+                            }
+    | italic_t              { debug("Parser: header_text");
+                              $$ = $1;
+                            }
+    | bold_t                { debug("Parser: header_text");
+                              $$ = $1;
+                            }
+    | header_text normal_t  { debug("Parser: header_text");
+                              $$ = concat(2, $1, $2);
+                            }
+    | header_text bold_t    { debug("Parser: header_text");
+                              $$ = concat(2, $1, $2);
+                            }
+    | header_text italic_t  { debug("Parser: header_text");
+                               $$ = concat(2, $1, $2);
+                            }
 
 text:
     normal_t       { debug("Parser: text"); 
