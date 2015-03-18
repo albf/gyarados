@@ -21,16 +21,16 @@ The list of implemented commands, with all the respective results in HTML:
 			 \item author{nomeautor}: não exerce efeito sobre o código HTML, apesar de ser reconhecido;
 		\end{itemize}
 
-	\item \textbf{b) Comandos de documento:}
+	\item \textbf{b) Body Commands:}
 		\begin{itemize}
-	 		\item \textit{begin{document}:} demarca o início do corpo do documento LaTex;
-	 		\item \textit{end{document}:} demarca o final do documento LaTex;
-	 		\item \textit{maketitle: mostra o} título descrito pelo comando \"title\" no cabeçalho (supõe-se que para que sempre que o comando é dado, existe um título definido para o documento na seção de cabeçalho);
-	 		\item \textit{textbf{texto1}:} aplica negrito em texto1;
-	 		\item \textit{textit{texto1}:} aplica itálico em texto1;
-	 		\item \textit{begin{itemize}:} demarca e gera uma lista não enumerada com os itens (pode haver encadeamento de lista);
-	 		\item \textit{item texto1: inclui} texto1 como um item dentro de uma lista de itens; 
-	 		\item \textit{end{itemize}:} demarca o final da lista de itens;
+	 		\item \textit{begin{document}:} marks the begining of the document;
+	 		\item \textit{end{document}:} marks the ending of the document;
+	 		\item \textit{maketitle: mostra o} shows the title defined in \"title\" command in the header;
+	 		\item \textit{textbf{texto1}:} apply bold to texto1;
+	 		\item \textit{textit{texto1}:} aply italic to texto1;
+	 		\item \textit{begin{itemize}:} generate an enumerated list of itens (treat nested list);
+	 		\item \textit{item texto1:} includes texto1 as an item inside the itens list; 
+	 		\item \textit{end{itemize}:} marks the end of the item list;
 	 		\item \textit{includegraphics{figura1}:} mostrar a imagem figura1;
 	 		\item \textit{cite{ref1}:} adiciona o número da referência ref1, que se encontra na seção de \'thebibliography\';
 	 		\item \textit{begin{thebibliography}:} inicia uma seção de bibliografias com uma lista de referências;
