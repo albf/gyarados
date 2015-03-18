@@ -6,6 +6,7 @@ all: parser
 
 parser: parser.o scanner.o log.o htmlGEN.o
 	$(CC) -o parser scanner.o parser.o log.o htmlGEN.o -g
+	rm parser.c parser.h parser.o parser.output scanner.c scanner.o
  
 parser.c: parser.y
 	$(BISON) -d parser.y  -o parser.c -v

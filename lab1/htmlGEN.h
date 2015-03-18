@@ -72,7 +72,11 @@ int htmlGEN_replace_ref(int index);
 #define htmlGEN_bib_title_start "<h2>"
 #define htmlGEN_bib_title_end "</h1>"
 
-#define htmlGEN_math_header "<!DOCTYPE html>\n<html>\n<head>\n<!-- Copyright (c) 2009-2015 The MathJax Consortium -->\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n<!-- VERY IMPORTANT SCRIPTS-->\n<script type=\"text/x-mathjax-config\">\nMathJax.Hub.Config({\nextensions: [\"tex2jax.js\"],\njax: [\"input/TeX\",\"output/HTML-CSS\"],\ntex2jax: {inlineMath: [[\"$\",\"$\"],]}\n});\n</script>\n<script type=\"text/javascript\" src=\"https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">\nMathJax.Hub.Config({\ntex2jax: {\ninlineMath: [['$','$'], ['\\(','\\)']],\nprocessEscapes: true\n}\n});\n</script>\n</head>\n<body>"
+#define htmlGEN_math_header_remote "<!DOCTYPE html>\n<html>\n<head>\n<!-- Copyright (c) 2009-2015 The MathJax Consortium -->\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n<!-- VERY IMPORTANT SCRIPTS-->\n<script type=\"text/x-mathjax-config\">\nMathJax.Hub.Config({\nextensions: [\"tex2jax.js\"],\njax: [\"input/TeX\",\"output/HTML-CSS\"],\ntex2jax: {inlineMath: [[\"$\",\"$\"],]}\n});\n</script>\n<script type=\"text/javascript\" src=\"https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">\nMathJax.Hub.Config({\ntex2jax: {\ninlineMath: [['$','$'], ['\\(','\\)']],\nprocessEscapes: true\n}\n});\n</script>\n</head>\n<body>"
+
+#define htmlGEN_math_header "<!DOCTYPE html>\n<html>\n<head>\n<!-- Copyright (c) 2009-2015 The MathJax Consortium -->\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n<!-- VERY IMPORTANT SCRIPTS-->\n<script type=\"text/x-mathjax-config\">\nMathJax.Hub.Config({\nextensions: [\"tex2jax.js\"],\njax: [\"input/TeX\",\"output/HTML-CSS\"],\ntex2jax: {inlineMath: [[\"$\",\"$\"],]}\n});\n</script>\n<script type=\"text/javascript\" src=\"MathJax-2.5-latest/MathJax-2.5-latest/MathJax.js?config=TeX-AMS_HTML-full\">\nMathJax.Hub.Config({\ntex2jax: {\ninlineMath: [['$','$'], ['\\(','\\)']],\nprocessEscapes: true\n}\n});\n</script>\n</head>\n<body>"
+
+#define htmlGEN_mathjax_path "MathJax-2.5-latest/MathJax-2.5-latest/MathJax.js"
 
 #define htmlGEN_MAX_INT_SIZE 20
 #define htmlGEN_use_ref_number 1

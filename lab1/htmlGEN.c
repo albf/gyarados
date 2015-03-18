@@ -213,7 +213,7 @@ int htmlGEN_print_all() {
         if (access(htmlGEN_mathjax_path, F_OK) != -1) {
             printf("%s", htmlGEN_math_header);
         } else {
-            warning("Unable to find local MathJax.js, using remote by default!");
+            warning("Unable to find local MathJax.js, using remote isntead.");
             printf("%s", htmlGEN_math_header_remote);
         }
     }
