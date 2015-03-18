@@ -350,6 +350,12 @@ normal_t:
     | special_symbol             { debug("Parser: normal_t"); 
                                    $$ = $1; 
                                  } 
+    | LBRACE                     { debug("Parser: normal_t"); 
+                                   $$ = "{";
+                                 }
+    | RBRACE                     { debug("Parser: normal_t"); 
+                                   $$ = "}";
+                                 }
     ;
 
 bold_text:
