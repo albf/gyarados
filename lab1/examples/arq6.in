@@ -5,19 +5,18 @@
 
 O Brian gosta bastante de ler \cite{MG}
 
-\begin{thebibliography}{100}
+\begin{thebibliography}
 
 \bibitem{Boney96} Boney, L., Tewfik, A.H., and Hamdy, K.N., ``Digital Watermarks for Audio Sigtenals," \textbf{Proceedings of the Third IEEE International Conference on Multimedia}, pp. 473-480, June 1996.
 
-\bibitem{MG} Pereira, F., Telo, M., Perez, F., \textit{\textbf{Como Chupar o Próprio Pênis}}, Addison-Wesley, Reading, MA, 1994.
+\bibitem{MG} Pereira, F., Telo, M., Perez, F., \textit{\textbf{Como Chupar o Proprio Penis}}, Addison-Wesley, Reading, MA, 1994.
 
-\bibitem{HK} Kopka, H., Daly P.W., \textbf{A Guide to LaTeX},
-Addison-Wesley, Reading, MA, 1999.
+\bibitem{HK} Kopka, H., Daly P.W., \textbf{A Guide to LaTeX}, Addison-Wesley, Reading, MA, 1999.
 
 \bibitem{Pan} Pan, D., ``A Tutorial on MPEG/Audio Compression," \textbf{IEEE Multimedia}, Vol.2, pp.60-74, Summer 1998.
 
 \end{thebibliography}
 
-Ele até fez uma música super maneira e comprimiu usando \textit{\cite{Pan}}, ele realmente está ficando bom, por isso fizemos um texto em LaTeX para homenagear, ainda bem que tinhamos \textit{\textbf{HK}}.
+Ele ate fez uma musica super maneira e comprimiu usando \textit{\cite{Pan}}, ele realmente esta ficando bom, por isso fizemos um texto em LaTeX para homenagear, ainda bem que tinhamos \textit{\textbf{\cite{HK}}}.
 
 \end{document}
