@@ -1,0 +1,46 @@
+\documentclass{article}
+
+\begin{document}
+
+
+\textbf{
+Lista de amores do mano Brian:
+
+\textit{
+\begin{itemize}
+    \item Kaory}
+    \item CS
+    }
+    \item MC911
+    \item Musicas       \begin{itemize}
+                        \item Lady Gaga \begin{itemize}
+					\item Alejandro
+					\item Poker Face 
+					\end{itemize}
+                        \item Madonna
+                        \item Spears
+	\end{itemize}
+    \item DotA 2 
+
+\end{itemize}
+
+
+O Brian gosta } bastante de ler \cite{MG}
+
+
+
+\begin{thebibliography}
+
+\bibitem{Boney96} Boney, L., Tewfik, A.H., and Hamdy, K.N., ``Digital Watermarks for Audio Sigtenals," \textbf{Proceedings of the Third IEEE International Conference on Multimedia}, pp. 473-480, June 1996.
+
+\bibitem{MG} Pereira, F., Telo, M., Perez, F., \textit{\textbf{Como ser um idiota.}}, Addison-Wesley, Reading, MA, 1994.
+
+\bibitem{HK} Kopka, H., Daly P.W., \textbf{A Guide to LaTeX}, Addison-Wesley, Reading, MA, 1999.
+
+\bibitem{Pan} Pan, D., ``A Tutorial on MPEG/Audio Compression," \textbf{IEEE Multimedia}, Vol.2, pp.60-74, Summer 1998.
+
+\end{thebibliography}
+
+Ele ate fez uma musica super maneira e comprimiu usando \textit{\cite{Pan}}, ele realmente esta ficando bom, por isso fizemos um texto em LaTeX para homenagear, ainda bem que tinhamos \textit{\textbf{\cite{HK}}}.
+
+\end{document}
