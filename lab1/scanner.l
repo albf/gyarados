@@ -33,7 +33,7 @@ ANY_CHAR .
 "\\item"             {return ITEM;}
 
 
-"\\\\"              {return LATEX_NEWLINE;}
+"\\\\"              {return NEWLINES;}
 "\$"                {return DOLLAR;}
 "{"                 {return LBRACE;}
 "}"                 {return RBRACE;}

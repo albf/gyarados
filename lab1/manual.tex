@@ -1,18 +1,31 @@
 \documentclass{article}
+\title{MC911 - Projeto 1}
 
 \begin{document}
 
 \includegraphics{unicamp}
 
+\maketitle
+
 \textbf{\textit{Introduction}}
 
-For the first project, it was proposed the creation and implementation of a grammar, which is supposed to take as input a LaTex file, usually used to create papers and scientific articles, and then, convert those files to HTML format as output, that is used to creation and display of web pages.
+For the first project, it was proposed the creation and implementation of a grammar, which is supposed to take as input a LaTex file, usually used to create papers and scientific articles, and then, convert them to HTML format as output, s used to create and display of web pages.
 
-To do this, it was created a LALR(1) grammar, taking a finite automata that uses a stack to parse. The implementation was done using Flex and Bison tools (an lexical analyser and parser respectively). Not all of the LaTeX commands had effect in the HTML scenario, so, some of then should be just read and others interpreted.
+To do this, it was created a LALR(1) grammar, taking a finite automata that uses a stack to parse. The implementation was done using Flex and Bison tools (an lexical analyser and parser respectively). Not all of the LaTeX commands had effect in the HTML scenario, so, some of then should be just ignored and others interpreted.
+
+\textbf{\textit{Usage}}
+
+To use, you need to compile first. Just run:
+
+	make
+
+After that, just execute the parser file. One note, all the html comes from the stdout, while erros, warnings and info messagens come from stderr. So it is best to execute with the following scheme:
+
+	./parser < manual.tex > manual.html 
 
 \textit{\textbf{Supported Commands}}
 
-The list of implemented commands, with all the respective results in HTML:
+Follows the list of implemented commands with all their expected results in HTML:
 
 \begin{itemize}
 
@@ -53,7 +66,7 @@ For example, the following text is a math text:
 
 \textit{\textbf{The Grammar}}
 
-In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using \$).
+In LaTex, despite some commands follow an order, in general the text that must be printed in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but ,at same time, powerfull enough to analyse commands, text and math mode (using \$).
 
 To guide the process, we used some principles of construction grammar described in \cite{Appel02} and \cite{Aho86}.
 
