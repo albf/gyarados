@@ -129,19 +129,6 @@ command:
                                              return -1;
                                          }
                                        } 
-    | CITE LBRACE normal_t RBRACE      { debug("Parser: command"); 
-                                         if(is_p_start==1) {
-                                           is_p_start = 0;
-                                             if(htmlGEN_add_string(concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end), 0, 0 ,1 ,0)<0) {
-                                                return -1;
-                                             }
-                                         }
-                                         else {
-                                             if(htmlGEN_add_string(concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end), 0, 0 ,0 ,0)<0) {
-                                                return -1;
-                                             }
-                                         }
-                                       } 
     | start_bib bib_list END_BIB       { debug("Parser: command"); } 
     ;
 
@@ -153,36 +140,18 @@ start_bib:
                                         }
 
 bib_list:
-    BBITEM LBRACE normal_t RBRACE normal_t             { debug("Parser: bib_list"); 
-                                                         if(htmlGEN_add_ref($3, $5)<0) {
-                                                            return -1;
-                                                         }
-                                                       } 
-    | BBITEM LBRACE normal_t RBRACE italic_t           { debug("Parser: bib_list"); 
-                                                         if(htmlGEN_add_ref($3, concat(3, htmlGEN_italic_html_start, $5, htmlGEN_italic_html_end))<0) {
-                                                            return -1;
-                                                         }
-                                                       } 
-    | BBITEM LBRACE normal_t RBRACE bold_t             { debug("Parser: bib_list"); 
-                                                         if(htmlGEN_add_ref($3, concat(3, htmlGEN_bold_html_start, $5, htmlGEN_bold_html_end))<0) {
-                                                            return -1;
-                                                         }
-                                                       } 
-    | bib_list BBITEM LBRACE normal_t RBRACE normal_t  { debug("Parser: bib_list"); 
-                                                         if(htmlGEN_add_ref($4, $6)<0) {
-                                                            return -1;
-                                                         }
-                                                       } 
-    | bib_list BBITEM LBRACE normal_t RBRACE italic_t  { debug("Parser: bib_list"); 
-                                                         if(htmlGEN_add_ref($4, concat(3, htmlGEN_italic_html_start, $6, htmlGEN_italic_html_end))<0) {
-                                                            return -1;
-                                                         }
-                                                       } 
-    | bib_list BBITEM LBRACE normal_t RBRACE bold_t    { debug("Parser: bib_list"); 
-                                                         if(htmlGEN_add_ref($4, concat(3, htmlGEN_bold_html_start, $6, htmlGEN_bold_html_end))<0) {
-                                                            return -1;
-                                                         }
-                                                       } 
+    BBITEM LBRACE normal_t RBRACE header_text             { debug("Parser: bib_list"); 
+                                                            if(htmlGEN_add_ref($3, $5)<0) {
+                                                                return -1;
+                                                            }
+                                                          } 
+    | bib_list BBITEM LBRACE normal_t RBRACE header_text  { debug("Parser: bib_list"); 
+                                                            if(htmlGEN_add_ref($4, $6)<0) {
+                                                                return -1;
+                                                            }
+                                                          } 
+    | NEWLINES                                            { debug("Parser: bib_list"); }
+    | bib_list NEWLINES                                   { debug("Parser: bib_list"); }
 
 
 special_symbol:
@@ -225,25 +194,41 @@ special_symbol:
                           }
                           $$ = concat(3, htmlGEN_title_start, title, htmlGEN_title_end); 
                         }
+    | CITE LBRACE normal_t RBRACE      { debug("Parser: special_symbol"); 
+                                             $$ = concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end);
+                                       }
+
 
 header_text:
     normal_t                { debug("Parser: header_text");
                               $$ = $1;
+                              is_italic = 0;
+                              is_bold = 0;
                             }
     | italic_t              { debug("Parser: header_text");
+                              is_italic = 0;
+                              is_bold = 0;
                               $$ = $1;
                             }
     | bold_t                { debug("Parser: header_text");
+                              is_italic = 0;
+                              is_bold = 0;
                               $$ = $1;
                             }
     | header_text normal_t  { debug("Parser: header_text");
                               $$ = concat(3, $1," ", $2);
+                              is_italic = 0;
+                              is_bold = 0;
                             }
     | header_text bold_t    { debug("Parser: header_text");
                               $$ = concat(3, $1," ", $2);
+                              is_italic = 0;
+                              is_bold = 0;
                             }
     | header_text italic_t  { debug("Parser: header_text");
-                               $$ = concat(3, $1," ", $2);
+                              $$ = concat(3, $1," ", $2);
+                              is_italic = 0;
+                              is_bold = 0;
                             }
 
 text:
@@ -260,7 +245,8 @@ text:
                             return -1;
                          }
                      }
-
+                     is_italic = 0;
+                     is_bold = 0;
                    } 
     | italic_t     { debug("Parser: text"); 
                      if(is_p_start==1) {
