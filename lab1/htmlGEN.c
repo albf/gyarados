@@ -24,7 +24,7 @@ char ** htmlGEN_ref_index;              // Ref index from ref_bank.
 int htmlGEN_ref_counter;                // Current number of refs.
 int htmlGEN_ref_size;                   // Current size of ref vectors.
 char * htmlGEN_title;                   // Title of the latex document
-
+int htmlGEN_is_title;                   // 1 if there is one title, 0 if not.  
 
 // Example function
 /*
@@ -76,6 +76,7 @@ int htmlGEN_init(int size) {
     htmlGEN_is_there_bib = 0;
     htmlGEN_is_init = 1;
     htmlGEN_title = NULL;
+    htmlGEN_is_title = 0;
 
     htmlGEN_is_there_math = 0;
 
@@ -385,10 +386,18 @@ int htmlGEN_set_title (char * title) {
         error("Can't copy string.");
         return -2;
     }
+    if(htmlGEN_is_title > 0) {
+        warning("Multiple title settings. Are you sure you will need that many titles?");
+    }
 
+    htmlGEN_is_title = 1;
     return 0;
 }
 
 void htmlGEN_include_math() {	
     htmlGEN_is_there_math = 1;
 }
+
+char * htmlGEN_get_title() {
+    return htmlGEN_title;	
+}	
