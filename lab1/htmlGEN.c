@@ -186,6 +186,7 @@ int htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_sta
 // Return : 0 - okay ; -1 : Can't find ref ; -2 Bib not createad.
 int htmlGEN_print_all() {
     int i;
+    char * my_ref;
     
     // Fix Refs
     for(i=0; i<htmlGEN_counter; i++) {
@@ -233,6 +234,24 @@ int htmlGEN_print_all() {
             if (htmlGEN_is_par_end[i]>0) {
                 printf("%s", htmlGEN_par_html_end);
             }
+    }
+
+
+    if(htmlGEN_is_there_bib > 0) {
+        printf(htmlGEN_bib_title_start);  
+        printf("References");
+        printf(htmlGEN_bib_title_end);  
+        for(i=0; i<htmlGEN_ref_counter; i++) {
+            printf(htmlGEN_par_html_start);
+            my_ref = htmlGEN_get_ref(htmlGEN_ref_index[i]);
+            printf(my_ref);
+            printf(" ");
+            free(my_ref);
+            printf(htmlGEN_ref_index[i]);
+            printf(" ");
+            printf(htmlGEN_ref_bank[i]);
+            printf(htmlGEN_par_html_end);
+        }
     }
     
     // Print end
