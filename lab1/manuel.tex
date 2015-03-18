@@ -31,23 +31,22 @@ The list of implemented commands, with all the respective results in HTML:
 	 		\item \textit{begin{itemize}:} generate an enumerated list of itens (treat nested list);
 	 		\item \textit{item texto1:} includes texto1 as an item inside the itens list; 
 	 		\item \textit{end{itemize}:} marks the end of the item list;
-	 		\item \textit{includegraphics{figura1}:} mostrar a imagem figura1;
-	 		\item \textit{cite{ref1}:} adiciona o número da referência ref1, que se encontra na seção de \'thebibliography\';
-	 		\item \textit{begin{thebibliography}:} inicia uma seção de bibliografias com uma lista de referências;
-	 		\item \textit{bibitem{ref1}:} define um item de referência;
-	 		\item \textit{end{thebibliography}:} adiciona as referências bibliográficas (o corpo do documento poderá conter apenas uma seção \'thebibliography\');
-	 		\item \textit{\$\$: o texto entre} dois caracteres dólar serve para fazer a marcação de um ambiente matemático;
+	 		\item \textit{includegraphics{figura1}:} shows figura1;
+	 		\item \textit{cite{ref1}:} add the number of the ref that is in the section \'thebibliography\';
+	 		\item \textit{begin{thebibliography}:} begin the section of bibliography as a list of references;
+	 		\item \textit{bibitem{ref1}:} define a reference item;
+	 		\item \textit{end{thebibliography}:} add the references to the body of the document (one per document);
+	 		\item \textit{\$\$:} the text between two dollars serves to mark the math environment;
 		\end{itemize}
 
 \end{itemize}
 
-\textit{\textbf{Gramática Desenvolvida}}
+\textit{\textbf{The Grammar}}
 
-Em LaTex, apesar de haver uma certa ordem com a qual aluguns comandos estão sujeitos, em geral o texto que deve ser impresso no documento final está misturado com comandos que servem para formatar esse texto (como por exemplo os comandos de texto em negrito e itálico). Buscou-se fazer uma gramática que fosse simples o suficiente para não gerar conflitos e ao mesmo tempo tivesse a capacidade de analisar comandos e textos misturados, bem como modos de formatação (texto normal ou matemático, através do marcador \$).
+In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixedwith the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using \$\$).
 
-[FOTO DA GRAMÁTICA SEGUE AQUI]
+\includegraphics{monarch}
 
-Para lídar com o modo matemático, contou-se com o auxílio da biblioteca MathJax. Através um processamento de texto HTML de duas fases, a biblioteca realiza na primeira fase uma analise do conteúdo do arquivo HTML em busca de marcadores de ambiente matemático, e após isso, realiza a devida substituição do texto não formatado em ambiente matemático (demarcado por dois caracteres \'\$\' no caso do projeto) para fórmulas.
-
-Comandos Para a Execução
+\textit{\textbf{How to Execute}}
+To deal with the math mode, we used MathJax library. Using an two-phase processing of the HTML text, the library check the content looking for makers \$ that define the math environment, and then, it substitute of the text in LaTex format to the correct Math format and formulas.
 \end{document}
