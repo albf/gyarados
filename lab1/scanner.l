@@ -6,6 +6,7 @@
 STRING  [A-Za-z0-9.,?!\\^()]+
 WHITESPACE [ \r\t]+
 NEWLINES [\n]+
+SPECIAL_CHAR [$]
 ANY_CHAR .
 
 %%
@@ -48,9 +49,14 @@ ANY_CHAR .
                 return STRING;
             }
 
+"\\"{SPECIAL_CHAR}	{
+						yylval.str = (char *) strdup(yytext+1);
+						debug("Lexer: Special Char received: %s", yylval.str);
+						return CHAR;
+					}
 
 {ANY_CHAR}  {
                 yylval.str = (char *) strdup(yytext);
-                debug("Lexe: Char received: %s", yylval.str);
+                debug("Lexer: Char received: %s", yylval.str);
                 return CHAR;
             }

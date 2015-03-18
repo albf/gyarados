@@ -39,13 +39,13 @@ The list of implemented commands, with all the respective results in HTML:
 	 		\item \textit{begin:} begin the section of bibliography as a list of references;
 	 		\item \textit{bibitem:} define a reference item;
 	 		\item \textit{end:} add the references to the body of the document (one per document);
-	 		\item \textit{DOLLAR:} the text between two dollars serves to mark the math environment;
+	 		\item \textit{\$:} the text between two dollars serves to mark the math environment;
 		\end{itemize}
 
 \end{itemize}
 
 \textit{\textbf{The Math Text}}
-To deal with the math mode, we used MathJax library. Using an two-phase processing of the HTML text, the library check the content looking for makers DOLLAR that define the math environment, and then, it substitute of the text in LaTex format to the correct Math format and formulas.
+To deal with the math mode, we used MathJax library. Using an two-phase processing of the HTML text, the library check the content looking for makers \$ that define the math environment, and then, it substitute of the text in LaTex format to the correct Math format and formulas.
 
 For example, the following text is a math text:
 
@@ -53,7 +53,7 @@ For example, the following text is a math text:
 
 \textit{\textbf{The Grammar}}
 
-In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using DOLLAR).
+In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using \$).
 
 To guide the process, we used some principles of construction grammar described in \cite{Appel02} and \cite{Aho86}.
 
