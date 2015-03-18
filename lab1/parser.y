@@ -131,6 +131,7 @@ command:
                                              debug("Parser: img_file: %s", img_file);
                                              if(access (img_file, F_OK) != -1) {
                                                  image_found = 1;
+                                                 info("Using \"%s\" intead of \"%s\".", img_file, $3);
                                                  if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, img_file, 
                                                     htmlGEN_image_html_middle, img_file, htmlGEN_image_html_end), 0, 0, 0, 0)<0) ||
                                                      (htmlGEN_add_string(" ", 0, 0, 0, 0)<0)) {
@@ -139,7 +140,7 @@ command:
                                              }
                                              if(image_found == 0) {
                                                  img_file = concat(2, $3, ".png");
-                                                 debug("Parser: img_file: %s", img_file);
+                                                 info("Using \"%s\" intead of \"%s\".", img_file, $3);
                                                  if(access (img_file, F_OK) != -1) {
                                                      image_found = 1;
                                                      if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, img_file, 
@@ -151,7 +152,7 @@ command:
                                              }     
                                              if(image_found == 0) {
                                                  img_file = concat(2, $3, ".bmp");
-                                                 debug("Parser: img_file: %s", img_file);
+                                                 info("Using \"%s\" intead of \"%s\".", img_file, $3);
                                                  if(access (img_file, F_OK) != -1) {
                                                      image_found = 1;
                                                      if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, img_file, 
