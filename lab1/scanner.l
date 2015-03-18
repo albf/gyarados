@@ -6,7 +6,7 @@
 STRING  [A-Za-z0-9.,?!\\^()]+
 WHITESPACE [ \r\t]+
 NEWLINES [\n]+
-SPECIAL_CHAR [\\$]
+SPECIAL_CHAR [$]
 ANY_CHAR .
 
 %%
