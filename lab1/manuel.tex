@@ -13,15 +13,15 @@ The list of implemented commands, with all the respective results in HTML:
 
 \begin{itemize}
 
-	\item \textbf{a) Header Commands}
+	\item \textbf{Header Commands}
 		\begin{itemize}
 			 \item documentclass: recognized, but not effective
 			 \item usepackage:  recognized, but not effective
 			 \item title: define the title of the LaTex document, so it could be displayed with \textbf{maketitle} command;
-			 \item author: não exerce efeito sobre o código HTML, apesar de ser reconhecido;
+			 \item author: recognized, but not effective
 		\end{itemize}
 
-	\item \textbf{b) Body Commands:}
+	\item \textbf{Body Commands:}
 		\begin{itemize}
 	 		\item \textit{begin}: marks the begining of the document;
 	 		\item \textit{end:} marks the ending of the document;
@@ -43,10 +43,26 @@ The list of implemented commands, with all the respective results in HTML:
 
 \textit{\textbf{The Grammar}}
 
-In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixedwith the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using DOLLAR).
+In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using DOLLAR).
+
+To guide the process, we used some principles of construction grammar described in \cite{Appel02} and \cite{Aho86}.
 
 \includegraphics{monarch.jpg}
 
-\textit{\textbf{How to Execute}}
+\begin{thebibliography}
+
+\bibitem{Appel02} Appel, A., \textbf{Modern Compiler Implementation in Java, 2nd Ed.}, October 21, 2002
+
+\bibitem{Aho86} Aho, A., Sethi, M., Ullman, J., \textbf{Compiladores : Princípios, Técnicas e Ferramentas}, 1986
+
+\end{thebibliography}
+
+\textit{\textbf{The Math Text}}
 To deal with the math mode, we used MathJax library. Using an two-phase processing of the HTML text, the library check the content looking for makers DOLLAR that define the math environment, and then, it substitute of the text in LaTex format to the correct Math format and formulas.
+
+For example, the following text is a math text:
+
+"When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$ and they are $x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$"
+
+
 \end{document}

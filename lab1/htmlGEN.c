@@ -242,15 +242,15 @@ int htmlGEN_print_all() {
         printf("References");
         printf(htmlGEN_bib_title_end);  
         for(i=0; i<htmlGEN_ref_counter; i++) {
-            printf(htmlGEN_par_html_start);
+            printf("%s", htmlGEN_par_html_start);
             my_ref = htmlGEN_get_ref(htmlGEN_ref_index[i]);
-            printf(my_ref);
+            printf("%s", my_ref);
             printf(" ");
             free(my_ref);
             printf(htmlGEN_ref_index[i]);
             printf(" ");
-            printf(htmlGEN_ref_bank[i]);
-            printf(htmlGEN_par_html_end);
+            printf("%s", htmlGEN_ref_bank[i]);
+            printf("%s", htmlGEN_par_html_end);
         }
     }
     
