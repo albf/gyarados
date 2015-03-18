@@ -247,7 +247,7 @@ int htmlGEN_print_all() {
             printf("%s", my_ref);
             printf(" ");
             free(my_ref);
-            printf(htmlGEN_ref_index[i]);
+            printf("%s", htmlGEN_ref_index[i]);
             printf(" ");
             printf("%s", htmlGEN_ref_bank[i]);
             printf("%s", htmlGEN_par_html_end);

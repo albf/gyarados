@@ -89,7 +89,7 @@ preamble:
     ;
 
 header_list:
-     header_list USEPKG LBRACE header_text RBRACE                                              { debug("Parser: header_list"); } 
+    header_list USEPKG LBRACE header_text RBRACE                                               { debug("Parser: header_list"); } 
     | header_list USEPKG LBRACKET header_text RBRACKET LBRACE normal_t RBRACE                  { debug("Parser: header_list"); } 
     | header_list TITLE  LBRACE header_text RBRACE                                             { debug("Parser: header_list"); 
                                                                                                  htmlGEN_set_title($4);

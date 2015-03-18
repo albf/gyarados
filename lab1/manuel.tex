@@ -1,6 +1,9 @@
 \documentclass{article}
 
 \begin{document}
+
+\includegraphics{unicamp.jpg}
+
 \textbf{\textit{Introduction}}
 
 For the first project, it was proposed the creation and implementation of a grammar, which is supposed to take as input a LaTex file, usually used to create papers and scientific articles, and then, convert those files to HTML format as output, that is used to creation and display of web pages.
@@ -41,28 +44,120 @@ The list of implemented commands, with all the respective results in HTML:
 
 \end{itemize}
 
-\textit{\textbf{The Grammar}}
-
-In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using DOLLAR).
-
-To guide the process, we used some principles of construction grammar described in \cite{Appel02} and \cite{Aho86}.
-
-\includegraphics{monarch.jpg}
-
-\begin{thebibliography}
-
-\bibitem{Appel02} Appel, A., \textbf{Modern Compiler Implementation in Java, 2nd Ed.}, October 21, 2002
-
-\bibitem{Aho86} Aho, A., Sethi, M., Ullman, J., \textbf{Compiladores : Princípios, Técnicas e Ferramentas}, 1986
-
-\end{thebibliography}
-
 \textit{\textbf{The Math Text}}
 To deal with the math mode, we used MathJax library. Using an two-phase processing of the HTML text, the library check the content looking for makers DOLLAR that define the math environment, and then, it substitute of the text in LaTex format to the correct Math format and formulas.
 
 For example, the following text is a math text:
 
 "When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$ and they are $x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$"
+
+\textit{\textbf{The Grammar}}
+
+In LaTex, despite some commands follow an order, in general the text that must be print in the final document is mixed with the commands that format this same text (for instance, commands like bold os italic). We attempted to do a grammar that is simple enough to do not have conflicts, but powerfull enough, at the same time to analyse commands, text and math mode (using DOLLAR).
+
+To guide the process, we used some principles of construction grammar described in \cite{Appel02} and \cite{Aho86}.
+
+latex $\rightarrow$ preamble document
+
+preamble $\rightarrow$ DOCCLASS LBRACE normalt RBRACE headerlist 
+preamble $\rightarrow$ DOCCLASS LBRACKET normalt RBRACKET LBRACE normalt RBRACE headerlist
+
+headerlist $\rightarrow$ headerlist USEPKG LBRACE headertext RBRACE
+headerlist $\rightarrow$ headerlist USEPKG LBRACKET headertext RBRACKET LBRACE headertext RBRACE
+headerlist $\rightarrow$ TITLE LBRACE headertext RBRACE
+headerlist $\rightarrow$ AUTHOR LBRACE headertext RBRACE
+headerlist $\rightarrow$ headerlist NEWLINES
+headerlist $\rightarrow$
+
+document $\rightarrow$ BEGINDOC body ENDDOC
+document $\rightarrow$ BEGINDOC ENDDOC
+
+body $\rightarrow$ body text
+body $\rightarrow$ body command
+body $\rightarrow$ text
+body $\rightarrow$ command
+
+command $\rightarrow$ INGRAPH LBRACE normalt RBRACE
+command $\rightarrow$ startbib biblist ENDBIB
+
+startbib $\rightarrow$ BEGINBIB
+
+biblist $\rightarrow$  BBITEM LBRACE normalt RBRACE headertext
+biblist $\rightarrow$ BBITEM LBRACE normalt RBRACE headertext
+biblist $\rightarrow$ NEWLINES
+biblist $\rightarrow$ biblist NEWLINES
+
+specialsymbol $\rightarrow$ BEGINITEM
+specialsymbol $\rightarrow$ ENDITEM
+specialsymbol $\rightarrow$ ITEM
+specialsymbol $\rightarrow$ MAKETITLE
+specialsymbol $\rightarrow$ CITE LBRACE normalt RBRACE
+
+headertext $\rightarrow$ normalt
+headertext $\rightarrow$ italict
+headertext $\rightarrow$ boldt
+headertext $\rightarrow$ headertext normalt
+headertext $\rightarrow$ headertext italict
+headertext $\rightarrow$ headertext boldt
+
+text $\rightarrow$ normalt
+text $\rightarrow$ italict
+text $\rightarrow$ boldt
+text $\rightarrow$ NEWLINES
+text $\rightarrow$ math
+
+math $\rightarrow$ DOLLAR mathexp DOLLAR
+
+mathexp $\rightarrow$ mathexp STRING
+mathexp $\rightarrow$ mathexp CHAR
+mathexp $\rightarrow$ mathexp LBRACE
+mathexp $\rightarrow$ mathexp RBRACE
+mathexp $\rightarrow$ STRING
+mathexp $\rightarrow$ CHAR
+mathexp $\rightarrow$ LBRACE
+mathexp $\rightarrow$ RBRACE
+
+normalt $\rightarrow$ STRING
+normalt $\rightarrow$ CHAR
+normalt $\rightarrow$ specialsymbol
+normalt $\rightarrow$ LBRACE
+normalt $\rightarrow$ RBRACE
+
+boldt $\rightarrow$ TXTBF LBRACE boldtext RBRACE
+
+italict $\rightarrow$ TXTIT LBRACE italictext RBRACE
+
+boldtext $\rightarrow$ CHAR
+boldtext $\rightarrow$ STRING
+boldtext $\rightarrow$ specialsymbol
+boldtext $\rightarrow$ italict
+boldtext $\rightarrow$ NEWLINES
+boldtext $\rightarrow$ boldtext CHAR
+boldtext $\rightarrow$ boldtext STRING
+boldtext $\rightarrow$ boldtext specialsymbol
+boldtext $\rightarrow$ boldtext italict
+boldtext $\rightarrow$ boldtext NEWLINES
+
+italictext $\rightarrow$ CHAR
+italictext $\rightarrow$ STRING
+italictext $\rightarrow$ specialsymbol
+italictext $\rightarrow$ italict
+italictext $\rightarrow$ NEWLINES
+italictext $\rightarrow$ italictext CHAR
+italictext $\rightarrow$ italictext STRING
+italictext $\rightarrow$ italictext specialsymbol
+italictext $\rightarrow$ italictext italict
+italictext $\rightarrow$ italictext NEWLINES
+
+
+\begin{thebibliography}
+
+\bibitem{Appel02} Appel, A., \textbf{Modern Compiler Implementation in Java, 2nd Ed.}, October 21, 2002
+
+\bibitem{Aho86} Aho, A., Sethi, M., Ullman, J., \textbf{Compilers: Principles, Techniques and Tools}, 1986
+
+\end{thebibliography}
+
 
 
 \end{document}
