@@ -3,7 +3,7 @@
 #include "log.h"
 %}
 
-STRING  [A-Za-z0-9.,?!\\^]+
+STRING  [A-Za-z0-9.,?!\\^()]+
 WHITESPACE [ \r\t]+
 NEWLINES [\n]+
 ANY_CHAR .

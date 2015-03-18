@@ -11,26 +11,26 @@ To do this, it was created a LALR(1) grammar, taking a finite automata that uses
 
 The list of implemented commands, with all the respective results in HTML:
 
-\begin{itemzie}
+\begin{itemize}
 
 	\item \textbf{a) Header Commands}
 		\begin{itemize}
-			 \item documentclass[...]{documentname}: recognized, but not effective
-			 \item usepackage[...]{nomepacote}:  recognized, but not effective
-			 \item title{titulo}: define the title of the LaTex document, so it could be displayed with \textbf{maketitle} command;
-			 \item author{nomeautor}: não exerce efeito sobre o código HTML, apesar de ser reconhecido;
+			 \item documentclass: recognized, but not effective
+			 \item usepackage:  recognized, but not effective
+			 \item title: define the title of the LaTex document, so it could be displayed with \textbf{maketitle} command;
+			 \item author: não exerce efeito sobre o código HTML, apesar de ser reconhecido;
 		\end{itemize}
 
 	\item \textbf{b) Body Commands:}
 		\begin{itemize}
-	 		\item \textit{begin{document}:} marks the begining of the document;
-	 		\item \textit{end{document}:} marks the ending of the document;
+	 		\item \textit{begin}: marks the begining of the document;
+	 		\item \textit{end:} marks the ending of the document;
 	 		\item \textit{maketitle: mostra o} shows the title defined in \"title\" command in the header;
-	 		\item \textit{textbf{texto1}:} apply bold to texto1;
-	 		\item \textit{textit{texto1}:} aply italic to texto1;
-	 		\item \textit{begin{itemize}:} generate an enumerated list of itens (treat nested list);
+	 		\item \textit{textbf:} apply bold to texto1;
+	 		\item \textit{textit}: apply italic to texto1;
+	 		\item \textit{begin}: generate an enumerated list of itens (treat nested list);
 	 		\item \textit{item texto1:} includes texto1 as an item inside the itens list; 
-	 		\item \textit{end{itemize}:} marks the end of the item list;
+	 		\item \textit{end{itemize}: marks the end of the item list;
 	 		\item \textit{includegraphics{figura1}:} shows figura1;
 	 		\item \textit{cite{ref1}:} add the number of the ref that is in the section \'thebibliography\';
 	 		\item \textit{begin{thebibliography}:} begin the section of bibliography as a list of references;
