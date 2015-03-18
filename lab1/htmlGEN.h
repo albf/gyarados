@@ -71,4 +71,7 @@ int htmlGEN_replace_ref(int index);
 
 #define htmlGEN_math_header "<!DOCTYPE html>\n<html>\n<head>\n<!-- Copyright (c) 2009-2015 The MathJax Consortium -->\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n<!-- VERY IMPORTANT SCRIPTS-->\n<script type=\"text/x-mathjax-config\">\nMathJax.Hub.Config({\nextensions: [\"tex2jax.js\"],\njax: [\"input/TeX\",\"output/HTML-CSS\"],\ntex2jax: {inlineMath: [[\"$\",\"$\"],[\"\\(\",\"\\)\"]]}\n});\n</script>\n<script type=\"text/javascript\" src=\"../MathJax.js\">\nMathJax.Hub.Config({\ntex2jax: {\ninlineMath: [['$','$'], ['\\(','\\)']],\nprocessEscapes: true\n}\n});\n</script>\n</head>\n<body>"
 
+#define htmlGEN_MAX_INT_SIZE 20
+#define htmlGEN_use_ref_number 1
+
 #endif //__htmlGEN_H__

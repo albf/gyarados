@@ -266,13 +266,32 @@ int htmlGEN_create_bib(int size) {
 // Get ref using index, NULL if don't exist. Assume that there each index is unique.
 char * htmlGEN_get_ref(char * index) {
     char * ref = NULL; 
+    int counter;
     int i;
 
-    if(htmlGEN_is_there_bib > 0) {
-        for(i=0; i<htmlGEN_ref_counter; i++) {
-            if(strcmp(htmlGEN_ref_index[i],index)==0) {
-                ref = htmlGEN_ref_bank[i];
-                break;
+    debug("htmlGEN: get_ref index: %s", index);
+
+    if(htmlGEN_use_ref_number == 0) {
+        if(htmlGEN_is_there_bib > 0) {
+            for(i=0; i<htmlGEN_ref_counter; i++) {
+                if(strcmp(htmlGEN_ref_index[i],index)==0) {
+                    ref = htmlGEN_ref_bank[i];
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        if(htmlGEN_is_there_bib > 0) {
+            counter = 1;
+            for(i=0; i<htmlGEN_ref_counter; i++) {
+                if(strcmp(htmlGEN_ref_index[i],index)==0) {
+                    ref = (char *) malloc(sizeof(char)*htmlGEN_MAX_INT_SIZE);
+                    sprintf(ref, "[%d]", counter);
+                    debug("htmlGEN : get_ref counter : %d", counter);
+                    break;
+                }
+                counter++;
             }
         }
     }
@@ -283,12 +302,16 @@ char * htmlGEN_get_ref(char * index) {
 // Add ref to htmlGEN
 // Return : 0 - Okay ; -1 - Memory error ; -2 - Repeated entry. 
 int htmlGEN_add_ref(char * new_index, char * new_ref) {
+    char * my_ref;
+
     // Check if there is space available
     if(htmlGEN_check_size() < 0) {
             return -1; 
     }
 
-    if(htmlGEN_get_ref(new_index)!=NULL) {
+    my_ref = htmlGEN_get_ref(new_index);
+    if(my_ref!=NULL) {
+        free(my_ref);
         error("Repeated reference (%s) in bib.\n", new_index);
         return -2;
     }
@@ -368,6 +391,7 @@ int htmlGEN_replace_ref(int index) {
         // Free memory allocated and not used anymore.
         free(old_str);
         free(key);
+        free(ref);
 
         // Continue checking for new members. 
         n_cit = strstr(htmlGEN_result[index],htmlGEN_ref_symbol_start);
