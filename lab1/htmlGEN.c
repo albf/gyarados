@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
+#include <unistd.h>
 #include "htmlGEN.h" 
 
 /* Global Variables: One should not touch these outside this file. */
@@ -208,7 +209,13 @@ int htmlGEN_print_all() {
     if (htmlGEN_is_there_math == 0) {
         printf("%s", htmlGEN_header);
     } else {
-        printf("%s", htmlGEN_math_header);
+        // Found the MathJax Lib locally
+        if (access(htmlGEN_mathjax_path, F_OK) != -1) {
+            printf("%s", htmlGEN_math_header);
+        } else {
+            warning("Unable to find local MathJax.js, using remote by default!");
+            printf("%s", htmlGEN_math_header_remote);
+        }
     }
 
     for(i=0; i<htmlGEN_counter; i++) {
