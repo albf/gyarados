@@ -1,22 +1,23 @@
 \documentclass{article}
 
 \begin{document}
-\textbf{\textit{Introdução}}
+\textbf{\textit{Introduction}}
 
-Para o projeto 1, foi proposta a criação de uma gramática, bem como sua implementação, a qual receberia como entrada um arquivo no formato de LaTeX, comumente utilizada para criação de papers e artigos científicos, e o converteria para um arquivo simples no formato HTML, utilizado principalmente para criação de páginas web.
-Para isso, foi criada uma gramática do tipo LALR(1), que utiliza um autômato de pilha para fazer o parsing. A implementação da gramática foi feita com o uso das ferramentas Flex e Bison, um analisador léxico e um parser respectivamente, popularmente utilizados para este fim. O desafio era que alguns comandos básicos do LaTex deveriam ser interpretados, apesar de nem todos terem efeito de fato na saída, de maneira a suportar certas funcionalidades LaTex para o HTML.
+For the first project, it was proposed the creation and implementation of a grammar, which is supposed to take as input a LaTex file, usually used to create papers and scientific articles, and then, convert those files to HTML format as output, that is used to creation and display of web pages.
 
-Comandos Suportados
+To do this, it was created a LALR(1) grammar, taking a finite automata that uses a stack to parse. The implementation was done using Flex and Bison tools (an lexical analyser and parser respectively). Not all of the LaTeX commands had effect in the HTML scenario, so, some of then should be just read and others interpreted.
 
-A lista de comandos que foram implementados, bem como os seus respectivos resultados no HTML são os seguintes:
+\textit{\textbf{Supported Commands}}
+
+The list of implemented commands, with all the respective results in HTML:
 
 \begin{itemzie}
 
-	\item \textbf{a) Comandos de cabeçalho:}
+	\item \textbf{a) Header Commands}
 		\begin{itemize}
-			 \item documentclass[...]{nomedocumento}: não exerce efeito sobre o HTML, apesar de ser reconhecido;
-			 \item usepackage[...]{nomepacote}:  não exerce efeito sobre o código HTML, apesar de ser reconhecido;
-			 \item title{titulo}: guarda o Título do documento LaTex, para que seja mostrado no HTML caso o comando \textbf{maketitle} seja dado;
+			 \item documentclass[...]{documentname}: recognized, but not effective
+			 \item usepackage[...]{nomepacote}:  recognized, but not effective
+			 \item title{titulo}: define the title of the LaTex document, so it could be displayed with \textbf{maketitle} command;
 			 \item author{nomeautor}: não exerce efeito sobre o código HTML, apesar de ser reconhecido;
 		\end{itemize}
 
