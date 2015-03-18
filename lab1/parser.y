@@ -91,7 +91,9 @@ preamble:
 header_list:
      header_list USEPKG LBRACE header_text RBRACE                                              { debug("Parser: header_list"); } 
     | header_list USEPKG LBRACKET header_text RBRACKET LBRACE normal_t RBRACE                  { debug("Parser: header_list"); } 
-    | header_list TITLE  LBRACE header_text RBRACE                                             { debug("Parser: header_list"); } 
+    | header_list TITLE  LBRACE header_text RBRACE                                             { debug("Parser: header_list"); 
+                                                                                                 htmlGEN_set_title($4);
+                                                                                               } 
     | header_list AUTHOR LBRACE header_text RBRACE                                             { debug("Parser: header_list"); } 
     | header_list NEWLINES                                                                     { debug("Parser: header_list"); }
     |                                                                                          { debug("Parser: header_list"); } 
@@ -114,8 +116,7 @@ body:
     ;
 
 command:
-    MAKETITLE                          { debug("Parser: command"); } 
-    | INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); 
+    INGRAPH LBRACE normal_t RBRACE   { debug("Parser: command"); 
                                          if(access ($3, F_OK) != -1) {
                                              if((htmlGEN_add_string(concat(5, htmlGEN_image_html_start, $3, 
                                                 htmlGEN_image_html_middle, $3, htmlGEN_image_html_end), 0, 0, 0, 0)<0) ||
@@ -216,6 +217,14 @@ special_symbol:
                             }
                             avoid_p = 1;
                         }
+    | MAKETITLE         { debug("Parser: special_symbol"); 
+                          char * title = htmlGEN_get_title();
+                          if(title == NULL) {
+                            error("Use of \\maketitle without \\title at the header.");
+                            return -1;
+                          }
+                          $$ = concat(3, htmlGEN_title_start, title, htmlGEN_title_end); 
+                        }
 
 header_text:
     normal_t                { debug("Parser: header_text");
@@ -228,13 +237,13 @@ header_text:
                               $$ = $1;
                             }
     | header_text normal_t  { debug("Parser: header_text");
-                              $$ = concat(2, $1, $2);
+                              $$ = concat(3, $1," ", $2);
                             }
     | header_text bold_t    { debug("Parser: header_text");
-                              $$ = concat(2, $1, $2);
+                              $$ = concat(3, $1," ", $2);
                             }
     | header_text italic_t  { debug("Parser: header_text");
-                               $$ = concat(2, $1, $2);
+                               $$ = concat(3, $1," ", $2);
                             }
 
 text:
