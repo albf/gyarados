@@ -70,7 +70,7 @@ int is_yyerror;
 %token LBRACKET
 %token RBRACKET
 
-%type <str> normal_t bold_text bold_t italic_text italic_t special_symbol math_exp math header_text
+%type <str> normal_t bib_text bold_text bold_t italic_text italic_t special_symbol math_exp math header_text
 
 %start latex
 
@@ -181,6 +181,7 @@ command:
                                          }
                                        } 
     | start_bib bib_list END_BIB       { debug("Parser: command"); } 
+    | start_bib NEWLINES bib_list END_BIB { debug("Parser: command"); } 
     ;
 
 start_bib:
@@ -191,18 +192,64 @@ start_bib:
                                         }
 
 bib_list:
-    BBITEM LBRACE normal_t RBRACE header_text             { debug("Parser: bib_list"); 
+    BBITEM LBRACE normal_t RBRACE bib_text                { debug("Parser: bib_list"); 
                                                             if(htmlGEN_add_ref($3, $5)<0) {
                                                                 return -1;
                                                             }
                                                           } 
-    | bib_list BBITEM LBRACE normal_t RBRACE header_text  { debug("Parser: bib_list"); 
+    | bib_list BBITEM LBRACE normal_t RBRACE bib_text     { debug("Parser: bib_list"); 
                                                             if(htmlGEN_add_ref($4, $6)<0) {
                                                                 return -1;
                                                             }
                                                           } 
-    | NEWLINES                                            { debug("Parser: bib_list"); }
-    | bib_list NEWLINES                                   { debug("Parser: bib_list"); }
+
+bib_text:
+    normal_t                { debug("Parser: bib_text");
+                              $$ = $1;
+                              is_italic = 0;
+                              is_bold = 0;
+                            }
+    | italic_t              { debug("Parser: bib_text");
+                              is_italic = 0;
+                              is_bold = 0;
+                              $$ = $1;
+                            }
+    | bold_t                { debug("Parser: bib_text");
+                              is_italic = 0;
+                              is_bold = 0;
+                              $$ = $1;
+                            }
+    | NEWLINES              { debug("Parser: bib_text");
+                              char *aaa = (char *) malloc(sizeof(char)*2);
+                              aaa[0] = '\n'; aaa[1] = '\0';
+                              $$ =  aaa; 
+                              is_italic = 0;
+                              is_bold = 0;
+                            }
+    | bib_text normal_t     { debug("Parser: bib_text");
+                              $$ = concat(3, $1," ", $2);
+                              is_italic = 0;
+                              is_bold = 0;
+                            }
+    | bib_text bold_t       { debug("Parser: bib_text");
+                              $$ = concat(3, $1," ", $2);
+                              is_italic = 0;
+                              is_bold = 0;
+                            }
+    | bib_text italic_t     { debug("Parser: bib_text");
+                              $$ = concat(3, $1," ", $2);
+                              is_italic = 0;
+                              is_bold = 0;
+                            }
+    | bib_text NEWLINES     { debug("Parser: bib_textl");
+                              debug("x1: %s\n", $1);
+                              $$ = concat(2, $1, "\n\0"); 
+                              //$$ = $1;
+                                debug("x2");
+                              is_italic = 0;
+                              is_bold = 0;
+                            }
+
 
 
 special_symbol:
@@ -237,6 +284,23 @@ special_symbol:
                             }
                             avoid_p = 1;
                         }
+    | ITEM LBRACKET normal_t RBRACKET { debug("Parser: special_symbol");
+                            if(list_level <= 0) {
+                                error("Adding item in a non-list. Declare the list first.");
+                                return -1;
+                            } 
+                            // Verify if the list is already started.
+                            if(get_list_init(list_level) == 1) {
+                              $$ = concat(6, htmlGEN_item_end, "\n", htmlGEN_item_start_no_bullet, htmlGEN_bold_html_start, $3, htmlGEN_bold_html_end);
+                            }
+                            else {
+                              // if not, just add the \n and the item start.
+                              set_list_init(1, list_level);
+                              $$ = concat(5, "\n", htmlGEN_item_start_no_bullet, htmlGEN_bold_html_start, $3, htmlGEN_bold_html_end);
+                            }
+                            avoid_p = 1;
+    }
+
     | MAKETITLE         { debug("Parser: special_symbol"); 
                           char * title = htmlGEN_get_title();
                           if(title == NULL) {
@@ -248,7 +312,6 @@ special_symbol:
     | CITE LBRACE normal_t RBRACE      { debug("Parser: special_symbol"); 
                                              $$ = concat(3, htmlGEN_ref_symbol_start, $3, htmlGEN_ref_symbol_end);
                                        }
-
 
 header_text:
     normal_t                { debug("Parser: header_text");
@@ -505,8 +568,9 @@ char* concat(int count, ...)
     int len = 1, i;
 
     va_start(ap, count);
-    for(i=0 ; i<count ; i++)
+    for(i=0 ; i<count ; i++) {
         len += strlen(va_arg(ap, char*));
+    }
     va_end(ap);
 
     char *result = (char*) calloc(sizeof(char),len);

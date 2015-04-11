@@ -109,7 +109,7 @@ int htmlGEN_check_size(){
         if(htmlGEN_ref_counter == (htmlGEN_ref_size - 1)) {
             htmlGEN_ref_size = htmlGEN_ref_size*2;
             htmlGEN_ref_bank = realloc (htmlGEN_ref_bank, sizeof(char *)*htmlGEN_ref_size); 
-            htmlGEN_ref_index = realloc (htmlGEN_ref_index, sizeof(int)*htmlGEN_ref_size);
+            htmlGEN_ref_index = realloc (htmlGEN_ref_index, sizeof(char *)*htmlGEN_ref_size);
 
             if((htmlGEN_ref_bank == NULL) || (htmlGEN_ref_index == NULL)) {
                     error("Problem allocating memory for htmlGEN #2.\n");
@@ -171,7 +171,7 @@ int htmlGEN_add_string(char * string, int is_bold, int is_italic, int is_par_sta
     }
 
     // Copy string and ref flag. Update counter after that. 
-    htmlGEN_result[htmlGEN_counter] = (char *) malloc (sizeof(char)*strlen(string)); 
+    htmlGEN_result[htmlGEN_counter] = (char *) malloc (sizeof(char)*strlen(string)+1); 
     strcpy (htmlGEN_result[htmlGEN_counter], string);
     htmlGEN_is_there_ref[htmlGEN_counter] = is_there_ref;
     htmlGEN_is_bold[htmlGEN_counter] = is_bold;
@@ -295,7 +295,7 @@ char * htmlGEN_get_ref(char * index) {
     int counter;
     int i;
 
-    debug("htmlGEN: get_ref index: %s", index);
+    debug("htmlGEN: get_ref index: %s, ref_counter: %d", index, htmlGEN_ref_counter);
 
     if(htmlGEN_use_ref_number == 0) {
         if(htmlGEN_is_there_bib > 0) {
@@ -311,6 +311,8 @@ char * htmlGEN_get_ref(char * index) {
         if(htmlGEN_is_there_bib > 0) {
             counter = 1;
             for(i=0; i<htmlGEN_ref_counter; i++) {
+		debug("htmlGEN_ref_index[%d] = %s\n",i, htmlGEN_ref_index[i]);
+		debug("index: %s\n", index);
                 if(strcmp(htmlGEN_ref_index[i],index)==0) {
                     ref = (char *) malloc(sizeof(char)*htmlGEN_MAX_INT_SIZE);
                     sprintf(ref, "[%d]", counter);
@@ -345,9 +347,9 @@ int htmlGEN_add_ref(char * new_index, char * new_ref) {
     debug("Adding reference: bib[%s] = %s", new_index, new_ref);
 
     // Copy string and ref flag. Update counter after that. 
-    htmlGEN_ref_bank[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_ref)); 
+    htmlGEN_ref_bank[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_ref)+1); 
     strcpy (htmlGEN_ref_bank[htmlGEN_ref_counter], new_ref);
-    htmlGEN_ref_index[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_index)); 
+    htmlGEN_ref_index[htmlGEN_ref_counter] = (char *) malloc (sizeof(char)*strlen(new_index)+1); 
     strcpy (htmlGEN_ref_index[htmlGEN_ref_counter], new_index);
     htmlGEN_ref_counter++;
     return 0;

@@ -64,6 +64,7 @@ int htmlGEN_replace_ref(int index);
 #define htmlGEN_list_start "<ul>\n"
 #define htmlGEN_list_end "</ul>"
 #define htmlGEN_item_start "<li>"
+#define htmlGEN_item_start_no_bullet "<li style=\"list-style-type:none\">"
 #define htmlGEN_item_end "</li>"
 
 #define htmlGEN_title_start "<h1>"
