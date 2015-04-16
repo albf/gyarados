@@ -231,7 +231,7 @@ public class Codegen extends VisitorAdapter {
 
 	}
 
-	/* Not tested */
+	/* LessThan node */
 	public LlvmValue visit(LessThan n) {
 
 		System.err.println("Node: " + n.getClass().getName());
@@ -244,6 +244,7 @@ public class Codegen extends VisitorAdapter {
 
 	}
 
+	/* Print node */
 	public LlvmValue visit(Print n) {
 
 		System.err.println("Node: " + n.getClass().getName());
@@ -274,7 +275,46 @@ public class Codegen extends VisitorAdapter {
 				LlvmPrimitiveType.I32, pts, "@printf", args));
 		return null;
 	}
+	
+	public LlvmValue visit(While n) {
 
+		System.err.println("Node: "+ n.getClass().getName());
+	
+		/* Get the condition and the body of the while */
+		LlvmValue cond;
+		Statement wBody = n.body;
+		
+		/* To make the Labels uniques */
+		int line = n.line, row = n.row;
+		
+		/* Prepare the string to the labels */
+		String wCond = "WhileCond_" + line + "-" + row;
+		String wBegin = "WhileBegin_" + line + "-" + row;
+		String wEnd = "WhileEnd_" + line + "-" + row;
+		
+		/* Insert branch instruction to the test of the loop */
+		assembler.add(new LlvmBranch(new LlvmLabelValue("%"+wCond)));
+		
+		/* Insert the Label to the wCond */
+		assembler.add(new LlvmLabel(new LlvmLabelValue(wCond)));
+		
+		/* Insert the branch instruction and the begin label */
+		cond = n.condition.accept(this);
+		assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%"+wBegin), new LlvmLabelValue("%"+wEnd)));
+		assembler.add(new LlvmLabel(new LlvmLabelValue(wBegin)));
+		
+		/* Insert the body of the loop */
+		wBody.accept(this);
+		
+		/* Insert the branch to the check condition */
+		assembler.add(new LlvmBranch(new LlvmLabelValue("%"+wCond)));
+		
+		/* Insert the end label */
+		assembler.add(new LlvmLabel(new LlvmLabelValue(wEnd)));		
+		
+		return null;
+	}
+	
 	public LlvmValue visit(IntegerLiteral n) {
 
 		System.err.println("Node: "+ n.getClass().getName());
@@ -333,13 +373,6 @@ public class Codegen extends VisitorAdapter {
 	}
 
 	public LlvmValue visit(IdentifierType n) {
-
-		System.err.println("Node: "+ n.getClass().getName());
-		
-		return null;
-	}
-
-	public LlvmValue visit(While n) {
 
 		System.err.println("Node: "+ n.getClass().getName());
 		
