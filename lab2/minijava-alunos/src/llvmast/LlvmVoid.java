@@ -1,2 +1,4 @@
 package llvmast;
-public class LlvmVoid extends LlvmType{}
+
+public class LlvmVoid extends LlvmType {
+}
