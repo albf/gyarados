@@ -49,10 +49,11 @@ public class Codegen extends VisitorAdapter {
 	private ClassNode classEnv; // Aponta para a classe atualmente em uso em
 								// symTab
 	private MethodNode methodEnv; // Aponta para a metodo atualmente em uso em
-									// symTab
+								  // symTab
 
 	public Codegen() {
 		assembler = new LinkedList<LlvmInstruction>();
+		symTab = new SymTab();
 	}
 
 	// Método de entrada do Codegen
@@ -61,7 +62,7 @@ public class Codegen extends VisitorAdapter {
 
 		// Preenchendo a Tabela de Símbolos
 		// Quem quiser usar 'env', apenas comente essa linha
-		// codeGenerator.symTab.FillTabSymbol(p);
+		codeGenerator.symTab.FillTabSymbol(p);
 
 		// Formato da String para o System.out.printlnijava "%d\n"
 		codeGenerator.assembler.add(new LlvmConstantDeclaration(
@@ -128,6 +129,17 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmCloseDefinition());
 		return null;
 	}
+	
+	public LlvmValue visit(ClassDeclSimple n) {
+
+		System.err.println("Node: "+ n.getClass().getName());
+		
+		/* Get the method declaration list */
+		
+		
+		return null;
+	}
+
 
 	/* Plus node */
 	public LlvmValue visit(Plus n) {
@@ -180,7 +192,7 @@ public class Codegen extends VisitorAdapter {
 
 	}
 
-	/* Not Tested */
+	/* If node */
 	public LlvmValue visit(If n) {
 
 		System.err.println("Node: " + n.getClass().getName());
@@ -276,6 +288,7 @@ public class Codegen extends VisitorAdapter {
 		return null;
 	}
 	
+	/* While node */
 	public LlvmValue visit(While n) {
 
 		System.err.println("Node: "+ n.getClass().getName());
@@ -323,13 +336,6 @@ public class Codegen extends VisitorAdapter {
 	};
 
 	// Todos os visit's que devem ser implementados
-	public LlvmValue visit(ClassDeclSimple n) {
-
-		System.err.println("Node: "+ n.getClass().getName());
-		
-		return null;
-	}
-
 	public LlvmValue visit(ClassDeclExtends n) {
 
 		System.err.println("Node: "+ n.getClass().getName());
@@ -483,88 +489,4 @@ public class Codegen extends VisitorAdapter {
 		
 		return null;
 	}
-}
-
-/**********************************************************************************/
-/*
- * === Tabela de Símbolos ====
- */
-/**********************************************************************************/
-
-class SymTab extends VisitorAdapter {
-	public Map<String, ClassNode> classes;
-	private ClassNode classEnv; // aponta para a classe em uso
-
-	public LlvmValue FillTabSymbol(Program n) {
-		n.accept(this);
-		return null;
-	}
-
-	public LlvmValue visit(Program n) {
-		n.mainClass.accept(this);
-
-		for (util.List<ClassDecl> c = n.classList; c != null; c = c.tail)
-			c.head.accept(this);
-
-		return null;
-	}
-
-	public LlvmValue visit(MainClass n) {
-		classes.put(n.className.s, new ClassNode(n.className.s, null, null));
-		return null;
-	}
-
-	public LlvmValue visit(ClassDeclSimple n) {
-		List<LlvmType> typeList = null;
-		// Constroi TypeList com os tipos das variáveis da Classe (vai formar a
-		// Struct da classe)
-
-		List<LlvmValue> varList = null;
-		// Constroi VarList com as Variáveis da Classe
-
-		classes.put(n.name.s, new ClassNode(n.name.s, new LlvmStructure(
-				typeList), varList));
-		// Percorre n.methodList visitando cada método
-		return null;
-	}
-
-	public LlvmValue visit(ClassDeclExtends n) {
-		return null;
-	}
-
-	public LlvmValue visit(VarDecl n) {
-		return null;
-	}
-
-	public LlvmValue visit(Formal n) {
-		return null;
-	}
-
-	public LlvmValue visit(MethodDecl n) {
-		return null;
-	}
-
-	public LlvmValue visit(IdentifierType n) {
-		return null;
-	}
-
-	public LlvmValue visit(IntArrayType n) {
-		return null;
-	}
-
-	public LlvmValue visit(BooleanType n) {
-		return null;
-	}
-
-	public LlvmValue visit(IntegerType n) {
-		return null;
-	}
-}
-
-class ClassNode extends LlvmType {
-	ClassNode(String nameClass, LlvmStructure classType, List<LlvmValue> varList) {
-	}
-}
-
-class MethodNode {
 }
