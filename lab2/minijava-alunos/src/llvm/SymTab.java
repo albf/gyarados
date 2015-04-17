@@ -16,6 +16,10 @@ public class SymTab extends VisitorAdapter {
 	public Map<String, ClassNode> classes;
 	private ClassNode classEnv; // aponta para a classe em uso
 
+	public SymTab() {
+		classes = new HashMap<>();
+	}
+	
 	public LlvmValue FillTabSymbol(Program n) {
 		n.accept(this);
 		return null;
@@ -45,16 +49,32 @@ public class SymTab extends VisitorAdapter {
 
 		System.err.println("SysTab Visit: "+ n.getClass().getName());
 
-		List<LlvmType> typeList = null;
+		/* Should think about that ARRAYLIST */
 		// Constroi TypeList com os tipos das variáveis da Classe (vai formar a
 		// Struct da classe)
+		List<LlvmType> typeList = new ArrayList<>();
 
-		List<LlvmValue> varList = null;
 		// Constroi VarList com as Variáveis da Classe
-
-		classes.put(n.name.s, new ClassNode(n.name.s, new LlvmStructure(
-				typeList), varList));
+		List<LlvmValue> varList = new ArrayList<>();
+		
+		/* Populate the arrays */
+		for (util.List<VarDecl> vec = n.varList; vec != null; vec = vec.tail) {
+			System.err.println("   variable: "+vec.head.name);
+			
+			LlvmValue variable = vec.head.accept(this);
+			typeList.add(variable.type);
+			varList.add(variable);
+		}
+		
+		classEnv = new ClassNode(n.name.s, new LlvmStructure(typeList), varList);
+		
+		classes.put(n.name.s, classEnv);
+		
 		// Percorre n.methodList visitando cada método
+		for (util.List<MethodDecl> vec = n.methodList; vec != null; vec = vec.tail) {
+			vec.head.accept(this);
+		}
+		
 		return null;
 	}
 

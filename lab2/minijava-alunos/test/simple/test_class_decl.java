@@ -9,5 +9,5 @@ class m309
 }
 
 class Matematica {
-
+	int a;
 }
