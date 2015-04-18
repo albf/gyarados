@@ -88,8 +88,15 @@ public class SymTab extends VisitorAdapter {
 	public LlvmValue visit(VarDecl n) {
 
 		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		
+		/* Printing the code of the variable declaration */
+		LlvmValue type = n.type.accept(this);
+		LlvmValue name = n.name.accept(this);
+		
+		/* Getting the type and name of the variable to return */
+		LlvmNamedValue variable = new LlvmNamedValue("%"+n.name.toString(), type.type); 
 
-		return null;
+		return variable;
 	}
 
 	public LlvmValue visit(Formal n) {
@@ -124,13 +131,13 @@ public class SymTab extends VisitorAdapter {
 
 		System.err.println("SysTab Visit: "+ n.getClass().getName());
 
-		return null;
+		return new LlvmNamedValue("", LlvmPrimitiveType.I1);
 	}
 
 	public LlvmValue visit(IntegerType n) {
 
 		System.err.println("SysTab Visit: "+ n.getClass().getName());
 
-		return null;
+		return new LlvmNamedValue("", LlvmPrimitiveType.I32);
 	}
 }
