@@ -10,4 +10,8 @@ class m309
 
 class Matematica {
 	int a;
+	public int foo(int b, boolean c) {
+		boolean oi;
+		return 0;
+	}
 }

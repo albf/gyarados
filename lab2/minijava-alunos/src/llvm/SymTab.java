@@ -19,7 +19,7 @@ public class SymTab extends VisitorAdapter {
 	public SymTab() {
 		classes = new HashMap<>();
 	}
-	
+
 	public LlvmValue FillTabSymbol(Program n) {
 		n.accept(this);
 		return null;
@@ -27,7 +27,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(Program n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		n.mainClass.accept(this);
 
@@ -39,7 +39,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(MainClass n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		classes.put(n.className.s, new ClassNode(n.className.s, null, null));
 		return null;
@@ -47,7 +47,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(ClassDeclSimple n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		/* Should think about that ARRAYLIST */
 		// Constroi TypeList com os tipos das variáveis da Classe (vai formar a
@@ -56,87 +56,142 @@ public class SymTab extends VisitorAdapter {
 
 		// Constroi VarList com as Variáveis da Classe
 		List<LlvmValue> varList = new ArrayList<>();
-		
+
 		/* Populate the arrays */
+		System.err.println(" Class: " + n.name);
 		for (util.List<VarDecl> vec = n.varList; vec != null; vec = vec.tail) {
-			System.err.println("   variable: "+vec.head.name);
-			
+			System.err.println(" | attribute: " + vec.head.name);
+
 			LlvmValue variable = vec.head.accept(this);
 			typeList.add(variable.type);
 			varList.add(variable);
 		}
-		
+
 		classEnv = new ClassNode(n.name.s, new LlvmStructure(typeList), varList);
-		
+
 		classes.put(n.name.s, classEnv);
-		
+
 		// Percorre n.methodList visitando cada método
+		System.err.println(" Class: " + n.name);
 		for (util.List<MethodDecl> vec = n.methodList; vec != null; vec = vec.tail) {
+			System.err.println("    | method: " + vec.head.name);
+
 			vec.head.accept(this);
 		}
-		
+
 		return null;
 	}
 
 	public LlvmValue visit(ClassDeclExtends n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		return null;
 	}
 
 	public LlvmValue visit(VarDecl n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
-		
+		System.err.println("SysTab Visit: " + n.getClass().getName());
+
 		/* Printing the code of the variable declaration */
 		LlvmValue type = n.type.accept(this);
 		LlvmValue name = n.name.accept(this);
-		
+
 		/* Getting the type and name of the variable to return */
-		LlvmNamedValue variable = new LlvmNamedValue("%"+n.name.toString(), type.type); 
+		LlvmNamedValue variable = new LlvmNamedValue("%" + n.name.toString(),
+				type.type);
 
 		return variable;
 	}
 
 	public LlvmValue visit(Formal n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
-		return null;
+		/* Printing the code of the variable declaration */
+		LlvmValue type = n.type.accept(this);
+		LlvmValue name = n.name.accept(this);
+
+		/* Getting the type and name of the variable to return */
+		LlvmNamedValue formal = new LlvmNamedValue("%" + n.name.toString(),
+				type.type);
+
+		return formal;
 	}
 
 	public LlvmValue visit(MethodDecl n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
+
+		/* Define the Method signature */
+		String methodName = "@__" + n.name.toString() + "__"
+				+ classEnv.nameClass;
+
+		/* Variable and Arguments Lists */
+		List<LlvmValue> vList = new ArrayList<>();
+		List<LlvmValue> fList = new ArrayList<>();
+
+		/* Building the Formal List */
+		LlvmValue tmp = new LlvmNamedValue("%this", 
+				new LlvmClassType(classEnv.nameClass));
+		
+		/* First Argument is always the Object */
+		fList.add(tmp);
+
+		/* Add the list of formals */
+		for (util.List<Formal> vec = n.formals; vec != null; vec = vec.tail) {
+			/*
+			 * Print the instructions to the arguments Add this values to the
+			 * list of formals
+			 */
+			LlvmValue v = vec.head.accept(this);
+			fList.add(v);
+		}
+
+		/* Add the list of variables */
+		for (util.List<VarDecl> vec = n.locals; vec != null; vec = vec.tail) {
+			/*
+			 * Print the instructions to the locals Add this values to the list
+			 * of locals
+			 */
+			LlvmValue v = vec.head.accept(this);
+			vList.add(v);
+		}
+
+		/* Debug */
+		// System.err.println(n.name.toString());
+
+		/* Add the method to the Class Node */
+		classEnv.mList.put(n.name.toString(), new MethodNode(n.name.toString(),
+				vList, fList, n.returnType.accept(this).type));
 
 		return null;
 	}
 
 	public LlvmValue visit(IdentifierType n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		return null;
 	}
 
 	public LlvmValue visit(IntArrayType n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		return null;
 	}
 
 	public LlvmValue visit(BooleanType n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		return new LlvmNamedValue("", LlvmPrimitiveType.I1);
 	}
 
 	public LlvmValue visit(IntegerType n) {
 
-		System.err.println("SysTab Visit: "+ n.getClass().getName());
+		System.err.println("SysTab Visit: " + n.getClass().getName());
 
 		return new LlvmNamedValue("", LlvmPrimitiveType.I32);
 	}

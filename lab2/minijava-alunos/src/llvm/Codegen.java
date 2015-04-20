@@ -49,7 +49,7 @@ public class Codegen extends VisitorAdapter {
 	private ClassNode classEnv; // Aponta para a classe atualmente em uso em
 								// symTab
 	private MethodNode methodEnv; // Aponta para a metodo atualmente em uso em
-								  // symTab
+									// symTab
 
 	public Codegen() {
 		assembler = new LinkedList<LlvmInstruction>();
@@ -129,17 +129,15 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmCloseDefinition());
 		return null;
 	}
-	
+
 	public LlvmValue visit(ClassDeclSimple n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		/* Get the method declaration list */
-		
-		
+
 		return null;
 	}
-
 
 	/* Plus node */
 	public LlvmValue visit(Plus n) {
@@ -152,21 +150,21 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmPlus(lhs, LlvmPrimitiveType.I32, v1, v2));
 		return lhs;
 	}
-	
+
 	/* Block node */
 	public LlvmValue visit(Block n) {
-		
-		System.err.println("Node: "+ n.getClass().getName());
-		
+
+		System.err.println("Node: " + n.getClass().getName());
+
 		/* Call accept in each Statement of the Block */
 		util.List<Statement> stmts = n.body;
-		while(stmts != null) {
-			stmts.head.accept(this);	// Accept the head
-			stmts = stmts.tail;		// Change to the tail
+		while (stmts != null) {
+			stmts.head.accept(this); // Accept the head
+			stmts = stmts.tail; // Change to the tail
 		}
 		return null;
 	}
-	
+
 	/* Minus node */
 	public LlvmValue visit(Minus n) {
 
@@ -212,11 +210,13 @@ public class Codegen extends VisitorAdapter {
 
 		/* Check the body type (if-then or if-then-else) */
 		if (elseClause != null) {
-			assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%"+ifthen),
-					new LlvmLabelValue("%"+ifelse)));
+			assembler.add(new LlvmBranch(cond,
+					new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%"
+							+ ifelse)));
 		} else {
-			assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%"+ifthen),
-					new LlvmLabelValue("%"+ifend)));
+			assembler.add(new LlvmBranch(cond,
+					new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%"
+							+ ifend)));
 		}
 
 		/* Insert label to thenClause */
@@ -224,8 +224,8 @@ public class Codegen extends VisitorAdapter {
 		/* Insert IRs for the body of then clause */
 		thenClause.accept(this);
 		/* Insert IRs for jump to the end of if */
-		assembler.add(new LlvmBranch(new LlvmLabelValue("%"+ifend)));
-		
+		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
+
 		/* Case there is an else clause */
 		if (elseClause != null) {
 			/* Insert label to elseClause */
@@ -233,9 +233,9 @@ public class Codegen extends VisitorAdapter {
 			/* Insert IRs */
 			elseClause.accept(this);
 			/* Insert IRs to jump to the end of if */
-			assembler.add(new LlvmBranch(new LlvmLabelValue("%"+ifend)));			
+			assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
 		}
-		
+
 		/* Insert label ifend */
 		assembler.add(new LlvmLabel(new LlvmLabelValue(ifend)));
 
@@ -287,206 +287,207 @@ public class Codegen extends VisitorAdapter {
 				LlvmPrimitiveType.I32, pts, "@printf", args));
 		return null;
 	}
-	
+
 	/* While node */
 	public LlvmValue visit(While n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-	
+		System.err.println("Node: " + n.getClass().getName());
+
 		/* Get the condition and the body of the while */
 		LlvmValue cond;
 		Statement wBody = n.body;
-		
+
 		/* To make the Labels uniques */
 		int line = n.line, row = n.row;
-		
+
 		/* Prepare the string to the labels */
 		String wCond = "WhileCond_" + line + "-" + row;
 		String wBegin = "WhileBegin_" + line + "-" + row;
 		String wEnd = "WhileEnd_" + line + "-" + row;
-		
+
 		/* Insert branch instruction to the test of the loop */
-		assembler.add(new LlvmBranch(new LlvmLabelValue("%"+wCond)));
-		
+		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + wCond)));
+
 		/* Insert the Label to the wCond */
 		assembler.add(new LlvmLabel(new LlvmLabelValue(wCond)));
-		
+
 		/* Insert the branch instruction and the begin label */
 		cond = n.condition.accept(this);
-		assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%"+wBegin), new LlvmLabelValue("%"+wEnd)));
+		assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%" + wBegin),
+				new LlvmLabelValue("%" + wEnd)));
 		assembler.add(new LlvmLabel(new LlvmLabelValue(wBegin)));
-		
+
 		/* Insert the body of the loop */
 		wBody.accept(this);
-		
+
 		/* Insert the branch to the check condition */
-		assembler.add(new LlvmBranch(new LlvmLabelValue("%"+wCond)));
-		
+		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + wCond)));
+
 		/* Insert the end label */
-		assembler.add(new LlvmLabel(new LlvmLabelValue(wEnd)));		
-		
+		assembler.add(new LlvmLabel(new LlvmLabelValue(wEnd)));
+
 		return null;
 	}
-	
+
 	public LlvmValue visit(IntegerLiteral n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return new LlvmIntegerLiteral(n.value);
 	};
 
 	// Todos os visit's que devem ser implementados
 	public LlvmValue visit(ClassDeclExtends n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(VarDecl n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(MethodDecl n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(Formal n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(IntArrayType n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(IntegerType n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(IdentifierType n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(Assign n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(ArrayAssign n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(And n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(Equal n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(ArrayLookup n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(ArrayLength n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(Call n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(True n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(False n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(IdentifierExp n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(This n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(NewArray n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(NewObject n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(Not n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 
 	public LlvmValue visit(Identifier n) {
 
-		System.err.println("Node: "+ n.getClass().getName());
-		
+		System.err.println("Node: " + n.getClass().getName());
+
 		return null;
 	}
 }
