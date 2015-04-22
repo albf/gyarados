@@ -6,7 +6,6 @@
 package llvm;
 
 import java.util.List;
-import java.util.ArrayList;
 import llvmast.*;
 
 public class MethodNode {

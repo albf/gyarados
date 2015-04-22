@@ -27,7 +27,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(Program n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		n.mainClass.accept(this);
 
@@ -39,7 +39,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(MainClass n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		classes.put(n.className.s, new ClassNode(n.className.s, null, null));
 		return null;
@@ -47,7 +47,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(ClassDeclSimple n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		/* Should think about that ARRAYLIST */
 		// Constroi TypeList com os tipos das variáveis da Classe (vai formar a
@@ -67,9 +67,9 @@ public class SymTab extends VisitorAdapter {
 			varList.add(variable);
 		}
 
-		classEnv = new ClassNode(n.name.s, new LlvmStructure(typeList), varList);
+		classEnv = new ClassNode(n.name.toString(), new LlvmStructure(typeList), varList);
 
-		classes.put(n.name.s, classEnv);
+		classes.put(n.name.toString(), classEnv);
 
 		// Percorre n.methodList visitando cada método
 		System.err.println(" Class: " + n.name);
@@ -84,14 +84,14 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(ClassDeclExtends n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		return null;
 	}
 
 	public LlvmValue visit(VarDecl n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		/* Printing the code of the variable declaration */
 		LlvmValue type = n.type.accept(this);
@@ -106,7 +106,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(Formal n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		/* Printing the code of the variable declaration */
 		LlvmValue type = n.type.accept(this);
@@ -121,7 +121,7 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(MethodDecl n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		/* Define the Method signature */
 		String methodName = "@__" + n.name.toString() + "__"
@@ -170,28 +170,28 @@ public class SymTab extends VisitorAdapter {
 
 	public LlvmValue visit(IdentifierType n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
-		return null;
+		return new LlvmRegister(n.name, new LlvmClassType(n.name));
 	}
 
 	public LlvmValue visit(IntArrayType n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
-
+		System.err.println("SymTab Visit: " + n.getClass().getName());
+		
 		return null;
 	}
 
 	public LlvmValue visit(BooleanType n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		return new LlvmNamedValue("", LlvmPrimitiveType.I1);
 	}
 
 	public LlvmValue visit(IntegerType n) {
 
-		System.err.println("SysTab Visit: " + n.getClass().getName());
+		System.err.println("SymTab Visit: " + n.getClass().getName());
 
 		return new LlvmNamedValue("", LlvmPrimitiveType.I32);
 	}

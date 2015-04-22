@@ -130,66 +130,85 @@ public class Codegen extends VisitorAdapter {
 		return null;
 	}
 
-	public LlvmValue visit(ClassDeclSimple n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		/* Get the method declaration list */
-
-		return null;
-	}
-
-	/* Plus node */
-	public LlvmValue visit(Plus n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		LlvmValue v1 = n.lhs.accept(this);
-		LlvmValue v2 = n.rhs.accept(this);
-		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
-		assembler.add(new LlvmPlus(lhs, LlvmPrimitiveType.I32, v1, v2));
-		return lhs;
-	}
-
 	/* Block node */
 	public LlvmValue visit(Block n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Call accept in each Statement of the Block */
-		util.List<Statement> stmts = n.body;
-		while (stmts != null) {
+		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
 			stmts.head.accept(this); // Accept the head
-			stmts = stmts.tail; // Change to the tail
 		}
 		return null;
-	}
+	}	
+	
+	/* ClassDecSimple node */
+	public LlvmValue visit(ClassDeclSimple n) {
 
-	/* Minus node */
-	public LlvmValue visit(Minus n) {
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Get the actual class */
+		classEnv = symTab.classes.get(n.name.toString());
+		
+		/* Deal with the instructions for the methods */
+		for (util.List<MethodDecl> met = n.methodList; met != null; met = met.tail)
+			met.head.accept(this);
+
+		return null;
+	}
+	
+	/* Formal node */
+	public LlvmValue visit(Formal n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 
-		LlvmValue v1 = n.lhs.accept(this);
-		LlvmValue v2 = n.rhs.accept(this);
-		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
-		assembler.add(new LlvmMinus(lhs, LlvmPrimitiveType.I32, v1, v2));
+		return new LlvmNamedValue("%"+n.name, (n.type.accept(this)).type);
+	}
+	
+	/* Identifier node */
+	public LlvmValue visit(Identifier n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Look for the variable in the list of locals */
+		LlvmValue var = null;
+		List<LlvmValue> locals = methodEnv.vList;
+		for (LlvmValue v : locals) {
+			/* Found */
+			if (v.toString().equals((String) n.s)) {
+				var = v;
+				break;
+			}
+		}
+
+		return new LlvmNamedValue(var.toString(), var.type);
+	}
+	
+	/* IdentifierExp node */
+	public LlvmValue visit(IdentifierExp n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Accept in the child */
+		LlvmValue addr = n.name.accept(this);
+		
+		/* Gets the type of the identifier */
+		LlvmRegister lhs = new LlvmRegister(addr.type);
+		
+		/* Issues the Instruction */
+		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue(addr+"_tmp", new LlvmPointer(addr.type)))); 
+
 		return lhs;
 	}
-
-	/* Times node */
-	public LlvmValue visit(Times n) {
+	
+	/* IdentifierType node */
+	public LlvmValue visit(IdentifierType n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 
-		LlvmValue v1 = n.lhs.accept(this);
-		LlvmValue v2 = n.rhs.accept(this);
-		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
-		assembler.add(new LlvmTimes(lhs, LlvmPrimitiveType.I32, v1, v2));
-		return lhs;
-
+		return new LlvmRegister(n.name, new LlvmClassType(n.name));
 	}
-
+	
 	/* If node */
 	public LlvmValue visit(If n) {
 
@@ -242,6 +261,22 @@ public class Codegen extends VisitorAdapter {
 		return null;
 
 	}
+	
+	/* IntegerLiteral node */
+	public LlvmValue visit(IntegerLiteral n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+
+		return new LlvmIntegerLiteral(n.value);
+	}
+	
+	/* IntegerType node */
+	public LlvmValue visit(IntegerType n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+
+		return new LlvmNamedValue("", LlvmPrimitiveType.I32);
+	}
 
 	/* LessThan node */
 	public LlvmValue visit(LessThan n) {
@@ -255,6 +290,90 @@ public class Codegen extends VisitorAdapter {
 		return lhs;
 
 	}
+	
+	/* MethodDecl node */
+	public LlvmValue visit(MethodDecl n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Sets the actual method */
+		methodEnv = classEnv.mList.get(n.name.toString());
+		
+		/* Method Name */
+		String mName = "@__"+methodEnv.mName+"_"+classEnv.nameClass;
+		
+		/* Control of names */
+		List<String> varList = new ArrayList<>();
+		
+		/* Get the formal list and the local list */
+		List<LlvmValue> formals = methodEnv.fList;
+		List<LlvmValue> locals = methodEnv.vList;
+		
+		/* Get the return type */
+		LlvmType rType = methodEnv.rType;
+		
+		/* Define the method - Print the instructions */
+		assembler.add(new LlvmDefine(mName, rType, formals));
+		assembler.add(new LlvmLabel(new LlvmLabelValue("entry")));
+		
+		/* Declare the method formals */
+		for (LlvmValue arg : formals) {
+			/* Allocate the memory to the formal */
+			LlvmNamedValue lhs = new LlvmNamedValue(arg.toString()+"_tmp", arg.type);
+			assembler.add(new LlvmAlloca(lhs, arg.type, new ArrayList<LlvmValue>()));
+			/* Store the value */
+			LlvmNamedValue plhs = new LlvmNamedValue(arg.toString()+"_tmp", new LlvmPointer(arg.type));
+			assembler.add(new LlvmStore(new LlvmNamedValue(arg.toString(), arg.type), plhs));
+			
+			/* Updates the list of vars */
+			varList.add(arg.toString());
+		}
+		
+		/* Declare the locals variables */
+		for (LlvmValue var : locals) {
+			/* Skip double declaration */
+			if (varList.contains(var.toString()))	continue;
+			
+			/* Allocate the memory to the formal */
+			LlvmNamedValue lhs = new LlvmNamedValue(var.toString()+"_tmp", var.type);
+			assembler.add(new LlvmAlloca(lhs, var.type, new ArrayList<LlvmValue>()));
+			
+			/* Updates the list of vars */
+		}
+		
+		/* Return */		
+		LlvmValue rValue = n.returnExp.accept(this);
+		assembler.add(new LlvmRet(rValue));
+		
+		/* Close the method */
+		assembler.add(new LlvmCloseDefinition());		
+
+		return n.returnType.accept(this);
+	}
+	
+	/* Minus node */
+	public LlvmValue visit(Minus n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+
+		LlvmValue v1 = n.lhs.accept(this);
+		LlvmValue v2 = n.rhs.accept(this);
+		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
+		assembler.add(new LlvmMinus(lhs, LlvmPrimitiveType.I32, v1, v2));
+		return lhs;
+	}
+
+	/* Plus node */
+	public LlvmValue visit(Plus n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+
+		LlvmValue v1 = n.lhs.accept(this);
+		LlvmValue v2 = n.rhs.accept(this);
+		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
+		assembler.add(new LlvmPlus(lhs, LlvmPrimitiveType.I32, v1, v2));
+		return lhs;
+	}	
 
 	/* Print node */
 	public LlvmValue visit(Print n) {
@@ -286,6 +405,27 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmCall(new LlvmRegister(LlvmPrimitiveType.I32),
 				LlvmPrimitiveType.I32, pts, "@printf", args));
 		return null;
+	}
+	
+	/* Times node */
+	public LlvmValue visit(Times n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+
+		LlvmValue v1 = n.lhs.accept(this);
+		LlvmValue v2 = n.rhs.accept(this);
+		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
+		assembler.add(new LlvmTimes(lhs, LlvmPrimitiveType.I32, v1, v2));
+		return lhs;
+
+	}
+	
+	/* VarDecl node */
+	public LlvmValue visit(VarDecl n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+
+		return new LlvmNamedValue("%"+n.name.toString(), (n.type.accept(this)).type);
 	}
 
 	/* While node */
@@ -328,15 +468,13 @@ public class Codegen extends VisitorAdapter {
 
 		return null;
 	}
-
-	public LlvmValue visit(IntegerLiteral n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return new LlvmIntegerLiteral(n.value);
-	};
-
+	
+	/* ====================================================================== */	
+	/* ====================================================================== */
 	// Todos os visit's que devem ser implementados
+	/* ====================================================================== */
+	/* ====================================================================== */
+
 	public LlvmValue visit(ClassDeclExtends n) {
 
 		System.err.println("Node: " + n.getClass().getName());
@@ -344,42 +482,7 @@ public class Codegen extends VisitorAdapter {
 		return null;
 	}
 
-	public LlvmValue visit(VarDecl n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(MethodDecl n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(Formal n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
 	public LlvmValue visit(IntArrayType n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(IntegerType n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(IdentifierType n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 
@@ -449,13 +552,6 @@ public class Codegen extends VisitorAdapter {
 		return null;
 	}
 
-	public LlvmValue visit(IdentifierExp n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
 	public LlvmValue visit(This n) {
 
 		System.err.println("Node: " + n.getClass().getName());
@@ -478,13 +574,6 @@ public class Codegen extends VisitorAdapter {
 	}
 
 	public LlvmValue visit(Not n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(Identifier n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 
