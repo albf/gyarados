@@ -86,8 +86,10 @@ public class Codegen extends VisitorAdapter {
 				new LlvmPointer(LlvmPrimitiveType.I8), mallocpts));
 
 		String r = new String();
-		for (LlvmInstruction instr : codeGenerator.assembler)
+		for (LlvmInstruction instr : codeGenerator.assembler) {
 			r += instr + "\n";
+			//System.out.println(instr+"\n");
+		}
 		return r;
 	}
 
@@ -175,7 +177,7 @@ public class Codegen extends VisitorAdapter {
 		List<LlvmValue> locals = methodEnv.vList;
 		for (LlvmValue v : locals) {
 			/* Found */
-			if (v.toString().equals((String) n.s)) {
+			if (v.toString().equals("%"+n.toString())) {
 				var = v;
 				break;
 			}
@@ -300,7 +302,7 @@ public class Codegen extends VisitorAdapter {
 		methodEnv = classEnv.mList.get(n.name.toString());
 		
 		/* Method Name */
-		String mName = "@__"+methodEnv.mName+"_"+classEnv.nameClass;
+		String mName = "@__"+methodEnv.mName+"_"+classEnv.className;
 		
 		/* Control of names */
 		List<String> varList = new ArrayList<>();
@@ -360,6 +362,18 @@ public class Codegen extends VisitorAdapter {
 		LlvmValue v2 = n.rhs.accept(this);
 		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
 		assembler.add(new LlvmMinus(lhs, LlvmPrimitiveType.I32, v1, v2));
+		return lhs;
+	}
+	
+	/* NewObject node */
+	public LlvmValue visit(NewObject n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Issues the className identifier */
+		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(symTab.classes.get(n.className.s).classType));
+		assembler.add(new LlvmMalloc(lhs, lhs.type, "%class."+n.className.s));
+
 		return lhs;
 	}
 
@@ -534,6 +548,19 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(Call n) {
 
 		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Get the Object Reference */
+		LlvmValue objReff = n.object.accept(this);
+		
+		/* Get the list of arguments */
+		List<LlvmValue> args = new ArrayList<>();
+		List<LlvmType> args_t = new ArrayList<>();
+		
+		/* Get the name of the method */
+		String mName = n.method.s;
+		String cName = objReff.type.toString();
+		
+		System.err.println(cName);
 
 		return null;
 	}
@@ -560,13 +587,6 @@ public class Codegen extends VisitorAdapter {
 	}
 
 	public LlvmValue visit(NewArray n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(NewObject n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 

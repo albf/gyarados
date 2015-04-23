@@ -125,7 +125,7 @@ public class SymTab extends VisitorAdapter {
 
 		/* Define the Method signature */
 		String methodName = "@__" + n.name.toString() + "__"
-				+ classEnv.nameClass;
+				+ classEnv.className;
 
 		/* Variable and Arguments Lists */
 		List<LlvmValue> vList = new ArrayList<>();
@@ -133,7 +133,7 @@ public class SymTab extends VisitorAdapter {
 
 		/* Building the Formal List */
 		LlvmValue tmp = new LlvmNamedValue("%this", 
-				new LlvmClassType(classEnv.nameClass));
+				new LlvmClassType(classEnv.className));
 		
 		/* First Argument is always the Object */
 		fList.add(tmp);
