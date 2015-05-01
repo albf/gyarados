@@ -15,6 +15,7 @@ import java.util.*;
 public class ClassNode extends LlvmType {
 	public String className;
 	public LlvmStructure classType;
+	public LlvmClassType type;
 	public List<LlvmValue> varList;
 	public Map<String, MethodNode> mList;
 
@@ -24,5 +25,6 @@ public class ClassNode extends LlvmType {
 		this.classType = classType;
 		this.varList = varList;
 		this.mList = new HashMap<>();
+		this.type = new LlvmClassType(nameClass);
 	}
 }

@@ -142,7 +142,75 @@ public class Codegen extends VisitorAdapter {
 			stmts.head.accept(this); // Accept the head
 		}
 		return null;
-	}	
+	}
+	
+	public LlvmValue visit(Call n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Get the Object Reference */
+		LlvmValue objReff = n.object.accept(this);
+		
+		/* Get the list of arguments */
+		List<LlvmValue> args = new ArrayList<>();
+		List<LlvmType> args_t = new ArrayList<>();
+		
+		/* Get the name of the method */
+		String classType = objReff.type.toString();
+		String clTypeName = classType.substring(7, classType.indexOf(" "));
+		
+		// DEBUG
+		System.err.println(clTypeName+"\n");
+		
+		/* Get the class and the method */
+		ClassNode classNode = symTab.classes.get(clTypeName);
+		MethodNode methodNode = classNode.mList.get(n.method.s);
+		
+		/* Checks the type of the first argument */
+		LlvmRegister this_ptr = new LlvmRegister(methodNode.fList.get(0).type);
+		
+		/* Checks with the obj type */
+		if (this_ptr.type.toString().equals(objReff.type.toString()))
+			args.add(objReff);
+		else {
+			assembler.add(new LlvmLoad(this_ptr, objReff));
+			args.add(this_ptr);
+		}
+		
+		/* The remaining arguments */
+		for (util.List<Exp> vec = n.actuals; vec != null; vec = vec.tail) {
+			/* Issues the instructions to deal with formals */
+			LlvmValue tmp = vec.head.accept(this);
+			
+			/* Deals with double pointers */
+			if (tmp.type.toString().contains("* *")) {
+				LlvmValue a_lhs = new LlvmRegister(((LlvmPointer) tmp.type).content);
+				assembler.add(new LlvmLoad(a_lhs, tmp));
+				args.add(a_lhs);
+			} else
+				args.add(tmp);
+		}
+		
+		/* Add the types in the type Array */
+		for (LlvmValue val : methodNode.fList)
+			args_t.add(val.type);
+		
+		/* Declares the name of the function */
+		String fnName = "@__"+methodNode.mName+"__"+clTypeName;
+		
+		/* Issues the call instruction to the method */
+		LlvmRegister lhs = new LlvmRegister(methodNode.rType);
+		assembler.add(
+				new LlvmCall(
+					lhs,
+					methodNode.rType,
+					fnName,
+					args
+				)
+		);
+
+		return null;
+	}
 	
 	/* ClassDecSimple node */
 	public LlvmValue visit(ClassDeclSimple n) {
@@ -371,9 +439,10 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 		
 		/* Issues the className identifier */
-		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(symTab.classes.get(n.className.s).classType));
+		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(symTab.classes.get(n.className.s).type));
 		assembler.add(new LlvmMalloc(lhs, lhs.type, "%class."+n.className.s));
 
+		/* Return */
 		return lhs;
 	}
 
@@ -541,31 +610,6 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(ArrayLength n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(Call n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-		
-		/* Get the Object Reference */
-		LlvmValue objReff = n.object.accept(this);
-		
-		/* Get the list of arguments */
-		List<LlvmValue> args = new ArrayList<>();
-		List<LlvmType> args_t = new ArrayList<>();
-		
-		/* Get the name of the method */
-		String mName = n.method.s;
-		String cType = objReff.type.toString();
-		
-		System.err.println(cType+"\n");
-		
-		for (Map.Entry<String, ClassNode> entry : symTab.classes.entrySet()) {
-			System.err.println(entry.getKey());
-		}
-		
 
 		return null;
 	}
