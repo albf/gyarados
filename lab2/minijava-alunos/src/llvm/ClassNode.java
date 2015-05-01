@@ -18,13 +18,16 @@ public class ClassNode extends LlvmType {
 	public LlvmClassType type;
 	public List<LlvmValue> varList;
 	public Map<String, MethodNode> mList;
+	public Map<String, LlvmValue> attrMap;
 
 	/* Constructor */
-	ClassNode(String nameClass, LlvmStructure classType, List<LlvmValue> varList) {
+	ClassNode(String nameClass, LlvmStructure classType,
+			List<LlvmValue> varList, Map<String, LlvmValue> attrMap) {
 		this.className = nameClass;
 		this.classType = classType;
 		this.varList = varList;
 		this.mList = new HashMap<>();
 		this.type = new LlvmClassType(nameClass);
+		this.attrMap = attrMap;
 	}
 }

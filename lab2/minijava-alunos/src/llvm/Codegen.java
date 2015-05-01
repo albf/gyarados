@@ -241,14 +241,9 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 		
 		/* Look for the variable in the list of locals */
-		LlvmValue var = null;
-		List<LlvmValue> locals = methodEnv.vList;
-		for (LlvmValue v : locals) {
-			/* Found */
-			if (v.toString().equals("%"+n.toString())) {
-				var = v;
-				break;
-			}
+		LlvmValue var = methodEnv.vMap.get(n.s);
+		if (var == null) {
+			var = classEnv.attrMap.get(n.s);
 		}
 
 		return new LlvmNamedValue(var.toString(), var.type);
