@@ -558,9 +558,14 @@ public class Codegen extends VisitorAdapter {
 		
 		/* Get the name of the method */
 		String mName = n.method.s;
-		String cName = objReff.type.toString();
+		String cType = objReff.type.toString();
 		
-		System.err.println(cName);
+		System.err.println(cType+"\n");
+		
+		for (Map.Entry<String, ClassNode> entry : symTab.classes.entrySet()) {
+			System.err.println(entry.getKey());
+		}
+		
 
 		return null;
 	}
