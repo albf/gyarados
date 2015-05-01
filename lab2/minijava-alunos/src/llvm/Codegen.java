@@ -95,7 +95,7 @@ public class Codegen extends VisitorAdapter {
 
 	public LlvmValue visit(Program n) {
 
-		System.err.println("Node: " + n.getClass().getName());
+		System.err.println("\nNode: " + n.getClass().getName());
 
 		n.mainClass.accept(this);
 
@@ -160,7 +160,7 @@ public class Codegen extends VisitorAdapter {
 		String clTypeName = classType.substring(7, classType.indexOf(" "));
 		
 		// DEBUG
-		System.err.println(clTypeName+"\n");
+		//System.err.println(clTypeName+"\n");
 		
 		/* Get the class and the method */
 		ClassNode classNode = symTab.classes.get(clTypeName);
@@ -367,10 +367,10 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 		
 		/* Sets the actual method */
-		methodEnv = classEnv.mList.get(n.name.toString());
+		methodEnv = classEnv.mList.get(n.name.s);
 		
 		/* Method Name */
-		String mName = "@__"+methodEnv.mName+"_"+classEnv.className;
+		String mName = "@__"+methodEnv.mName+"__"+classEnv.className;
 		
 		/* Control of names */
 		List<String> varList = new ArrayList<>();
@@ -410,6 +410,10 @@ public class Codegen extends VisitorAdapter {
 			
 			/* Updates the list of vars */
 		}
+		
+		/* Issues the body instructions */
+		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail)
+			stmts.head.accept(this);
 		
 		/* Return */		
 		LlvmValue rValue = n.returnExp.accept(this);
