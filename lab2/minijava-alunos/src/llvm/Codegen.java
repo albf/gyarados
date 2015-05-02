@@ -87,8 +87,8 @@ public class Codegen extends VisitorAdapter {
 
 		String r = new String();
 		for (LlvmInstruction instr : codeGenerator.assembler) {
+			System.out.println(instr+"\n");
 			r += instr + "\n";
-			//System.out.println(instr+"\n");
 		}
 		return r;
 	}
@@ -331,7 +331,6 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(IntegerLiteral n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
 		return new LlvmIntegerLiteral(n.value);
 	}
 	
@@ -405,10 +404,15 @@ public class Codegen extends VisitorAdapter {
 			
 			/* Updates the list of vars */
 		}
-		
-		/* Issues the body instructions */
+	
+                System.err.println("METHOD");
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail)
+                        System.err.println(stmts.toString());
+                        
+		/* Issues the body instructions */
+		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
 			stmts.head.accept(this);
+                }
 		
 		/* Return */		
 		LlvmValue rValue = n.returnExp.accept(this);
@@ -572,10 +576,22 @@ public class Codegen extends VisitorAdapter {
 	}
 
 	public LlvmValue visit(Assign n) {
+                LlvmValue lhs = n.var.accept(this);
+                LlvmValue rhs = n.var.accept(this);
+                LlvmValue cast;
+               
+                if(lhs.type.toString() == rhs.type.toString()) {
+                    assembler.add(new LlvmStore(rhs,lhs));
+                }
+                else {
+                    cast = new LlvmRegister(new LlvmPointer(rhs.type));
+                    assembler.add(new LlvmBitcast(cast,lhs, rhs.type));
+                    assembler.add(new LlvmStore(rhs, cast));
+                }
+            
+                System.err.println("Node: " + n.getClass().getName());
 
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
+                return null;
 	}
 
 	public LlvmValue visit(ArrayAssign n) {
