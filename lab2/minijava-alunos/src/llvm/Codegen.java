@@ -86,9 +86,10 @@ public class Codegen extends VisitorAdapter {
 				new LlvmPointer(LlvmPrimitiveType.I8), mallocpts));
 
 		String r = new String();
+                //System.out.println(codeGenerator.assembler.toString());
 		for (LlvmInstruction instr : codeGenerator.assembler) {
-			System.out.println(instr+"\n");
-			r += instr + "\n";
+                    System.out.println(instr+"-- CODE\n");
+                    r += instr + "\n";
 		}
 		return r;
 	}
