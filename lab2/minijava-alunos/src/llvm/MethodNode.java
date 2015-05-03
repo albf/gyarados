@@ -17,9 +17,8 @@ public class MethodNode {
 	public LlvmType rType;
 	public Map<String, LlvmValue> vMap;
 
-	public MethodNode(String name, List<LlvmValue> vars, 
-			List<LlvmValue> formals, LlvmType type,
-			Map<String, LlvmValue> vMap) {
+	public MethodNode(String name, List<LlvmValue> vars,
+			List<LlvmValue> formals, LlvmType type, Map<String, LlvmValue> vMap) {
 		this.mName = name;
 		this.vList = vars;
 		this.fList = formals;

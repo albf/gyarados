@@ -41,7 +41,8 @@ public class SymTab extends VisitorAdapter {
 
 		System.err.println("SymTab Visit: " + n.getClass().getName());
 
-		classes.put(n.className.s, new ClassNode(n.className.s, null, null, null));
+		classes.put(n.className.s, new ClassNode(n.className.s, null, null,
+				null));
 		return null;
 	}
 
@@ -56,7 +57,7 @@ public class SymTab extends VisitorAdapter {
 
 		// Constroi VarList com as Variáveis da Classe
 		List<LlvmValue> varList = new ArrayList<>();
-		
+
 		/* Creates the attribute map */
 		Map<String, LlvmValue> attr = new HashMap<>();
 
@@ -66,17 +67,17 @@ public class SymTab extends VisitorAdapter {
 			System.err.println(" | attribute: " + vec.head.name);
 
 			LlvmValue variable = vec.head.accept(this);
-			
+
 			/* Checks if is an object */
 			if (variable.type.toString().contains("%class."))
 				variable.type = new LlvmPointer(variable.type);
-			
+
 			typeList.add(variable.type);
 			varList.add(variable);
 			attr.put(vec.head.name.s, variable);
 		}
 
-		classEnv = new ClassNode(n.name.toString(), 
+		classEnv = new ClassNode(n.name.toString(),
 				new LlvmStructure(typeList), varList, attr);
 
 		classes.put(n.name.toString(), classEnv);
@@ -102,7 +103,7 @@ public class SymTab extends VisitorAdapter {
 	public LlvmValue visit(VarDecl n) {
 
 		System.err.println("SymTab Visit: " + n.getClass().getName());
-                //System.err.println(n.toString());
+		// System.err.println(n.toString());
 
 		/* Printing the code of the variable declaration */
 		LlvmValue type = n.type.accept(this);
@@ -140,14 +141,14 @@ public class SymTab extends VisitorAdapter {
 		/* Variable and Arguments Lists */
 		List<LlvmValue> vList = new ArrayList<>();
 		List<LlvmValue> fList = new ArrayList<>();
-		
+
 		/* Variable Map - avoids formals and locals with the same name */
 		Map<String, LlvmValue> vMap = new HashMap<>();
 
 		/* Building the Formal List */
-		LlvmNamedValue tmp = new LlvmNamedValue("%this", 
-				new LlvmClassType(classEnv.className));
-		
+		LlvmNamedValue tmp = new LlvmNamedValue("%this", new LlvmClassType(
+				classEnv.className));
+
 		/* First Argument is always the Object */
 		fList.add(tmp);
 		vMap.put(tmp.name, tmp);
@@ -172,7 +173,7 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue v = vec.head.accept(this);
 			vList.add(v);
 			vMap.put(vec.head.name.s, v);
-                        //System.err.println(vMap.toString());
+			// System.err.println(vMap.toString());
 		}
 
 		/* Add the method to the Class Node */
@@ -192,8 +193,9 @@ public class SymTab extends VisitorAdapter {
 	public LlvmValue visit(IntArrayType n) {
 
 		System.err.println("SymTab Visit: " + n.getClass().getName());
-		
-		return new LlvmRegister(new LlvmPointer(new LlvmArray(0, LlvmPrimitiveType.I32)));
+
+		return new LlvmRegister(new LlvmPointer(new LlvmArray(0,
+				LlvmPrimitiveType.I32)));
 	}
 
 	public LlvmValue visit(BooleanType n) {
