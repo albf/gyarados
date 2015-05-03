@@ -248,7 +248,7 @@ public class Codegen extends VisitorAdapter {
 		LlvmRegister lhs = new LlvmRegister(methodNode.rType);
 		assembler.add(new LlvmCall(lhs, methodNode.rType, fnName, args));
 
-		return null;
+		return lhs;
 	}
 
 	/* ClassDecSimple node */
@@ -540,7 +540,6 @@ public class Codegen extends VisitorAdapter {
 
 	/* Print node */
 	public LlvmValue visit(Print n) {
-                int i = 0;
 		System.err.println("Node: " + n.getClass().getName());
 
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v");
@@ -568,7 +567,7 @@ public class Codegen extends VisitorAdapter {
 
 		// printf:
                 LlvmRegister PrintReg = new LlvmRegister(LlvmPrimitiveType.I32);
-                LlvmCall PrintCall = new LlvmCall(PrintReg,
+                    LlvmCall PrintCall = new LlvmCall(PrintReg,
 				LlvmPrimitiveType.I32, pts, "@printf", args);
                 System.err.println("Node: " + n.getClass().getName() + " - PrintReg : " + PrintReg.toString());
                 System.err.println("Node: " + n.getClass().getName() + " - LlvmCall : " + PrintCall.toString());
