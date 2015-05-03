@@ -88,11 +88,13 @@ public class Codegen extends VisitorAdapter {
 		String r = new String();
 		// System.out.println(codeGenerator.assembler.toString());
 		for (LlvmInstruction instr : codeGenerator.assembler) {
-			//System.out.println(instr + "-- CODE\n");
-			if (instr != null)
-				r += instr + "\n";
-			else
-				r += "NULL INSTRUCTION\n";
+                        try{
+                            System.out.println(instr+"\n");
+                            r += instr + "\n";
+                        }
+                        catch (java.lang.NullPointerException e) {
+                            System.out.println("NULL POINTER");
+                        }
 		}
 		return r;
 	}
