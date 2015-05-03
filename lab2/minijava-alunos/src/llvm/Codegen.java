@@ -102,11 +102,15 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(Program n) {
 
 		System.err.println("\nNode: " + n.getClass().getName());
-
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting MainClass");
 		n.mainClass.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from MainClass");
 
-		for (util.List<ClassDecl> c = n.classList; c != null; c = c.tail)
+		for (util.List<ClassDecl> c = n.classList; c != null; c = c.tail) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting ClassDecl: " + c.toString());
 			c.head.accept(this);
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from ClassDecl: " + c.toString());
+                }
 
 		return null;
 	}
@@ -128,7 +132,9 @@ public class Codegen extends VisitorAdapter {
 		// Statement é uma classe abstrata
 		// Portanto, o accept chamado é da classe que implementa Statement, por
 		// exemplo, a classe "Print".
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Statement");
 		n.stm.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Statement");
 
 		// Final do Main
 		LlvmRegister R2 = new LlvmRegister(LlvmPrimitiveType.I32);
@@ -144,8 +150,12 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 		
 		/* Visits the var and the expression in the right of the assignment */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting lhs.");
 		LlvmValue lhs = n.var.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting lhs. Value: " + lhs.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rhs.");
 		LlvmValue rhs = n.exp.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rhs. Value: " + rhs.toString());
 		LlvmValue cast;
 
 		/* Test if the two types are the same */
@@ -168,7 +178,9 @@ public class Codegen extends VisitorAdapter {
 
 		/* Call accept in each Statement of the Block */
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Statement");
 			stmts.head.accept(this); // Accept the head
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Statement");
 		}
 		return null;
 	}
@@ -178,7 +190,9 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Get the Object Reference */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting objReff");
 		LlvmValue objReff = n.object.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from objReff");
 
 		/* Get the list of arguments */
 		List<LlvmValue> args = new ArrayList<>();
@@ -209,7 +223,9 @@ public class Codegen extends VisitorAdapter {
 		/* The remaining arguments */
 		for (util.List<Exp> vec = n.actuals; vec != null; vec = vec.tail) {
 			/* Issues the instructions to deal with formals */
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Argument");
 			LlvmValue tmp = vec.head.accept(this);
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Argument");
 
 			/* Deals with double pointers */
 			if (tmp.type.toString().contains("* *")) {
@@ -244,8 +260,11 @@ public class Codegen extends VisitorAdapter {
 		classEnv = symTab.classes.get(n.name.toString());
 
 		/* Deal with the instructions for the methods */
-		for (util.List<MethodDecl> met = n.methodList; met != null; met = met.tail)
+		for (util.List<MethodDecl> met = n.methodList; met != null; met = met.tail) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Method");
 			met.head.accept(this);
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Method");
+                }
 
 		return null;
 	}
@@ -254,8 +273,10 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(Formal n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
-		return new LlvmNamedValue("%" + n.name, (n.type.accept(this)).type);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting FormalValue");
+                LlvmNamedValue FormalValue = new LlvmNamedValue("%" + n.name, (n.type.accept(this)).type);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from FormalValue");
+		return FormalValue;
 	}
 
 	/* Identifier node */
@@ -278,7 +299,9 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Accept in the child */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting addr");
 		LlvmValue addr = n.name.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from addr");
 
 		/* Gets the type of the identifier */
 		LlvmRegister lhs = new LlvmRegister(addr.type);
@@ -304,7 +327,9 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Child nodes from If node */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Cond");
 		LlvmValue cond = n.condition.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Cond");
 		Statement thenClause = n.thenClause;
 		Statement elseClause = n.elseClause;
 
@@ -330,7 +355,9 @@ public class Codegen extends VisitorAdapter {
 		/* Insert label to thenClause */
 		assembler.add(new LlvmLabel(new LlvmLabelValue(ifthen)));
 		/* Insert IRs for the body of then clause */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting thenClause");
 		thenClause.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from thenClause");
 		/* Insert IRs for jump to the end of if */
 		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
 
@@ -339,7 +366,9 @@ public class Codegen extends VisitorAdapter {
 			/* Insert label to elseClause */
 			assembler.add(new LlvmLabel(new LlvmLabelValue(ifelse)));
 			/* Insert IRs */
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting elseClause");
 			elseClause.accept(this);
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from elseClause");
 			/* Insert IRs to jump to the end of if */
 			assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
 		}
@@ -370,9 +399,13 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(LessThan n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
+                
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v1");
 		LlvmValue v1 = n.lhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v1: " + v1.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v2");
 		LlvmValue v2 = n.rhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v2" + v2.toString());
 		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I1);
 		assembler.add(new LlvmIcmp(lhs, 1, v1.type, v1, v2));
 		return lhs;
@@ -442,16 +475,21 @@ public class Codegen extends VisitorAdapter {
 
 		/* Issues the body instructions */
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting statement");
 			stmts.head.accept(this);
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from statement");
 		}
 
 		/* Return */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rValue");
 		LlvmValue rValue = n.returnExp.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue");
 		assembler.add(new LlvmRet(rValue));
 
 		/* Close the method */
 		assembler.add(new LlvmCloseDefinition());
 
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting and returning n.returnType");
 		return n.returnType.accept(this);
 	}
 
@@ -459,9 +497,12 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(Minus n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v1");
 		LlvmValue v1 = n.lhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v1: " + v1.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v2");
 		LlvmValue v2 = n.rhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v2: " + v2.toString());
 		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
 		assembler.add(new LlvmMinus(lhs, LlvmPrimitiveType.I32, v1, v2));
 		return lhs;
@@ -486,8 +527,12 @@ public class Codegen extends VisitorAdapter {
 
 		System.err.println("Node: " + n.getClass().getName());
 
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v1");
 		LlvmValue v1 = n.lhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v1: " + v1.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v2");
 		LlvmValue v2 = n.rhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v2: " + v2.toString());
 		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
 		assembler.add(new LlvmPlus(lhs, LlvmPrimitiveType.I32, v1, v2));
 		return lhs;
@@ -495,10 +540,12 @@ public class Codegen extends VisitorAdapter {
 
 	/* Print node */
 	public LlvmValue visit(Print n) {
-
+                int i = 0;
 		System.err.println("Node: " + n.getClass().getName());
 
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v");
 		LlvmValue v = n.exp.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v: " + v.toString());
 
 		// getelementptr:
 		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(
@@ -520,8 +567,14 @@ public class Codegen extends VisitorAdapter {
 		pts.add(LlvmPrimitiveType.DOTDOTDOT);
 
 		// printf:
-		assembler.add(new LlvmCall(new LlvmRegister(LlvmPrimitiveType.I32),
-				LlvmPrimitiveType.I32, pts, "@printf", args));
+                LlvmRegister PrintReg = new LlvmRegister(LlvmPrimitiveType.I32);
+                LlvmCall PrintCall = new LlvmCall(PrintReg,
+				LlvmPrimitiveType.I32, pts, "@printf", args);
+                System.err.println("Node: " + n.getClass().getName() + " - PrintReg : " + PrintReg.toString());
+                System.err.println("Node: " + n.getClass().getName() + " - LlvmCall : " + PrintCall.toString());
+		assembler.add(PrintCall);
+                //assembler.add(new LlvmCall(new LlvmRegister(LlvmPrimitiveType.I32),
+		//		LlvmPrimitiveType.I32, pts, "@printf", args));
 		return null;
 	}
 	
@@ -541,9 +594,12 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(Times n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v1");
 		LlvmValue v1 = n.lhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v1: " + v1.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v2");
 		LlvmValue v2 = n.rhs.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v2: " + v2.toString());
 		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I32);
 		assembler.add(new LlvmTimes(lhs, LlvmPrimitiveType.I32, v1, v2));
 		return lhs;
@@ -554,7 +610,7 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(VarDecl n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting n.type and returning new LlvNamedValue");
 		return new LlvmNamedValue("%" + n.name.toString(),
 				(n.type.accept(this)).type);
 	}
@@ -583,13 +639,17 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmLabel(new LlvmLabelValue(wCond)));
 
 		/* Insert the branch instruction and the begin label */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting cond");
 		cond = n.condition.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from cond");
 		assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%" + wBegin),
 				new LlvmLabelValue("%" + wEnd)));
 		assembler.add(new LlvmLabel(new LlvmLabelValue(wBegin)));
 
 		/* Insert the body of the loop */
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting body");
 		wBody.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from cond");
 
 		/* Insert the branch to the check condition */
 		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + wCond)));
