@@ -162,6 +162,7 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue v = vec.head.accept(this);
 			fList.add(v);
 			vMap.put(v.toString().substring(1), v);
+                        System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Formal : " + v.toString());
 		}
 
 		/* Add the list of variables */
@@ -173,8 +174,10 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue v = vec.head.accept(this);
 			vList.add(v);
 			vMap.put(vec.head.name.s, v);
+                        System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding VarDecl : " + v.toString());
 			// System.err.println(vMap.toString());
 		}
+                System.err.println("SymTab Visit: " + n.getClass().getName() + " - vList : " + vList.toString());
 
 		/* Add the method to the Class Node */
 		classEnv.mList.put(n.name.toString(), new MethodNode(n.name.toString(),

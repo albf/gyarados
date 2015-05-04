@@ -161,11 +161,13 @@ public class Codegen extends VisitorAdapter {
 
 		/* Test if the two types are the same */
 		if (lhs_accept.type.toString().equals(rhs.type.toString())) {
+                        System.err.println("Node: " + n.getClass().getName() + " - Same type, no cast.");
 			assembler.add(new LlvmStore(rhs, lhs));
 		} else {
 			/* Cast the value if they aren't */
+                        System.err.println("Node: " + n.getClass().getName() + " - Different type, cast needed.");
 			cast = new LlvmRegister(new LlvmPointer(rhs.type));
-			assembler.add(new LlvmBitcast(cast, lhs, rhs.type));
+			assembler.add(new LlvmBitcast(cast, lhs, cast.type));
 			assembler.add(new LlvmStore(rhs, cast));
 		}
 
@@ -290,8 +292,12 @@ public class Codegen extends VisitorAdapter {
 		/* Look for the variable in the list of locals */
 		LlvmValue var = methodEnv.vMap.get(n.s);
 		if (var == null) {
+                        System.err.println("Node: " + n.getClass().getName() + "- Using Class Variable");
 			var = classEnv.attrMap.get(n.s);
 		}
+                else {
+                    System.err.println("Node: " + n.getClass().getName() + "- Using Method Variable");
+                }
 
 		return new LlvmNamedValue(var.toString(), var.type);
 	}
@@ -472,6 +478,43 @@ public class Codegen extends VisitorAdapter {
 			/* Updates the list of vars */
 		}
 
+                /* Allocate space for class variables, check if it's a method name first */
+                int counter = 0;
+                
+                for(LlvmValue classvar: classEnv.varList) {
+                    boolean ShouldInclude = true;
+                    int locals_size = locals.size();
+                    for(int i=0 ; i<locals_size; i++) {
+                        if(locals.get(i).toString().equals(classvar.toString())) {
+                            ShouldInclude = false;
+                            break;
+                        }
+                    }
+                    int formals_size = formals.size();
+                    if(ShouldInclude) {
+                        for(int i=0 ; i<formals_size; i++) {
+                            if(formals.get(i).toString().equals(classvar.toString())) {
+                                ShouldInclude = false;
+                                break;
+                            }
+                        }
+                    }
+                    //System.err.println("DEBUG locals : " + locals.toString());
+                    //System.err.println("ShouldInclude : " + Boolean.toString(ShouldInclude));
+                    if(ShouldInclude) {
+                        LlvmValue assign = new LlvmNamedValue(classvar.toString() + "_tmp", new LlvmPointer(classvar.type));
+                        LlvmValue value = new LlvmNamedValue("%this", new LlvmPointer(new LlvmClassType(classEnv.className)));
+                        LinkedList<LlvmValue> offset = new LinkedList<LlvmValue>();
+                        LlvmValue offset1 = new LlvmNamedValue("0", LlvmPrimitiveType.I32);
+                        LlvmValue offset2 = new LlvmNamedValue(Integer.toString(counter), LlvmPrimitiveType.I32);
+                        counter = counter+1;
+                        offset.add(offset1);
+                        offset.add(offset2);
+                        assembler.add(new LlvmGetElementPointer(assign, value, offset));
+                    }
+                }
+                
+                // Debug
 		System.err.println("METHOD");
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail)
 			System.err.println(stmts.toString());
@@ -732,10 +775,18 @@ public class Codegen extends VisitorAdapter {
 	}
 
 	public LlvmValue visit(NewArray n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
+                System.err.println("Node: " + n.getClass().getName());
+            
+                // Allocation and store of the new array
+                LlvmValue array = new LlvmRegister(new LlvmArray(0, LlvmPrimitiveType.I32));
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting n.size");
+                LlvmValue size = n.size.accept(this);
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from n.size");
+                assembler.add(new LlvmMalloc(array, LlvmPrimitiveType.I32, size));
+                array.type = new LlvmPointer(LlvmPrimitiveType.I32);
+                assembler.add(new LlvmStore(LlvmMalloc.lastArraySize, array));
+	
+		return array;
 	}
 
 	public LlvmValue visit(Not n) {
