@@ -290,7 +290,7 @@ public class Codegen extends VisitorAdapter {
 			var = classEnv.attrMap.get(n.s);
 		}
 
-		return new LlvmNamedValue(var.toString(), var.type);
+		return new LlvmNamedValue(var.toString()+ "_tmp", var.type);
 	}
 
 	/* IdentifierExp node */
