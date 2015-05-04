@@ -151,15 +151,16 @@ public class Codegen extends VisitorAdapter {
 		
 		/* Visits the var and the expression in the right of the assignment */
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting lhs.");
-		LlvmValue lhs = n.var.accept(this);
-                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting lhs. Value: " + lhs.toString());
+		LlvmValue lhs_accept = n.var.accept(this);
+                LlvmValue lhs = new LlvmNamedValue(lhs_accept.toString(), new LlvmPointer(lhs_accept.type));
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning From lhs. Value: " + lhs.toString() + " - Type: " + lhs.type.toString());
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rhs.");
 		LlvmValue rhs = n.exp.accept(this);
-                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rhs. Value: " + rhs.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returnin From rhs. Value: " + rhs.toString() + " - Type: " + rhs.type.toString());
 		LlvmValue cast;
 
 		/* Test if the two types are the same */
-		if (lhs.type.toString() == rhs.type.toString()) {
+		if (lhs_accept.type.toString().equals(rhs.type.toString())) {
 			assembler.add(new LlvmStore(rhs, lhs));
 		} else {
 			/* Cast the value if they aren't */
