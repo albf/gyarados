@@ -750,8 +750,27 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(ArrayLookup n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
+                LlvmValue base = n.array.accept(this);
+                
+                LlvmRegister elem_ptr = new LlvmRegister(new LlvmPointer(((LlvmArray)((LlvmPointer)base.type).content).content));
+                List<LlvmValue> offset = new LinkedList<LlvmValue>();
+                offset.add(new LlvmIntegerLiteral(0));
+                
+                LlvmValue index = n.index.accept(this);
+                if(index instanceof LlvmIntegerLiteral) {
+                    offset.add(new LlvmIntegerLiteral(((LlvmIntegerLiteral )index).value+1));
+                }
+                else {
+                    LlvmRegister fix = new LlvmRegister(LlvmPrimitiveType.I32);
+                    assembler.add(new LlvmPlus(fix, fix.type, index, new LlvmIntegerLiteral(1)));
+                    offset.add(fix);
+                }
+                
+                assembler.add(new LlvmGetElementPointer (elem_ptr, base, offset));
+                
+                LlvmRegister assign = new LlvmRegister(((LlvmArray)((LlvmPointer)(base.type)).content).content);
+                assembler.add(new LlvmLoad(assign, elem_ptr));
+                return assign;       
 	}
 
 	public LlvmValue visit(ArrayLength n) {
