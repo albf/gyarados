@@ -763,15 +763,15 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(True n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
+                LlvmValue TrueValue = new LlvmBool(1);
+		return TrueValue;
 	}
 
 	public LlvmValue visit(False n) {
 
 		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
+                LlvmValue FalseValue = new LlvmBool(0);
+		return FalseValue;
 	}
 
 	public LlvmValue visit(NewArray n) {
