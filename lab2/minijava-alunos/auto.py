@@ -12,6 +12,34 @@ def check(output, correct, name):
 # Make
 call(['make'])
 
+# Run and verify test_arithmetic.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/simple/test_arithmetic.java', 
+	'results/test_arithmetic.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/test_arithmetic.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '20\n', 'test_arithmetic.java')
+
+# Run and verify test_class_decl.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/simple/test_class_decl.java', 
+	'results/test_class_decl.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/test_class_decl.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '100\n', 'test_class_decl.java')
+
+# Run and verify test_if-simple.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/simple/test_if-simple.java', 
+	'results/test_if-simple.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/test_if-simple.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '10\n', 'test_if-simple.java')
+
+# Run and verify test_if-then-else.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/simple/test_if-then-else.java', 
+	'results/test_if-then-else.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/test_if-then-else.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '100\n', 'test_if-then-else.java')
+
 # Run and verify m109.java
 p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m109.java', 
 	'results/m109.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
