@@ -152,7 +152,7 @@ public class Codegen extends VisitorAdapter {
 		/* Visits the var and the expression in the right of the assignment */
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting lhs.");
 		LlvmValue lhs_accept = n.var.accept(this);
-                LlvmValue lhs = new LlvmNamedValue(lhs_accept.toString(), new LlvmPointer(lhs_accept.type));
+                LlvmValue lhs = new LlvmNamedValue(lhs_accept.toString() + "_tmp", new LlvmPointer(lhs_accept.type));
                 System.err.println("\nNode: " + n.getClass().getName() + " - Returning From lhs. Value: " + lhs.toString() + " - Type: " + lhs.type.toString());
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rhs.");
 		LlvmValue rhs = n.exp.accept(this);
@@ -291,7 +291,7 @@ public class Codegen extends VisitorAdapter {
 			var = classEnv.attrMap.get(n.s);
 		}
 
-		return new LlvmNamedValue(var.toString()+ "_tmp", var.type);
+		return new LlvmNamedValue(var.toString(), var.type);
 	}
 
 	/* IdentifierExp node */
