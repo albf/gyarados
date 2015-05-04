@@ -441,7 +441,8 @@ public class Codegen extends VisitorAdapter {
 
 		/* Get the return type */
 		LlvmType rType = methodEnv.rType;
-
+                
+                System.err.println("Node: " + n.getClass().getName() + " - rType: " + rType.toString());
 		/* Define the method - Print the instructions */
 		assembler.add(new LlvmDefine(mName, rType, formals));
 		assembler.add(new LlvmLabel(new LlvmLabelValue("entry")));

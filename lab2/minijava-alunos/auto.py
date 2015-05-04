@@ -68,6 +68,13 @@ p = Popen([llicommand, 'results/m334.s'], stdout = PIPE)
 output, err = p.communicate()
 check(output, '1\n', 'm334.java')
 
+# Run and verify m336.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m336.java', 
+	'results/m336.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/m336.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '0\n', 'm336.java')
+
 # Run and verify Fatorial
 p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigger/Factorial.java', 
 	'results/Factorial.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
