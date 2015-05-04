@@ -592,6 +592,7 @@ public class Codegen extends VisitorAdapter {
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting v");
 		LlvmValue v = n.exp.accept(this);
                 System.err.println("\nNode: " + n.getClass().getName() + " - Returning from v: " + v.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - v.type: " + v.type);
 
 		// getelementptr:
 		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(
@@ -618,6 +619,8 @@ public class Codegen extends VisitorAdapter {
 				LlvmPrimitiveType.I32, pts, "@printf", args);
                 System.err.println("Node: " + n.getClass().getName() + " - PrintReg : " + PrintReg.toString());
                 System.err.println("Node: " + n.getClass().getName() + " - LlvmCall : " + PrintCall.toString());
+                System.err.println("Node: " + n.getClass().getName() + " - Args : " + args.toString());
+                System.err.println("Node: " + n.getClass().getName() + " - Pts : " + pts.toString());
 		assembler.add(PrintCall);
                 //assembler.add(new LlvmCall(new LlvmRegister(LlvmPrimitiveType.I32),
 		//		LlvmPrimitiveType.I32, pts, "@printf", args));
@@ -777,7 +780,15 @@ public class Codegen extends VisitorAdapter {
 
 		System.err.println("Node: " + n.getClass().getName());
 
-		return null;
+                LlvmValue len = n.array.accept(this);
+                LlvmValue len_value = new LlvmNamedValue(len.toString(), len.type);
+                LlvmValue assign = new LlvmRegister(LlvmPrimitiveType.I32);
+                LlvmValue cast = new LlvmRegister(new LlvmPointer(LlvmPrimitiveType.I32));
+                assembler.add(new LlvmBitcast(cast, len_value, cast.type));
+                assembler.add(new LlvmLoad(assign,cast));
+                System.err.println("Node: " + n.getClass().getName() + " - assign.toString: " + assign.toString());
+                System.err.println("Node: " + n.getClass().getName() + " - assign.type: " + assign.type.toString());
+		return assign;
 	}
 
 	public LlvmValue visit(True n) {

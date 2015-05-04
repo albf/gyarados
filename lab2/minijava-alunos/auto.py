@@ -54,6 +54,13 @@ p = Popen([llicommand, 'results/m110.s'], stdout = PIPE)
 output, err = p.communicate()
 check(output, '10\n', 'm110.java')
 
+# Run and verify m309.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m309.java', 
+	'results/m309.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/m309.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '11\n', 'm309.java')
+
 # Run and verify m312.java
 p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m312.java', 
 	'results/m312.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
@@ -81,6 +88,13 @@ p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smal
 p = Popen([llicommand, 'results/m322.s'], stdout = PIPE)
 output, err = p.communicate()
 check(output, '1\n', 'm322.java')
+
+# Run and verify m328.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m328.java', 
+	'results/m328.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/m328.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '10\n', 'm328.java')
 
 # Run and verify m330.java
 p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m330.java', 
