@@ -585,7 +585,7 @@ public class Codegen extends VisitorAdapter {
 		
 		/* Returns a register that points to the class */
 		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(new LlvmClassType(classEnv.className)));
-		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue("%this_temp", new LlvmPointer(lhs.type))));
+		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue("%this_tmp", new LlvmPointer(lhs.type))));
 
 		return lhs;
 	}
