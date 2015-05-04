@@ -6,7 +6,6 @@
 
 package llvm;
 
-import semant.Env;
 import syntaxtree.*;
 import llvmast.*;
 
@@ -146,12 +145,13 @@ public class SymTab extends VisitorAdapter {
 		Map<String, LlvmValue> vMap = new HashMap<>();
 
 		/* Building the Formal List */
-		LlvmNamedValue tmp = new LlvmNamedValue("%this", new LlvmClassType(
-				classEnv.className));
+		//LlvmNamedValue tmp = new LlvmNamedValue("%this", new LlvmClassType(
+		//		classEnv.className));
 
 		/* First Argument is always the Object */
-		fList.add(tmp);
-		vMap.put(tmp.name, tmp);
+		LlvmNamedValue object = new LlvmNamedValue("%this", new LlvmPointer(new LlvmClassType(classEnv.className)));
+                fList.add(object);
+		vMap.put(object.name, object);
 
 		/* Add the list of formals */
 		for (util.List<Formal> vec = n.formals; vec != null; vec = vec.tail) {
