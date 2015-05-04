@@ -259,6 +259,8 @@ public class Codegen extends VisitorAdapter {
 
 		/* Get the actual class */
 		classEnv = symTab.classes.get(n.name.toString());
+                LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, "type " + classEnv.classType);
+                assembler.add(0, ClassDef);
 
 		/* Deal with the instructions for the methods */
 		for (util.List<MethodDecl> met = n.methodList; met != null; met = met.tail) {
