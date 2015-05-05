@@ -503,7 +503,14 @@ public class Codegen extends VisitorAdapter {
                     //System.err.println("DEBUG locals : " + locals.toString());
                     //System.err.println("ShouldInclude : " + Boolean.toString(ShouldInclude));
                     if(ShouldInclude) {
-                        LlvmValue assign = new LlvmNamedValue(classvar.toString() + "_tmp", new LlvmPointer(classvar.type));
+                        System.err.println("Node: " + n.getClass().getName() + " Adding ClassVar: " + classvar.toString() );
+                        LlvmValue assign = null;
+                        if(symTab.classes.get(classvar.toString()) == null) {
+                            assign = new LlvmNamedValue(classvar.toString() + "_tmp", new LlvmPointer(classvar.type));
+                        }
+                        else {
+                            assign = new LlvmNamedValue("%" + classvar.toString() + "_tmp", new LlvmPointer(classvar.type));
+                        }
                         LlvmValue value = new LlvmNamedValue("%this", new LlvmPointer(new LlvmClassType(classEnv.className)));
                         LinkedList<LlvmValue> offset = new LinkedList<LlvmValue>();
                         LlvmValue offset1 = new LlvmNamedValue("0", LlvmPrimitiveType.I32);
@@ -718,6 +725,18 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(ClassDeclExtends n) {
 
 		System.err.println("Node: " + n.getClass().getName());
+
+		/* Get the actual class */
+		classEnv = symTab.classes.get(n.name.toString());
+                LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, "type " + classEnv.classType);
+                assembler.add(0, ClassDef);
+
+		/* Deal with the instructions for the methods */
+		for (util.List<MethodDecl> met = n.methodList; met != null; met = met.tail) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Method");
+			met.head.accept(this);
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Method");
+                }
 
 		return null;
 	}

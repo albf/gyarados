@@ -54,6 +54,13 @@ p = Popen([llicommand, 'results/m110.s'], stdout = PIPE)
 output, err = p.communicate()
 check(output, '10\n', 'm110.java')
 
+# Run and verify m209.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m209.java', 
+	'results/m209.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/m209.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '10\n', 'm209.java')
+
 # Run and verify m309.java
 p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/smaller/m309.java', 
 	'results/m309.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()

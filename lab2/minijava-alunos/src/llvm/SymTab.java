@@ -96,6 +96,53 @@ public class SymTab extends VisitorAdapter {
 
 		System.err.println("SymTab Visit: " + n.getClass().getName());
 
+		/* Should think about that ARRAYLIST */
+		// Constroi TypeList com os tipos das variáveis da Classe (vai formar a
+		// Struct da classe)
+		List<LlvmType> typeList = new ArrayList<>();
+
+		// Constroi VarList com as Variáveis da Classe
+		List<LlvmValue> varList = new ArrayList<>();
+
+		/* Creates the attribute map */
+		Map<String, LlvmValue> attr = new HashMap<>();
+                
+                /* Add the Father */
+                //LlvmValue father = new LlvmNamedValue(n.superClass.toString(), n.superClass.);
+                System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Father : " + n.superClass.toString());
+                LlvmType FatherType = new LlvmClassType(n.superClass.toString());
+                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(FatherType));
+                varList.add(Father);
+                typeList.add(FatherType);
+                
+		/* Populate the arrays of class variables */
+		System.err.println(" Class: " + n.name);
+		for (util.List<VarDecl> vec = n.varList; vec != null; vec = vec.tail) {
+			System.err.println(" | attribute: " + vec.head.name);
+
+			LlvmValue variable = vec.head.accept(this);
+
+			/* Checks if is an object */
+			if (variable.type.toString().contains("%class."))
+				variable.type = new LlvmPointer(variable.type);
+
+			typeList.add(variable.type);
+			varList.add(variable);
+			attr.put(vec.head.name.s, variable);
+		}
+
+		classEnv = new ClassNode(n.name.toString(),
+				new LlvmStructure(typeList), varList, attr, true);
+
+		classes.put(n.name.toString(), classEnv);
+
+		// Percorre n.methodList visitando cada método
+		System.err.println(" Class: " + n.name);
+		for (util.List<MethodDecl> vec = n.methodList; vec != null; vec = vec.tail) {
+			System.err.println("    | method: " + vec.head.name);
+			vec.head.accept(this);
+		}
+
 		return null;
 	}
 
