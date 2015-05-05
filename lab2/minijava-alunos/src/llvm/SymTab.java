@@ -145,12 +145,13 @@ public class SymTab extends VisitorAdapter {
 		Map<String, LlvmValue> vMap = new HashMap<>();
 
 		/* Building the Formal List */
-		//LlvmNamedValue tmp = new LlvmNamedValue("%this", new LlvmClassType(
-		//		classEnv.className));
+		// LlvmNamedValue tmp = new LlvmNamedValue("%this", new LlvmClassType(
+		// classEnv.className));
 
 		/* First Argument is always the Object */
-		LlvmNamedValue object = new LlvmNamedValue("%this", new LlvmPointer(new LlvmClassType(classEnv.className)));
-                fList.add(object);
+		LlvmNamedValue object = new LlvmNamedValue("%this", new LlvmPointer(
+				new LlvmClassType(classEnv.className)));
+		fList.add(object);
 		vMap.put(object.name, object);
 
 		/* Add the list of formals */
@@ -162,7 +163,8 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue v = vec.head.accept(this);
 			fList.add(v);
 			vMap.put(v.toString().substring(1), v);
-                        System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Formal : " + v.toString());
+			System.err.println("SymTab Visit: " + n.getClass().getName()
+					+ " - Adding Formal : " + v.toString());
 		}
 
 		/* Add the list of variables */
@@ -174,27 +176,34 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue v = vec.head.accept(this);
 			vList.add(v);
 			vMap.put(vec.head.name.s, v);
-                        System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding VarDecl : " + v.toString());
+			System.err.println("SymTab Visit: " + n.getClass().getName()
+					+ " - Adding VarDecl : " + v.toString());
 			// System.err.println(vMap.toString());
 		}
-                System.err.println("SymTab Visit: " + n.getClass().getName() + " - vList : " + vList.toString());
+		System.err.println("SymTab Visit: " + n.getClass().getName()
+				+ " - vList : " + vList.toString());
 
 		/* Add the method to the Class Node */
-                LlvmValue returnFix = n.returnType.accept(this);
-                System.err.println("SymTab Visit: " + n.getClass().getName() + " Adding Method. ReturnFix: " + returnFix.toString());
-                System.err.println("SymTab Visit: " + n.getClass().getName() + " Type: " + returnFix.type);
-               
-                if(!returnFix.type.toString().contains("%class.")) {
-                    classEnv.mList.put(n.name.toString(), new MethodNode(n.name.toString(),
-			vList, fList, returnFix.type, vMap));
-                }
-                else {
-                    System.err.println("SymTab Visit: " + n.getClass().getName() + " - Class type, using pointer.");
-                    classEnv.mList.put(n.name.toString(), new MethodNode(n.name.toString(),
-			vList, fList, new LlvmPointer(returnFix.type), vMap));
-                }
+		LlvmValue returnFix = n.returnType.accept(this);
+		System.err.println("SymTab Visit: " + n.getClass().getName()
+				+ " Adding Method. ReturnFix: " + returnFix.toString());
+		System.err.println("SymTab Visit: " + n.getClass().getName()
+				+ " Type: " + returnFix.type);
 
-                System.err.println("SymTab Visit: " + n.getClass().getName() + " Just added Method.");
+		if (!returnFix.type.toString().contains("%class.")) {
+			classEnv.mList.put(n.name.toString(),
+					new MethodNode(n.name.toString(), vList, fList,
+							returnFix.type, vMap));
+		} else {
+			System.err.println("SymTab Visit: " + n.getClass().getName()
+					+ " - Class type, using pointer.");
+			classEnv.mList.put(n.name.toString(),
+					new MethodNode(n.name.toString(), vList, fList,
+							new LlvmPointer(returnFix.type), vMap));
+		}
+
+		System.err.println("SymTab Visit: " + n.getClass().getName()
+				+ " Just added Method.");
 		return null;
 	}
 
@@ -202,10 +211,11 @@ public class SymTab extends VisitorAdapter {
 
 		System.err.println("SymTab Visit: " + n.getClass().getName());
 
-		//return new LlvmRegister(n.name, new LlvmClassType(n.name));
-                System.err.println("SymTab Visit: " + n.getClass().getName() + " - n.name: " + n.name);
-                return new LlvmNamedValue (n.name, new LlvmClassType(n.name));
-        }
+		// return new LlvmRegister(n.name, new LlvmClassType(n.name));
+		System.err.println("SymTab Visit: " + n.getClass().getName()
+				+ " - n.name: " + n.name);
+		return new LlvmNamedValue(n.name, new LlvmClassType(n.name));
+	}
 
 	public LlvmValue visit(IntArrayType n) {
 

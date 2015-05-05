@@ -1,7 +1,8 @@
 from subprocess import Popen, PIPE
 from subprocess import call
 
-llicommand = '/usr/local/Cellar/llvm/3.4.1/bin/lli'
+llicommand = 'lli'
+#llicommand = '/usr/local/Cellar/llvm/3.4.1/bin/lli'
 
 def check(output, correct, name):
 	if(output == correct):
@@ -124,5 +125,9 @@ p = Popen([llicommand, 'results/Factorial.s'], stdout = PIPE)
 output, err = p.communicate()
 check(output, '3628800\n', 'Factorial.java')
 
-
-
+# Run and verify BubbleInit.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigger/BubbleInit.java', 
+	'results/BubbleInit.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/BubbleInit.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n99999\n2\n5\n6\n7\n9\n11\n12\n18\n19\n20\n0\n', 'BubbleInit.java')

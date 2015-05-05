@@ -88,21 +88,29 @@ public class LlvmMalloc extends LlvmInstruction {
 		}
 
 		lhsTimes = new LlvmRegister(LlvmPrimitiveType.I32);
+		LlvmRegister plusLhs = new LlvmRegister(LlvmPrimitiveType.I32);
+		this.lastArraySize = nElements;
 		lhsCall = new LlvmRegister(LlvmPrimitiveType.I8);
 
-		times = new String("  " + lhsTimes + " = mul i32 " + size + ", "
-				+ nElements + "\n");
-		call = new String("  " + lhsCall + " = call i8* @malloc ( i32 "
-				+ lhsTimes + ")\n");
+		/* Temp strings to aux */
+		String mulInst = "  " + lhsTimes + " = mul i32 " + size + ", " + nElements + "\n";
+		String addInst = "  " + plusLhs + " = add i32 " + size + ", " + lhsTimes + "\n";
+
+		/* Times Instruction */
+		times = mulInst+addInst;
+
+		/* Call Instruction */
+		call = new String("  " + lhsCall + " = call i8* @malloc ( i32 " + lhsTimes + ")\n");
+
+		/* Bitcast Instruction */
 		if (className == null)
-			bitcast = new String("  " + lhs + " = bitcast i8* " + lhsCall
-					+ " to " + type + "*");
+			bitcast = new String("  " + lhs + " = bitcast i8* " + lhsCall + " to " + type + "*");
 		else
-			bitcast = new String("  " + lhs + " = bitcast i8* " + lhsCall
-					+ " to " + className + "*");
+			bitcast = new String("  " + lhs + " = bitcast i8* " + lhsCall + " to " + className + "*");
 	}
 
 	public String toString() {
+		if (times == null)	return call + bitcast;
 		return times + call + bitcast;
 	}
 }
