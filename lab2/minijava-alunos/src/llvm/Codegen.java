@@ -583,9 +583,9 @@ public class Codegen extends VisitorAdapter {
 
 	}
 
-	/* MethodDecl node */
+		/* MethodDecl node */
 	public LlvmValue visit(MethodDecl n) {
-
+                
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Sets the actual method */
@@ -603,9 +603,8 @@ public class Codegen extends VisitorAdapter {
 
 		/* Get the return type */
 		LlvmType rType = methodEnv.rType;
-
-		System.err.println("Node: " + n.getClass().getName() + " - rType: "
-				+ rType.toString());
+                
+                System.err.println("Node: " + n.getClass().getName() + " - rType: " + rType.toString());
 		/* Define the method - Print the instructions */
 		assembler.add(new LlvmDefine(mName, rType, formals));
 		assembler.add(new LlvmLabel(new LlvmLabelValue("entry")));
@@ -642,50 +641,6 @@ public class Codegen extends VisitorAdapter {
 			/* Updates the list of vars */
 		}
 
-<<<<<<< HEAD
-		/* Allocate space for class variables, check if it's a method name first */
-		int counter = 0;
-
-		for (LlvmValue classvar : classEnv.varList) {
-			boolean ShouldInclude = true;
-			int locals_size = locals.size();
-			for (int i = 0; i < locals_size; i++) {
-				if (locals.get(i).toString().equals(classvar.toString())) {
-					ShouldInclude = false;
-					break;
-				}
-			}
-			int formals_size = formals.size();
-			if (ShouldInclude) {
-				for (int i = 0; i < formals_size; i++) {
-					if (formals.get(i).toString().equals(classvar.toString())) {
-						ShouldInclude = false;
-						break;
-					}
-				}
-			}
-			// System.err.println("DEBUG locals : " + locals.toString());
-			// System.err.println("ShouldInclude : " +
-			// Boolean.toString(ShouldInclude));
-			if (ShouldInclude) {
-				LlvmValue assign = new LlvmNamedValue(classvar.toString()
-						+ "_tmp", new LlvmPointer(classvar.type));
-				LlvmValue value = new LlvmNamedValue("%this", new LlvmPointer(
-						new LlvmClassType(classEnv.className)));
-				LinkedList<LlvmValue> offset = new LinkedList<LlvmValue>();
-				LlvmValue offset1 = new LlvmNamedValue("0",
-						LlvmPrimitiveType.I32);
-				LlvmValue offset2 = new LlvmNamedValue(
-						Integer.toString(counter), LlvmPrimitiveType.I32);
-				counter = counter + 1;
-				offset.add(offset1);
-				offset.add(offset2);
-				assembler.add(new LlvmGetElementPointer(assign, value, offset));
-			}
-		}
-
-		// Debug
-=======
                 /* Allocate space for class variables, check if it's a method name first */
                 int counter = 0;
                 
@@ -730,33 +685,27 @@ public class Codegen extends VisitorAdapter {
                 }
                 
                 // Debug
->>>>>>> c66d6422116430630d37e2a1ead673a1ac1e6d28
 		System.err.println("METHOD");
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail)
 			System.err.println(stmts.toString());
 
 		/* Issues the body instructions */
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Accepting statement");
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Accepting statement");
 			stmts.head.accept(this);
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Returning from statement");
+                        System.err.println("\nNode: " + n.getClass().getName() + " - Returning from statement");
 		}
 
 		/* Return */
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting rValue");
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rValue");
 		LlvmValue rValue = n.returnExp.accept(this);
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Returning from rValue");
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue");
 		assembler.add(new LlvmRet(rValue));
 
 		/* Close the method */
 		assembler.add(new LlvmCloseDefinition());
 
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting and returning n.returnType");
+                System.err.println("\nNode: " + n.getClass().getName() + " - Accepting and returning n.returnType");
 		return n.returnType.accept(this);
 	}
 
