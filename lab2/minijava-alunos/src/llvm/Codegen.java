@@ -339,20 +339,23 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Get the Object Reference */
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting objReff");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting objReff");
 		LlvmValue objReff = n.object.accept(this);
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Returning from objReff");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Returning from objReff");
 
 		/* Get the list of arguments */
 		List<LlvmValue> args = new ArrayList<>();
 		List<LlvmType> args_t = new ArrayList<>();
+                String clTypeName;
 
 		/* Get the name of the method */
 		String classType = objReff.type.toString();
-		String clTypeName = classType.substring(7, classType.indexOf(" "));
-
+                System.err.println("\nNode: " + n.getClass().getName() + " - classType: " + classType);
+		try{
+                    clTypeName = classType.substring(7, classType.indexOf(" "));
+                } catch (StringIndexOutOfBoundsException e) {
+                    clTypeName = classType.substring(7);
+                }
 		// DEBUG
 		// System.err.println(clTypeName+"\n");
 
@@ -361,24 +364,52 @@ public class Codegen extends VisitorAdapter {
 		MethodNode methodNode = classNode.mList.get(n.method.s);
 
 		/* Checks the type of the first argument */
-		LlvmRegister this_ptr = new LlvmRegister(methodNode.fList.get(0).type);
+		//LlvmRegister this_ptr = new LlvmRegister(methodNode.fList.get(0).type);
 
 		/* Checks with the obj type */
-		if (this_ptr.type.toString().equals(objReff.type.toString()))
+		/*if (this_ptr.type.toString().equals(objReff.type.toString()))
 			args.add(objReff);
 		else {
 			assembler.add(new LlvmLoad(this_ptr, objReff));
 			args.add(this_ptr);
-		}
-
+		}*/
+                System.err.println("\nNode: " + n.getClass().getName() + " - classEnv.className: " + classEnv.className);
+                System.err.println("\nNode: " + n.getClass().getName() + " - clTypeName: " + clTypeName + " - len: " + clTypeName.length());
+                System.err.println("\nNode: " + n.getClass().getName() + " - methodNode.mName: " + methodNode.mName + " - len: " + methodNode.mName.length());
+                if(classEnv.className.equals(clTypeName)) {
+                    LlvmType argType = new LlvmClassType(clTypeName);
+                    LlvmValue thisArg = new LlvmNamedValue("%this", new LlvmPointer(argType));
+                    args.add(thisArg);
+                    System.err.println("\nNode: " + n.getClass().getName() + " - EQUAL ARGS: " + args.toString());
+                }
+                else {
+                    LlvmRegister this_ptr = new LlvmRegister(methodNode.fList.get(0).type);
+                    if (this_ptr.type.toString().equals(objReff.type.toString())) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - DIFF_A ");
+			args.add(objReff);
+                    }
+                    else {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - DIFF_B ");
+                        System.err.println("\nNode: " + n.getClass().getName() + " - objReff: " + objReff.toString());
+                        System.err.println("\nNode: " + n.getClass().getName() + " - objReff: " + objReff.toString());
+                        System.err.println("\nNode: " + n.getClass().getName() + " - objReff: " + objReff.toString());
+                        System.err.println("\nNode: " + n.getClass().getName() + " -  methodNode.fList.get(0).type: " + methodNode.fList.get(0).type.toString() );
+			assembler.add(new LlvmLoad(this_ptr, objReff));
+			//args.add(this_ptr);
+                        //LlvmType argType = new LlvmClassType(clTypeName);
+                        //LlvmValue thisArg = new LlvmNamedValue(objReff.toString(), new LlvmPointer(argType));
+                        //args.add(thisArg);
+                        
+                    }
+                    System.err.println("\nNode: " + n.getClass().getName() + " - DIFFERENT ARGS: " + args.toString());
+                }
+                
 		/* The remaining arguments */
 		for (util.List<Exp> vec = n.actuals; vec != null; vec = vec.tail) {
 			/* Issues the instructions to deal with formals */
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Accepting Argument");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Argument");
 			LlvmValue tmp = vec.head.accept(this);
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Returning from Argument");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Argument");
 
 			/* Deals with double pointers */
 			if (tmp.type.toString().contains("* *")) {
@@ -506,13 +537,12 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Accept in the child */
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting addr");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting addr, n.name: " + n.name.toString());
 		LlvmValue addr = n.name.accept(this);
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Returning from addr");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Returning from addr: " + addr.toString());
 
 		/* Gets the type of the identifier */
+                System.err.println("\nNode: " + n.getClass().getName() + " - addr.type: " + addr.type);
 		LlvmRegister lhs = new LlvmRegister(addr.type);
 
 		/* Issues the Instruction */
