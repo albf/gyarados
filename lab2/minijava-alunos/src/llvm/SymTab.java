@@ -73,8 +73,8 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue variable = vec.head.accept(this);
 
 			/* Checks if is an object */
-			if (variable.type.toString().contains("%class."))
-				variable.type = new LlvmPointer(variable.type);
+			//if (variable.type.toString().contains("%class."))
+			//	variable.type = new LlvmPointer(variable.type);
 
 			typeList.add(variable.type);
 			varList.add(variable);
@@ -130,8 +130,8 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue variable = vec.head.accept(this);
 
 			/* Checks if is an object */
-			if (variable.type.toString().contains("%class."))
-				variable.type = new LlvmPointer(variable.type);
+			//if (variable.type.toString().contains("%class."))
+			//	variable.type = new LlvmPointer(variable.type);
 
 			typeList.add(variable.type);
 			varList.add(variable);

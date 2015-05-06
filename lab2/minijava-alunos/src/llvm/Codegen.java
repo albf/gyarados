@@ -396,7 +396,7 @@ public class Codegen extends VisitorAdapter {
                         System.err.println("\nNode: " + n.getClass().getName() + " - objReff: " + objReff.toString());
                         System.err.println("\nNode: " + n.getClass().getName() + " -  methodNode.fList.get(0).type: " + methodNode.fList.get(0).type.toString() );
 			//assembler.add(new LlvmLoad(this_ptr, objReff));
-			args.add(this_ptr);
+			//args.add(this_ptr);
                         LlvmType argType = new LlvmClassType(clTypeName);
                         LlvmValue thisArg = new LlvmNamedValue(this.calledArgument, new LlvmPointer(argType));
                         args.add(thisArg);
@@ -410,15 +410,20 @@ public class Codegen extends VisitorAdapter {
 			/* Issues the instructions to deal with formals */
 			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Argument");
 			LlvmValue tmp = vec.head.accept(this);
-			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Argument");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Argument, TMP_TYPE: " + tmp.type.toString());
 
 			/* Deals with double pointers */
 			if (tmp.type.toString().contains("* *")) {
-				LlvmValue a_lhs = new LlvmRegister(
-						((LlvmPointer) tmp.type).content);
+				LlvmValue a_lhs = new LlvmRegister(((LlvmPointer) tmp.type).content);
 				assembler.add(new LlvmLoad(a_lhs, tmp));
 				args.add(a_lhs);
-			} else
+			} else if (tmp.type.toString().contains("%class") && tmp.type.toString().contains("*")) {
+                            LlvmType conv_type = new LlvmClassType(tmp.type.toString().substring(7, tmp.type.toString().length()-2));
+                            LlvmRegister conv = new LlvmRegister(conv_type);
+                            assembler.add(new LlvmLoad(conv, tmp));
+                            args.add(conv);
+                            
+                        } else
 				args.add(tmp);
 		}
 
@@ -776,9 +781,9 @@ public class Codegen extends VisitorAdapter {
                 }
                 
                 // Debug
-		System.err.println("METHOD");
-		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail)
-			System.err.println(stmts.toString());
+		//System.err.println("METHOD");
+		//for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail)
+		//	System.err.println(stmts.toString());
 
 		/* Issues the body instructions */
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
@@ -790,9 +795,31 @@ public class Codegen extends VisitorAdapter {
 		/* Return */
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rValue");
 		LlvmValue rValue = n.returnExp.accept(this);
-                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue");
-		assembler.add(new LlvmRet(rValue));
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue.type: " + rValue.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue.type: " + rValue.type.toString());
+                
+                if(rValue.type.toString().contains("%class.") && (this.calledArgument != null)) {
+                                    //
+                
+                    //List<LlvmValue> offsets = new LinkedList<LlvmValue>();
+                    //offsets.add(new LlvmIntegerLiteral(0));
+                    //offsets.add(new LlvmIntegerLiteral(0));
+                    //LlvmRegister lhs = new LlvmRegister(new LlvmPointer(rValue.type));
+                    //assembler.add(new LlvmGetElementPointer(lhs, rValue, offsets));
+                    //assembler.add(new LlvmRet(lhs));
+                                    
+                    LlvmType retType = new LlvmClassType(rValue.type.toString().substring(7));
+                    LlvmValue ret = new LlvmNamedValue(this.calledArgument, new LlvmPointer(retType));
+                    assembler.add(new LlvmRet(ret));
+                    this.calledArgument = null;
+                //
+                
+                }
+                else {
+                assembler.add(new LlvmRet(rValue));
+                }
 
+                
 		/* Close the method */
 		assembler.add(new LlvmCloseDefinition());
 
