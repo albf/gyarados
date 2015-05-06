@@ -404,11 +404,12 @@ public class Codegen extends VisitorAdapter {
 
 		/* Get the actual class */
 		classEnv = symTab.classes.get(n.name.toString());
-		LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration(
-				"%class." + classEnv.className, "type " + classEnv.classType);
+
+                // Adds vTable variable.
+                String vTableName = "[" + classEnv.mList.size() + " x i8 *]";
+                String attr = "type " + "{" + vTableName + ", " + classEnv.classType.toString().substring(1);
                 
-                // Adds Vtable variable.
-                
+                LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, attr);
                 
 		assembler.add(0, ClassDef);
 
@@ -1029,8 +1030,12 @@ public class Codegen extends VisitorAdapter {
                 System.err.println("Node: " + n.getClass().getName() + "Before Merging Methods : " + classEnv.mList.size());
                 classEnv.mList = joinMethods(n.name.toString());
                 System.err.println("Node: " + n.getClass().getName() + "After Merging Methods : " + classEnv.mList.size());
+
+                // Adds vTable variable.
+                String vTableName = "[" + classEnv.mList.size() + " x i8 *]";
+                String attr = "type " + "{" + vTableName + ", " + classEnv.classType.toString().substring(1);
                 
-                LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, "type " + classEnv.classType);
+                LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, attr);
                 assembler.add(0, ClassDef);
 
 		/* Deal with the instructions for the methods */

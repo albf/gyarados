@@ -112,7 +112,7 @@ public class SymTab extends VisitorAdapter {
                 System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Father : " + n.superClass.toString());
                 //LlvmType FatherType = new LlvmPointer(new LlvmClassType(n.superClass.toString()));
                 LlvmType FatherType = new LlvmClassType(n.superClass.toString());
-                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(new LlvmPointer(FatherType)));
+                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(FatherType));
                 //Father.type = FatherType;s
                 varList.add(Father);
                 typeList.add(FatherType);
