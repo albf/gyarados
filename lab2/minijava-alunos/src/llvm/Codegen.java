@@ -388,6 +388,10 @@ public class Codegen extends VisitorAdapter {
 		classEnv = symTab.classes.get(n.name.toString());
 		LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration(
 				"%class." + classEnv.className, "type " + classEnv.classType);
+                
+                // Adds Vtable variable.
+                
+                
 		assembler.add(0, ClassDef);
 
 		/* Deal with the instructions for the methods */
