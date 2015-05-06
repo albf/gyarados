@@ -214,7 +214,17 @@ public class SymTab extends VisitorAdapter {
 			 * Print the instructions to the arguments Add this values to the
 			 * list of formals
 			 */
+
 			LlvmValue v = vec.head.accept(this);
+                        
+                        System.err.println("SymTab Visit: " + n.getClass().getName() + " - fixing v.type : " + v.type.toString());
+                        
+                        /* Checks if is an object */
+			if (v.type.toString().contains("%class.")) {
+				v.type = new LlvmPointer(v.type);
+                        }
+                        System.err.println("SymTab Visit: " + n.getClass().getName() + " - fixing v.type : " + v.type.toString());
+                    
 			fList.add(v);
 			vMap.put(v.toString().substring(1), v);
 			System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Formal : " + v.toString());

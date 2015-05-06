@@ -417,14 +417,27 @@ public class Codegen extends VisitorAdapter {
 				LlvmValue a_lhs = new LlvmRegister(((LlvmPointer) tmp.type).content);
 				assembler.add(new LlvmLoad(a_lhs, tmp));
 				args.add(a_lhs);
-			} else if (tmp.type.toString().contains("%class") && tmp.type.toString().contains("*")) {
+			} 
+                        /*=else if (tmp.type.toString().contains("%class") && tmp.type.toString().contains("*")) {
                             LlvmType conv_type = new LlvmClassType(tmp.type.toString().substring(7, tmp.type.toString().length()-2));
+                            // Com ou sem ponteiro
                             LlvmRegister conv = new LlvmRegister(conv_type);
+                            //LlvmRegister conv = new LlvmRegister(new LlvmPointer(conv_type));
                             assembler.add(new LlvmLoad(conv, tmp));
-                            args.add(conv);
+                            args.add(conv); 
+                        } */
+                        
+                        else if (tmp.type.toString().contains("%class") && (!tmp.type.toString().contains("*")) && (this.calledArgument != null)) {
+                            //LlvmRegister conv = new LlvmRegister(new LlvmPointer(conv_type));
+                            //this.calledArgument
+                            LlvmType fix_type = new LlvmClassType(tmp.type.toString().substring(7));
+                            LlvmValue fix = new LlvmNamedValue(this.calledArgument, new LlvmPointer(fix_type));
+                            this.calledArgument = null;
+                            args.add(fix);
+                        }
                             
-                        } else
-				args.add(tmp);
+                        else
+                            args.add(tmp);
 		}
 
 		/* Add the types in the type Array */
