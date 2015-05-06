@@ -50,6 +50,7 @@ public class Codegen extends VisitorAdapter {
 								// symTab
 	private MethodNode methodEnv; // Aponta para a metodo atualmente em uso em
 									// symTab
+        private String calledArgument;
 
 	public Codegen() {
 		assembler = new LinkedList<LlvmInstruction>();
@@ -394,11 +395,11 @@ public class Codegen extends VisitorAdapter {
                         System.err.println("\nNode: " + n.getClass().getName() + " - objReff: " + objReff.toString());
                         System.err.println("\nNode: " + n.getClass().getName() + " - objReff: " + objReff.toString());
                         System.err.println("\nNode: " + n.getClass().getName() + " -  methodNode.fList.get(0).type: " + methodNode.fList.get(0).type.toString() );
-			assembler.add(new LlvmLoad(this_ptr, objReff));
-			//args.add(this_ptr);
-                        //LlvmType argType = new LlvmClassType(clTypeName);
-                        //LlvmValue thisArg = new LlvmNamedValue(objReff.toString(), new LlvmPointer(argType));
-                        //args.add(thisArg);
+			//assembler.add(new LlvmLoad(this_ptr, objReff));
+			args.add(this_ptr);
+                        LlvmType argType = new LlvmClassType(clTypeName);
+                        LlvmValue thisArg = new LlvmNamedValue(this.calledArgument, new LlvmPointer(argType));
+                        args.add(thisArg);
                         
                     }
                     System.err.println("\nNode: " + n.getClass().getName() + " - DIFFERENT ARGS: " + args.toString());
@@ -544,6 +545,7 @@ public class Codegen extends VisitorAdapter {
 		/* Gets the type of the identifier */
                 System.err.println("\nNode: " + n.getClass().getName() + " - addr.type: " + addr.type);
 		LlvmRegister lhs = new LlvmRegister(addr.type);
+                this.calledArgument = addr.toString() + "_tmp";
 
 		/* Issues the Instruction */
 		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue(addr + "_tmp",
