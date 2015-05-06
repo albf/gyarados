@@ -43,8 +43,8 @@ public  class LlvmMalloc extends LlvmInstruction{
 	 * @param type
 	 * @param className
 	 */
-	public LlvmMalloc(LlvmValue lhs, LlvmType type, String className){
-		MallocImpl(lhs, type, new LlvmIntegerLiteral(1), className);
+	public LlvmMalloc(LlvmValue lhs, LlvmType type, String className, int size){
+		MallocImpl(lhs, type, new LlvmIntegerLiteral(size), className);
 	}
 
 	

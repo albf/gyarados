@@ -39,9 +39,14 @@ public class SymTab extends VisitorAdapter {
 	public LlvmValue visit(MainClass n) {
 
 		System.err.println("SymTab Visit: " + n.getClass().getName());
+                ClassNode mainClass = new ClassNode(n.className.s, null, new ArrayList<LlvmValue>(), new HashMap<String, LlvmValue>());
+                LinkedHashMap<String, MethodNode> mList = new LinkedHashMap<String, MethodNode>();
 
-		classes.put(n.className.s, new ClassNode(n.className.s, null, null,
-				null));
+                mainClass.mList.put("main",
+					new MethodNode("main", new ArrayList<LlvmValue>(), new ArrayList<LlvmValue>(),
+                                            LlvmPrimitiveType.I32, new HashMap<String, LlvmValue>()));
+		classes.put(n.className.s, mainClass);
+                
 		return null;
 	}
 

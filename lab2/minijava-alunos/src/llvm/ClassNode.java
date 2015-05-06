@@ -21,6 +21,7 @@ public class ClassNode extends LlvmType {
 	public Map<String, LlvmValue> attrMap;
         public boolean isExtended;
         public String superName;
+        public boolean isJoined;
 
 	/* Constructor */
 	ClassNode(String nameClass, LlvmStructure classType,
@@ -33,6 +34,7 @@ public class ClassNode extends LlvmType {
 		this.attrMap = attrMap;
                 this.isExtended = false;
                 this.superName = null;
+                this.isJoined = true;
 	}
         
         	/* Constructor */
@@ -46,5 +48,6 @@ public class ClassNode extends LlvmType {
 		this.attrMap = attrMap;
                 this.isExtended = isExtended;
                 this.superName = superName;
+                this.isJoined = false;
 	}
 }

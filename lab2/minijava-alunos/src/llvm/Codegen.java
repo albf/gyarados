@@ -124,6 +124,13 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(MainClass n) {
 
 		System.err.println("Node: " + n.getClass().getName());
+                
+                // Adding ref
+                /* Get the actual class */
+		classEnv = symTab.classes.get(n.className.toString());
+                String attr = "type { }";
+                LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, attr);
+		assembler.add(0, ClassDef);
 
 		// definicao do main
 		assembler.add(new LlvmDefine("@main", LlvmPrimitiveType.I32,
@@ -400,14 +407,24 @@ public class Codegen extends VisitorAdapter {
 	/* ClassDecSimple node */
 	public LlvmValue visit(ClassDeclSimple n) {
 
-		System.err.println("Node: " + n.getClass().getName());
+		System.err.println("Node: " + n.getClass().getName() + " - Current Class: " + n.name.toString());
 
 		/* Get the actual class */
 		classEnv = symTab.classes.get(n.name.toString());
 
-                // Adds vTable variable.
+
                 String vTableName = "[" + classEnv.mList.size() + " x i8 *]";
-                String attr = "type " + "{" + vTableName + ", " + classEnv.classType.toString().substring(1);
+                String attr;
+                
+                // Adds vTable variable.
+                if(classEnv.classType.typeList.isEmpty()) {
+                    attr = "type " + "{" + vTableName + "}";
+                }
+                else {
+                    attr = "type " + "{" + vTableName + ", " + classEnv.classType.toString().substring(1);
+                }
+                
+                System.err.println("Node: " + n.getClass().getName() + " - attr: " + attr);
                 
                 LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, attr);
                 
@@ -717,8 +734,9 @@ public class Codegen extends VisitorAdapter {
                         LlvmValue value = new LlvmNamedValue("%this", new LlvmPointer(new LlvmClassType(classEnv.className)));
                         LinkedList<LlvmValue> offset = new LinkedList<LlvmValue>();
                         LlvmValue offset1 = new LlvmNamedValue("0", LlvmPrimitiveType.I32);
-                        LlvmValue offset2 = new LlvmNamedValue(Integer.toString(counter), LlvmPrimitiveType.I32);
                         counter = counter+1;
+                        LlvmValue offset2 = new LlvmNamedValue(Integer.toString(counter), LlvmPrimitiveType.I32);
+                        
                         offset.add(offset1);
                         offset.add(offset2);
                         assembler.add(new LlvmGetElementPointer(assign, value, offset));
@@ -792,11 +810,20 @@ public class Codegen extends VisitorAdapter {
 	public LlvmValue visit(NewObject n) {
 
 		System.err.println("Node: " + n.getClass().getName());
+                ClassNode ObjClass = symTab.classes.get(n.className.s);
 
 		/* Issues the className identifier */
-		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(
-				symTab.classes.get(n.className.s).type));
-		assembler.add(new LlvmMalloc(lhs, lhs.type, "%class." + n.className.s));
+		LlvmRegister lhs = new LlvmRegister(new LlvmPointer(ObjClass.type));
+                System.err.println("Node: " + n.getClass().getName() + " --- MALLOC : " + lhs.type.toString());
+                
+                if(ObjClass.isJoined == false) {
+                    ObjClass.mList = joinMethods(n.className.s);
+                    ObjClass.isJoined = true;
+                }
+                
+                int size = (8 * ObjClass.mList.size()) + (ObjClass.varList.size()*8);
+                
+		assembler.add(new LlvmMalloc(lhs, lhs.type, "%class." + n.className.s, size));
 
 		/* Return */
 		return lhs;
@@ -1028,13 +1055,25 @@ public class Codegen extends VisitorAdapter {
                 
                 // Merge method list with super(s)
                 System.err.println("Node: " + n.getClass().getName() + "Before Merging Methods : " + classEnv.mList.size());
-                classEnv.mList = joinMethods(n.name.toString());
+                if(classEnv.isJoined == false) {
+                    classEnv.mList = joinMethods(n.name.toString());
+                    classEnv.isJoined = true;
+                }
                 System.err.println("Node: " + n.getClass().getName() + "After Merging Methods : " + classEnv.mList.size());
 
                 // Adds vTable variable.
                 String vTableName = "[" + classEnv.mList.size() + " x i8 *]";
-                String attr = "type " + "{" + vTableName + ", " + classEnv.classType.toString().substring(1);
+                String attr;
                 
+                // Adds vTable variable.
+                if(classEnv.classType.typeList.isEmpty()) {
+                    attr = "type " + "{" + vTableName + "}";
+                }
+                else {
+                    attr = "type " + "{" + vTableName + ", " + classEnv.classType.toString().substring(1);
+                }
+                
+                System.err.println("Node: " + n.getClass().getName() + " - attr: " + attr);
                 LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, attr);
                 assembler.add(0, ClassDef);
 
