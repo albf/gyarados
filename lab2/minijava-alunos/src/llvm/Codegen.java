@@ -401,17 +401,6 @@ public class Codegen extends VisitorAdapter {
 
 		return null;
 	}
-        
-        public int countMethods(String className) {
-            int counter = 0;
-            ClassNode Node = symTab.classes.get(className);
-            
-            LinkedHashMap<String, MethodNode> newMethods = new LinkedHashMap<String, MethodNode>();
-            
-            
-            
-            return counter;
-        }
 
 	/* False node */
 	public LlvmValue visit(False n) {
@@ -947,13 +936,43 @@ public class Codegen extends VisitorAdapter {
 	// Todos os visit's que devem ser implementados
 	/* ====================================================================== */
 	/* ====================================================================== */
-
+        
+        // Join method list with super(s)
+        public LinkedHashMap<String, MethodNode> joinMethods(String className) {
+            System.err.println("JoinList: " + className);
+            ClassNode Node = symTab.classes.get(className);
+            
+            LinkedHashMap<String, MethodNode> newMethods;
+            
+            if(Node.isExtended == true) {
+                newMethods = joinMethods(Node.superName);
+            }
+            else {
+                newMethods = new LinkedHashMap<String, MethodNode>();
+                newMethods.putAll(Node.mList);
+                return newMethods;
+            }
+            
+            for (Map.Entry<String, MethodNode> entry : Node.mList.entrySet())
+            {
+                newMethods.put(entry.getKey(), entry.getValue());
+            }
+            
+            return newMethods;
+        }
+        
 	public LlvmValue visit(ClassDeclExtends n) {
 
-		System.err.println("Node: " + n.getClass().getName());
+		System.err.println("Node: " + n.getClass().getName() + " - Current Class: " + n.name.toString());
 
 		/* Get the actual class */
 		classEnv = symTab.classes.get(n.name.toString());
+                
+                // Merge method list with super(s)
+                System.err.println("Node: " + n.getClass().getName() + "Before Merging Methods : " + classEnv.mList.size());
+                classEnv.mList = joinMethods(n.name.toString());
+                System.err.println("Node: " + n.getClass().getName() + "After Merging Methods : " + classEnv.mList.size());
+                
                 LlvmConstantDeclaration ClassDef = new LlvmConstantDeclaration("%class." + classEnv.className, "type " + classEnv.classType);
                 assembler.add(0, ClassDef);
 
