@@ -110,8 +110,10 @@ public class SymTab extends VisitorAdapter {
                 /* Add the Father */
                 //LlvmValue father = new LlvmNamedValue(n.superClass.toString(), n.superClass.);
                 System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Father : " + n.superClass.toString());
+                //LlvmType FatherType = new LlvmPointer(new LlvmClassType(n.superClass.toString()));
                 LlvmType FatherType = new LlvmClassType(n.superClass.toString());
-                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(FatherType));
+                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(new LlvmPointer(FatherType)));
+                //Father.type = FatherType;s
                 varList.add(Father);
                 typeList.add(FatherType);
                 
@@ -132,7 +134,7 @@ public class SymTab extends VisitorAdapter {
 		}
 
 		classEnv = new ClassNode(n.name.toString(),
-				new LlvmStructure(typeList), varList, attr, true);
+				new LlvmStructure(typeList), varList, attr, true, n.superClass.toString());
 
 		classes.put(n.name.toString(), classEnv);
 
@@ -190,6 +192,9 @@ public class SymTab extends VisitorAdapter {
 
 		/* Variable Map - avoids formals and locals with the same name */
 		Map<String, LlvmValue> vMap = new HashMap<>();
+                
+                /* Formals Only */
+                LinkedHashMap<String, LlvmValue> formalsOnly = new LinkedHashMap<String, LlvmValue>();
 
 		/* Building the Formal List */
 		// LlvmNamedValue tmp = new LlvmNamedValue("%this", new LlvmClassType(
@@ -210,6 +215,7 @@ public class SymTab extends VisitorAdapter {
 			LlvmValue v = vec.head.accept(this);
 			fList.add(v);
 			vMap.put(v.toString().substring(1), v);
+                        formalsOnly.put(v.toString().substring(1), v);
 			System.err.println("SymTab Visit: " + n.getClass().getName()
 					+ " - Adding Formal : " + v.toString());
 		}
@@ -240,13 +246,13 @@ public class SymTab extends VisitorAdapter {
 		if (!returnFix.type.toString().contains("%class.")) {
 			classEnv.mList.put(n.name.toString(),
 					new MethodNode(n.name.toString(), vList, fList,
-							returnFix.type, vMap));
+							returnFix.type, vMap, formalsOnly));
 		} else {
 			System.err.println("SymTab Visit: " + n.getClass().getName()
 					+ " - Class type, using pointer.");
 			classEnv.mList.put(n.name.toString(),
 					new MethodNode(n.name.toString(), vList, fList,
-							new LlvmPointer(returnFix.type), vMap));
+							new LlvmPointer(returnFix.type), vMap, formalsOnly));
 		}
 
 		System.err.println("SymTab Visit: " + n.getClass().getName()

@@ -92,7 +92,7 @@ public class Codegen extends VisitorAdapter {
 		// System.out.println(codeGenerator.assembler.toString());
 		for (LlvmInstruction instr : codeGenerator.assembler) {
 			try {
-				// System.out.println(instr+"\n");
+				System.out.println(instr+"\n");
 				r += instr + "\n";
 			} catch (java.lang.NullPointerException e) {
 				System.out.println("NULL POINTER");
