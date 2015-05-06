@@ -17,9 +17,10 @@ public class ClassNode extends LlvmType {
 	public LlvmStructure classType;
 	public LlvmClassType type;
 	public List<LlvmValue> varList;
-	public Map<String, MethodNode> mList;
+	public LinkedHashMap<String, MethodNode> mList;
 	public Map<String, LlvmValue> attrMap;
         public boolean isExtended;
+        public String superName;
 
 	/* Constructor */
 	ClassNode(String nameClass, LlvmStructure classType,
@@ -27,21 +28,23 @@ public class ClassNode extends LlvmType {
 		this.className = nameClass;
 		this.classType = classType;
 		this.varList = varList;
-		this.mList = new HashMap<>();
+		this.mList = new LinkedHashMap<>();
 		this.type = new LlvmClassType(nameClass);
 		this.attrMap = attrMap;
                 this.isExtended = false;
+                this.superName = null;
 	}
         
         	/* Constructor */
 	ClassNode(String nameClass, LlvmStructure classType,
-			List<LlvmValue> varList, Map<String, LlvmValue> attrMap, boolean isExtended) {
+			List<LlvmValue> varList, Map<String, LlvmValue> attrMap, boolean isExtended, String superName) {
 		this.className = nameClass;
 		this.classType = classType;
 		this.varList = varList;
-		this.mList = new HashMap<>();
+		this.mList = new LinkedHashMap<>();
 		this.type = new LlvmClassType(nameClass);
 		this.attrMap = attrMap;
                 this.isExtended = isExtended;
+                this.superName = superName;
 	}
 }

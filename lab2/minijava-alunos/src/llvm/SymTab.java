@@ -110,8 +110,10 @@ public class SymTab extends VisitorAdapter {
                 /* Add the Father */
                 //LlvmValue father = new LlvmNamedValue(n.superClass.toString(), n.superClass.);
                 System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding Father : " + n.superClass.toString());
+                //LlvmType FatherType = new LlvmPointer(new LlvmClassType(n.superClass.toString()));
                 LlvmType FatherType = new LlvmClassType(n.superClass.toString());
-                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(FatherType));
+                LlvmValue Father = new LlvmNamedValue(n.superClass.toString(), new LlvmPointer(new LlvmPointer(FatherType)));
+                //Father.type = FatherType;s
                 varList.add(Father);
                 typeList.add(FatherType);
                 
@@ -132,7 +134,7 @@ public class SymTab extends VisitorAdapter {
 		}
 
 		classEnv = new ClassNode(n.name.toString(),
-				new LlvmStructure(typeList), varList, attr, true);
+				new LlvmStructure(typeList), varList, attr, true, n.superClass.toString());
 
 		classes.put(n.name.toString(), classEnv);
 

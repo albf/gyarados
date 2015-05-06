@@ -92,7 +92,7 @@ public class Codegen extends VisitorAdapter {
 		// System.out.println(codeGenerator.assembler.toString());
 		for (LlvmInstruction instr : codeGenerator.assembler) {
 			try {
-				// System.out.println(instr+"\n");
+				System.out.println(instr+"\n");
 				r += instr + "\n";
 			} catch (java.lang.NullPointerException e) {
 				System.out.println("NULL POINTER");
@@ -401,6 +401,17 @@ public class Codegen extends VisitorAdapter {
 
 		return null;
 	}
+        
+        public int countMethods(String className) {
+            int counter = 0;
+            ClassNode Node = symTab.classes.get(className);
+            
+            LinkedHashMap<String, MethodNode> newMethods = new LinkedHashMap<String, MethodNode>();
+            
+            
+            
+            return counter;
+        }
 
 	/* False node */
 	public LlvmValue visit(False n) {

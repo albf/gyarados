@@ -1,8 +1,8 @@
 from subprocess import Popen, PIPE
 from subprocess import call
 
-llicommand = 'lli'
-#llicommand = '/usr/local/Cellar/llvm/3.4.1/bin/lli'
+#llicommand = 'lli'
+llicommand = '/usr/local/Cellar/llvm/3.4.1/bin/lli'
 
 def check(output, correct, name):
 	if(output == correct):
