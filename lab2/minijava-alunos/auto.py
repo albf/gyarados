@@ -137,4 +137,25 @@ p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigg
 	'results/BubbleInit.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
 p = Popen([llicommand, 'results/BubbleInit.s'], stdout = PIPE)
 output, err = p.communicate()
-check(output, '20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n99999\n2\n5\n6\n7\n9\n11\n12\n18\n19\n20\n0\n', 'BubbleInit.java')
+check(output, '20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n99999\n20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n0\n', 'BubbleInit.java')
+
+# Run and verify BubbleSort.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigger/BubbleSort.java', 
+	'results/BubbleSort.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/BubbleSort.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n99999\n2\n5\n6\n7\n9\n11\n12\n18\n19\n20\n0\n', 'BubbleSort.java')
+
+# Run and verify BinarySearch.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigger/BinarySearch.java', 
+	'results/BinarySearch.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/BinarySearch.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n36\n37\n38\n99999\n0\n0\n1\n1\n1\n1\n0\n0\n999\n', 'BinarySearch.java')
+
+# Run and verify QuickSort.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigger/QuickSort.java', 
+	'results/QuickSort.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/QuickSort.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n9999\n2\n5\n6\n7\n9\n11\n12\n18\n19\n20\n0\n', 'QuickSort.java')

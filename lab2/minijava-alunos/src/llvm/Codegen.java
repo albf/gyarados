@@ -151,6 +151,24 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmCloseDefinition());
 		return null;
 	}
+	
+	/* And node */
+	public LlvmValue visit(And n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Accept the two values */
+		LlvmValue lChild = n.lhs.accept(this);
+		LlvmValue rChild = n.rhs.accept(this);
+		
+		/* Create the register */
+		LlvmRegister lhs = new LlvmRegister(lChild.type);
+		
+		/* Issues the instruction */
+		assembler.add(new LlvmAnd(lhs, lChild.type, lChild, rChild));
+		
+		return lhs;
+	}
 
 	/* Assign node */
 	public LlvmValue visit(Assign n) {
@@ -400,6 +418,24 @@ public class Codegen extends VisitorAdapter {
 		}
 
 		return null;
+	}
+	
+	/* Equals node */
+	public LlvmValue visit(Equal n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Accept the two values */
+		LlvmValue lChild = n.lhs.accept(this);
+		LlvmValue rChild = n.rhs.accept(this);
+		
+		/* Create the register */
+		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I1);
+		
+		/* Issues the instruction */
+		assembler.add(new LlvmIcmp(lhs, 0, lChild.type, lChild, rChild));
+
+		return lhs;
 	}
 
 	/* False node */
@@ -760,6 +796,23 @@ public class Codegen extends VisitorAdapter {
 		/* Return */
 		return lhs;
 	}
+	
+	/* Not node */
+	public LlvmValue visit(Not n) {
+
+		System.err.println("Node: " + n.getClass().getName());
+		
+		/* Accepts the value of the expression */
+		LlvmValue val = n.exp.accept(this);
+		
+		/* Register with the boolean value */
+		LlvmRegister lhs = new LlvmRegister(LlvmPrimitiveType.I1);
+		
+		/* Issues the instruction */
+		assembler.add(new LlvmMinus(lhs, LlvmPrimitiveType.I1, new LlvmBool(1), val));
+
+		return lhs;
+	}
 
 	/* Plus node */
 	public LlvmValue visit(Plus n) {
@@ -956,24 +1009,4 @@ public class Codegen extends VisitorAdapter {
 		return null;
 	}
 
-	public LlvmValue visit(And n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(Equal n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
-
-	public LlvmValue visit(Not n) {
-
-		System.err.println("Node: " + n.getClass().getName());
-
-		return null;
-	}
 }
