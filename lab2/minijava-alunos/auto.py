@@ -159,3 +159,10 @@ p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigg
 p = Popen([llicommand, 'results/QuickSort.s'], stdout = PIPE)
 output, err = p.communicate()
 check(output, '20\n7\n12\n18\n2\n11\n6\n9\n19\n5\n9999\n2\n5\n6\n7\n9\n11\n12\n18\n19\n20\n0\n', 'QuickSort.java')
+
+# Run and verify LinearSearch.java
+p = Popen(['java', '-classpath', 'src:lib/projeto2.jar', 'main/Main', 'test/bigger/LinearSearch.java', 
+	'results/LinearSearch.s'], stdin=PIPE, stdout=PIPE, stderr=PIPE).communicate()
+p = Popen([llicommand, 'results/LinearSearch.s'], stdout = PIPE)
+output, err = p.communicate()
+check(output, '10\n11\n12\n13\n14\n15\n16\n17\n18\n9999\n0\n1\n1\n0\n55\n', 'LinearSearch.java')
