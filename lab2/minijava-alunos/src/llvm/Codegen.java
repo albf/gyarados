@@ -945,10 +945,50 @@ public class Codegen extends VisitorAdapter {
                 int size = (8 * ObjClass.mList.size()) + (ObjClass.varList.size()*8);
                 
 		assembler.add(new LlvmMalloc(lhs, lhs.type, "%class." + n.className.s, size));
+                
+                // Time to instanciate vTable
+                initVtable(ObjClass.className, lhs, false, null);
 
 		/* Return */
 		return lhs;
 	}
+        
+        public void initVtable(String className, LlvmValue lhs, boolean isFather, LlvmType extendType) {
+            ClassNode ObjClass = symTab.classes.get(className);
+            LlvmValue ObjRef = lhs;
+            int counter;
+            
+            if(ObjClass.isExtended) {
+                initVtable(ObjClass.superName, lhs, true, ObjClass.type);
+            }
+            
+            if(isFather) {
+                LlvmValue cast = new LlvmRegister(new LlvmPointer (ObjClass.type));
+                assembler.add(new LlvmBitcast(cast, lhs, cast.type));
+                ObjRef = cast;
+            }
+            
+            LlvmValue vTable = new LlvmRegister(LlvmPrimitiveType.VTable);
+            assembler.add(new LlvmBitcast(vTable, ObjRef, LlvmPrimitiveType.VTable));
+
+            counter = 0;
+            for (Map.Entry<String, MethodNode> entry : ObjClass.mList.entrySet()) {
+                LlvmValue Function = new LlvmRegister(new LlvmPointer(LlvmPrimitiveType.I8));
+                LlvmValue Conv = new LlvmNamedValue("@__" + entry.getValue().mName + "__" + className, new LlvmClassPointer(className, entry.getValue().rType, entry.getValue().fList));
+                assembler.add(new LlvmBitcast(Function, Conv, Function.type));
+                
+                
+                LlvmValue store_pointer = new LlvmRegister(LlvmPrimitiveType.VTable);
+                        
+                List<LlvmValue> offsets = new LinkedList<LlvmValue>();
+		offsets.add(new LlvmIntegerLiteral(0));
+                offsets.add(new LlvmIntegerLiteral(counter));
+		assembler.add(new LlvmGetElementPointer(store_pointer, vTable, offsets));
+                store_pointer.type = new LlvmPointer(new LlvmPointer(LlvmPrimitiveType.I8));
+                assembler.add(new LlvmStore(Function, store_pointer));
+            }
+            
+        }
 	
 	/* Not node */
 	public LlvmValue visit(Not n) {
