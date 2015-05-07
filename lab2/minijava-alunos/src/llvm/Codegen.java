@@ -260,11 +260,9 @@ public class Codegen extends VisitorAdapter {
 		
 		/* Issues the index instruction */
 		assembler.add(new LlvmGetElementPointer(fstPtr, base, offList));
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting index value");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting index value");
 		LlvmValue val = n.value.accept(this);
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Returning from index value");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Returning from index value");
 		assembler.add(new LlvmStore(val, fstPtr));
 		
 		return null;
@@ -326,11 +324,9 @@ public class Codegen extends VisitorAdapter {
 
 		/* Call accept in each Statement of the Block */
 		for (util.List<Statement> stmts = n.body; stmts != null; stmts = stmts.tail) {
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Accepting Statement");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Statement");
 			stmts.head.accept(this); // Accept the head
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Returning from Statement");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Statement");
 		}
 		return null;
 	}
@@ -363,6 +359,19 @@ public class Codegen extends VisitorAdapter {
 		/* Get the class and the method */
 		ClassNode classNode = symTab.classes.get(clTypeName);
 		MethodNode methodNode = classNode.mList.get(n.method.s);
+                
+                // UNNECESSARY BECAUSE OF JOIN
+                /* Look if should get the method from the father(s)
+                while (methodNode == null) {
+                    ClassNode classPai = symTab.classes.get(classNode.superName);
+                    LlvmValue objPai = new LlvmRegister(new LlvmPointer(classPai.type));
+                    assembler.add(new LlvmBitcast(objPai, objReff, objPai.type));
+                    // bitCast
+                    
+                    objReff = objPai;
+                    classNode = classPai;
+                    methodNode = classNode.mList.get(n.method.s);
+                } */ 
 
 		/* Checks the type of the first argument */
 		//LlvmRegister this_ptr = new LlvmRegister(methodNode.fList.get(0).type);
@@ -406,6 +415,7 @@ public class Codegen extends VisitorAdapter {
                 //}
                 
 		/* The remaining arguments */
+                int counter = 0;
 		for (util.List<Exp> vec = n.actuals; vec != null; vec = vec.tail) {
 			/* Issues the instructions to deal with formals */
 			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Argument");
@@ -435,14 +445,23 @@ public class Codegen extends VisitorAdapter {
                             LlvmType fix_type = new LlvmClassType(tmp.type.toString().substring(7));
                             LlvmValue fix = new LlvmNamedValue(this.calledArgument, new LlvmPointer(fix_type));
                             this.calledArgument = null;
+                            
+                            //if(fix.type.toString() != methodNode)
+                            
+                            
                             args.add(fix);
                             System.err.println("\nNode: " + n.getClass().getName() + " - TYPE2 :" + fix.toString());
                         }
                             
                         else  {
                             args.add(tmp);
+                            
+                            
+                            
+                            
                             System.err.println("\nNode: " + n.getClass().getName() + " - TYPE3 :" + tmp.toString());   
                         }
+                        counter ++;
 		}
 
 		/* Add the types in the type Array */
@@ -450,7 +469,7 @@ public class Codegen extends VisitorAdapter {
 			args_t.add(val.type);
 
                 // Get reference from vTable
-                int counter = 0;
+                counter = 0;
                 for (Map.Entry<String, MethodNode> entry : classNode.mList.entrySet()) {
                     if(entry.getValue().mName.equals(methodNode.mName)) {
                         break;
@@ -568,12 +587,27 @@ public class Codegen extends VisitorAdapter {
 		/* Look for the variable in the list of locals */
 		LlvmValue var = methodEnv.vMap.get(n.s);
 		if (var == null) {
-			System.err.println("Node: " + n.getClass().getName()
-					+ "- Using Class Variable");
+			System.err.println("Node: " + n.getClass().getName() + "- Using Class Variable");
 			var = classEnv.attrMap.get(n.s);
+
+                        // Look if should get the variable from the father(s)
+                        String superName = classEnv.superName;
+                        while (var == null) {
+                            System.err.println("Node: " + n.getClass().getName() + "- Using Parente Class Variable");
+                            ClassNode classPai = symTab.classes.get(superName);
+                            //LlvmValue objPai = new LlvmRegister(new LlvmPointer(classPai.type));
+                            //assembler.add(new LlvmBitcast(objPai, , objPai.type));
+                            // bitCast
+                            
+                            var = classPai.attrMap.get(n.s);
+                            if(classPai.isExtended) {
+                                superName = classPai.superName;
+                            }
+                        }
+                        
+                        
 		} else {
-			System.err.println("Node: " + n.getClass().getName()
-					+ "- Using Method Variable");
+			System.err.println("Node: " + n.getClass().getName() + "- Using Method Variable");
 		}
 
 		return new LlvmNamedValue(var.toString(), var.type);
@@ -748,15 +782,11 @@ public class Codegen extends VisitorAdapter {
 		/* Declare the method formals */
 		for (LlvmValue arg : formals) {
 			/* Allocate the memory to the formal */
-			LlvmNamedValue lhs = new LlvmNamedValue(arg.toString() + "_tmp",
-					arg.type);
-			assembler.add(new LlvmAlloca(lhs, arg.type,
-					new ArrayList<LlvmValue>()));
+			LlvmNamedValue lhs = new LlvmNamedValue(arg.toString() + "_tmp", arg.type);
+			assembler.add(new LlvmAlloca(lhs, arg.type, new ArrayList<LlvmValue>()));
 			/* Store the value */
-			LlvmNamedValue plhs = new LlvmNamedValue(arg.toString() + "_tmp",
-					new LlvmPointer(arg.type));
-			assembler.add(new LlvmStore(new LlvmNamedValue(arg.toString(),
-					arg.type), plhs));
+			LlvmNamedValue plhs = new LlvmNamedValue(arg.toString() + "_tmp", new LlvmPointer(arg.type));
+			assembler.add(new LlvmStore(new LlvmNamedValue(arg.toString(), arg.type), plhs));
 
 			/* Updates the list of vars */
 			varList.add(arg.toString());
@@ -769,18 +799,18 @@ public class Codegen extends VisitorAdapter {
 				continue;
 
 			/* Allocate the memory to the formal */
-			LlvmNamedValue lhs = new LlvmNamedValue(var.toString() + "_tmp",
-					var.type);
-			assembler.add(new LlvmAlloca(lhs, var.type,
-					new ArrayList<LlvmValue>()));
+			LlvmNamedValue lhs = new LlvmNamedValue(var.toString() + "_tmp", var.type);
+			assembler.add(new LlvmAlloca(lhs, var.type, new ArrayList<LlvmValue>()));
 
 			/* Updates the list of vars */
 		}
 
                 /* Allocate space for class variables, check if it's a method name first */
                 int counter = 0;
+                LinkedHashMap<String, String> MyClassVars = new LinkedHashMap<String, String>();
                 
                 for(LlvmValue classvar: classEnv.varList) {
+                    MyClassVars.put(classvar.toString(), classEnv.toString());
                     boolean ShouldInclude = true;
                     int locals_size = locals.size();
                     for(int i=0 ; i<locals_size; i++) {
@@ -801,6 +831,7 @@ public class Codegen extends VisitorAdapter {
                     //System.err.println("DEBUG locals : " + locals.toString());
                     //System.err.println("ShouldInclude : " + Boolean.toString(ShouldInclude));
                     if(ShouldInclude) {
+                        
                         System.err.println("Node: " + n.getClass().getName() + " Adding ClassVar: " + classvar.toString() );
                         LlvmValue assign = null;
                         if(symTab.classes.get(classvar.toString()) == null) {
@@ -820,6 +851,52 @@ public class Codegen extends VisitorAdapter {
                         assembler.add(new LlvmGetElementPointer(assign, value, offset));
                     }
                 }
+                
+                // Add parent class variables
+                boolean is_parent = classEnv.isExtended;
+                String superName = classEnv.superName;
+                while(is_parent) {
+                    ClassNode classPai = symTab.classes.get(superName);
+                    
+                    counter = 0;
+                    for(LlvmValue classvar: classPai.varList) {
+                        if(MyClassVars.get(classvar.toString()) == null) {
+                            MyClassVars.put(classvar.toString(), classPai.toString());
+                            
+                            LlvmValue assign = null;
+                            if(symTab.classes.get(classvar.toString()) == null) {
+                                assign = new LlvmNamedValue(classvar.toString() + "_tmp", new LlvmPointer(classvar.type));
+                            }
+                            else {
+                                assign = new LlvmNamedValue("%" + classvar.toString() + "_tmp", new LlvmPointer(classvar.type));
+                            }
+                            LlvmValue regT = new LlvmRegister(new LlvmPointer(classPai.type));
+                            LlvmValue value = new LlvmNamedValue("%this", new LlvmPointer(new LlvmClassType(classEnv.className)));
+                            assembler.add(new LlvmBitcast(regT, value, regT.type));
+                            
+                            LinkedList<LlvmValue> offset = new LinkedList<LlvmValue>();
+                            LlvmValue offset1 = new LlvmNamedValue("0", LlvmPrimitiveType.I32);
+                            counter = counter+1;
+                            LlvmValue offset2 = new LlvmNamedValue(Integer.toString(counter), LlvmPrimitiveType.I32);
+
+                            offset.add(offset1);
+                            offset.add(offset2);
+                            assembler.add(new LlvmGetElementPointer(assign, regT, offset));                            
+                        }
+                        counter++;
+                    }
+                        //LlvmValue objPai = new LlvmRegister(new LlvmPointer(classPai.type));
+                        //assembler.add(new LlvmBitcast(objPai, , objPai.type));
+                        // bitCast
+                            
+                        if(classPai.isExtended) {
+                            superName = classPai.superName;
+                        }
+                        else {
+                            is_parent = false;
+                        }
+                    }
+               
                 
                 // Debug
 		//System.err.println("METHOD");
@@ -995,19 +1072,53 @@ public class Codegen extends VisitorAdapter {
 
             counter = 0;
             for (Map.Entry<String, MethodNode> entry : ObjClass.mList.entrySet()) {
-                LlvmValue Function = new LlvmRegister(new LlvmPointer(LlvmPrimitiveType.I8));
-                LlvmValue Conv = new LlvmNamedValue("@__" + entry.getValue().mName + "__" + className, new LlvmClassPointer(className, entry.getValue().rType, entry.getValue().fList));
-                assembler.add(new LlvmBitcast(Function, Conv, Function.type));
+                boolean is_on_father = false;
+                ClassNode classPai;
+                String nomePai = null;
+                if(ObjClass.isExtended) {
+                    nomePai = ObjClass.superName;
+                    boolean more = true;
+                    classPai = symTab.classes.get(nomePai);
+                    while (more) {
+                        for (Map.Entry<String, MethodNode> entry_p : classPai.mList.entrySet()) {
+                            if(entry.getKey() == entry_p.getKey()) {
+                                is_on_father = true;
+                                more = false;
+                                break;
+                            }
+                        }
+                        if(more) {
+                            if(classPai.isExtended) {
+                                nomePai = classPai.superName;
+                            }
+                            else {
+                                more = false;
+                            }
+                        }
+                    }
+                }
+                    String classOrigin;
+                    if(is_on_father) {
+                        classOrigin = nomePai;
+                    }
+                    else {
+                        classOrigin = className;
+                    }
                 
-                
-                LlvmValue store_pointer = new LlvmRegister(LlvmPrimitiveType.VTable);
-                        
-                List<LlvmValue> offsets = new LinkedList<LlvmValue>();
-		offsets.add(new LlvmIntegerLiteral(0));
-                offsets.add(new LlvmIntegerLiteral(counter));
-		assembler.add(new LlvmGetElementPointer(store_pointer, vTable, offsets));
-                store_pointer.type = new LlvmPointer(new LlvmPointer(LlvmPrimitiveType.I8));
-                assembler.add(new LlvmStore(Function, store_pointer));
+                    LlvmValue Function = new LlvmRegister(new LlvmPointer(LlvmPrimitiveType.I8));
+                    LlvmValue Conv = new LlvmNamedValue("@__" + entry.getValue().mName + "__" + classOrigin, new LlvmClassPointer(classOrigin, entry.getValue().rType, entry.getValue().fList));
+                    assembler.add(new LlvmBitcast(Function, Conv, Function.type));
+
+
+                    LlvmValue store_pointer = new LlvmRegister(LlvmPrimitiveType.VTable);
+
+                    List<LlvmValue> offsets = new LinkedList<LlvmValue>();
+                    offsets.add(new LlvmIntegerLiteral(0));
+                    offsets.add(new LlvmIntegerLiteral(counter));
+                    assembler.add(new LlvmGetElementPointer(store_pointer, vTable, offsets));
+                    store_pointer.type = new LlvmPointer(new LlvmPointer(LlvmPrimitiveType.I8));
+                    assembler.add(new LlvmStore(Function, store_pointer));
+                    counter++;
             }
             
         }
