@@ -139,8 +139,7 @@ public class Codegen extends VisitorAdapter {
 		assembler.add(new LlvmLabel(new LlvmLabelValue("entry")));
 		LlvmRegister R1 = new LlvmRegister(new LlvmPointer(
 				LlvmPrimitiveType.I32));
-		assembler.add(new LlvmAlloca(R1, LlvmPrimitiveType.I32,
-				new LinkedList<LlvmValue>()));
+		assembler.add(new LlvmAlloca(R1, LlvmPrimitiveType.I32, new LinkedList<LlvmValue>()));
 		assembler.add(new LlvmStore(new LlvmIntegerLiteral(0), R1));
 
 		// Statement é uma classe abstrata
@@ -160,22 +159,83 @@ public class Codegen extends VisitorAdapter {
 		return null;
 	}
 	
-	/* And node */
+            /* And node */
 	public LlvmValue visit(And n) {
 
 		System.err.println("Node: " + n.getClass().getName());
 		
 		/* Accept the two values */
 		LlvmValue lChild = n.lhs.accept(this);
-		LlvmValue rChild = n.rhs.accept(this);
-		
+                
 		/* Create the register */
 		LlvmRegister lhs = new LlvmRegister(lChild.type);
+                LlvmRegister ret = new LlvmRegister(LlvmPrimitiveType.I1);
+                assembler.add(new LlvmAlloca(ret, LlvmPrimitiveType.I1, new ArrayList<LlvmValue>()));
+                
+                
+                System.err.println("Node: " + n.getClass().getName());
+
+		/* Child nodes from If node */
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Cond");
+		LlvmValue cond = lChild;
+		System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Cond");
+
+		/* Used to demark uniquily the if statement */
+		int line = n.line, row = n.row;
+
+		/* Create the labels string */
+		String ifthen = "IfThen_And_" + line + "-" + row;
+		String ifelse = "IfElse_And_" + line + "-" + row;
+		String ifend = "IfEnd_And_" + line + "-" + row;
+
+		/* Check the body type (if-then or if-then-else) */
+	//	if (elseClause != null) {
+                    
+                assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%" + ifelse)));
+	//	} else {
+                //    assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%" + ifend)));
+	//	}
+                    
+                /* Insert label to thenClause */
+		assembler.add(new LlvmLabel(new LlvmLabelValue(ifthen)));
+		/* Insert IRs for the body of then clause */
+                
+		LlvmValue rChild = n.rhs.accept(this);
+                //assembler.add(new LlvmAnd(ret, lChild.type, lChild, rChild));
+                ret.type = new LlvmPointer(LlvmPrimitiveType.I1);
+                assembler.add(new LlvmStore(rChild, ret));   
+
+                /* Issues the instruction */
+		//  maassembler.add(new LlvmAnd(lhs, lChild.type, lChild, rChild));
 		
-		/* Issues the instruction */
-		assembler.add(new LlvmAnd(lhs, lChild.type, lChild, rChild));
+                
+		/* Insert IRs for jump to the end of if */
+		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
+
+                // if else
+		assembler.add(new LlvmLabel(new LlvmLabelValue(ifelse)));
+		/* Insert IRs */
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting elseClause");
+		//elseClause.accept(this);
+		//assembler.add(new LlvmMinus(ret, LlvmPrimitiveType.I1, new LlvmBool(0), new LlvmBool(0)));
+                assembler.add(new LlvmStore(new LlvmBool(0), ret)); 
+                        
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from elseClause");
+                /* Insert IRs to jump to the end of if */
 		
-		return lhs;
+                
+                assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
+		
+
+		/* Insert label ifend */
+		assembler.add(new LlvmLabel(new LlvmLabelValue(ifend)));
+                LlvmRegister ret_loaded = new LlvmRegister(LlvmPrimitiveType.I1);
+                
+                assembler.add(new LlvmLoad(ret_loaded, ret));
+
+
+		return ret_loaded;
+                
 	}
 
 	/* Assign node */
@@ -240,8 +300,7 @@ public class Codegen extends VisitorAdapter {
 		offList.add(new LlvmIntegerLiteral(0));
 		
 		/* Issues the Instruction to load the array */
-		assembler.add(new LlvmLoad(base, new LlvmNamedValue(basePtr.toString()
-				+ "_tmp", new LlvmPointer(base.type))));
+		assembler.add(new LlvmLoad(base, new LlvmNamedValue(basePtr.toString() + "_tmp", new LlvmPointer(base.type))));
 		
 		/* Accept the index */
 		System.err.println("\nNode: " + n.getClass().getName()
@@ -690,11 +749,9 @@ public class Codegen extends VisitorAdapter {
 		System.err.println("Node: " + n.getClass().getName());
 
 		/* Child nodes from If node */
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting Cond");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Cond");
 		LlvmValue cond = n.condition.accept(this);
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Returning from Cond");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Cond");
 		Statement thenClause = n.thenClause;
 		Statement elseClause = n.elseClause;
 
@@ -708,23 +765,17 @@ public class Codegen extends VisitorAdapter {
 
 		/* Check the body type (if-then or if-then-else) */
 		if (elseClause != null) {
-			assembler.add(new LlvmBranch(cond,
-					new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%"
-							+ ifelse)));
+			assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%" + ifelse)));
 		} else {
-			assembler.add(new LlvmBranch(cond,
-					new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%"
-							+ ifend)));
+			assembler.add(new LlvmBranch(cond, new LlvmLabelValue("%" + ifthen), new LlvmLabelValue("%" + ifend)));
 		}
 
 		/* Insert label to thenClause */
 		assembler.add(new LlvmLabel(new LlvmLabelValue(ifthen)));
 		/* Insert IRs for the body of then clause */
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Accepting thenClause");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Accepting thenClause");
 		thenClause.accept(this);
-		System.err.println("\nNode: " + n.getClass().getName()
-				+ " - Returning from thenClause");
+		System.err.println("\nNode: " + n.getClass().getName() + " - Returning from thenClause");
 		/* Insert IRs for jump to the end of if */
 		assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
 
@@ -733,11 +784,9 @@ public class Codegen extends VisitorAdapter {
 			/* Insert label to elseClause */
 			assembler.add(new LlvmLabel(new LlvmLabelValue(ifelse)));
 			/* Insert IRs */
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Accepting elseClause");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting elseClause");
 			elseClause.accept(this);
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Returning from elseClause");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from elseClause");
 			/* Insert IRs to jump to the end of if */
 			assembler.add(new LlvmBranch(new LlvmLabelValue("%" + ifend)));
 		}
