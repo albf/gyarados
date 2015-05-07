@@ -377,13 +377,13 @@ public class Codegen extends VisitorAdapter {
                 System.err.println("\nNode: " + n.getClass().getName() + " - classEnv.className: " + classEnv.className);
                 System.err.println("\nNode: " + n.getClass().getName() + " - clTypeName: " + clTypeName + " - len: " + clTypeName.length());
                 System.err.println("\nNode: " + n.getClass().getName() + " - methodNode.mName: " + methodNode.mName + " - len: " + methodNode.mName.length());
-                if(classEnv.className.equals(clTypeName)) {
+                /*if(classEnv.className.equals(clTypeName)) {
                     LlvmType argType = new LlvmClassType(clTypeName);
                     LlvmValue thisArg = new LlvmNamedValue("%this", new LlvmPointer(argType));
                     args.add(thisArg);
                     System.err.println("\nNode: " + n.getClass().getName() + " - EQUAL ARGS: " + args.toString());
-                }
-                else {
+                } */
+                //else {
                     LlvmRegister this_ptr = new LlvmRegister(methodNode.fList.get(0).type);
                     if (this_ptr.type.toString().equals(objReff.type.toString())) {
                         System.err.println("\nNode: " + n.getClass().getName() + " - DIFF_A ");
@@ -403,7 +403,7 @@ public class Codegen extends VisitorAdapter {
                         
                     }
                     System.err.println("\nNode: " + n.getClass().getName() + " - DIFFERENT ARGS: " + args.toString());
-                }
+                //}
                 
 		/* The remaining arguments */
 		for (util.List<Exp> vec = n.actuals; vec != null; vec = vec.tail) {
@@ -411,12 +411,14 @@ public class Codegen extends VisitorAdapter {
 			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Argument");
 			LlvmValue tmp = vec.head.accept(this);
 			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Argument, TMP_TYPE: " + tmp.type.toString());
-
+                        System.err.println("\nNode: " + n.getClass().getName() + " - methodNode.mName: " + methodNode.mName + " - len: " + methodNode.mName.length());
+                        
 			/* Deals with double pointers */
 			if (tmp.type.toString().contains("* *")) {
 				LlvmValue a_lhs = new LlvmRegister(((LlvmPointer) tmp.type).content);
 				assembler.add(new LlvmLoad(a_lhs, tmp));
 				args.add(a_lhs);
+                                System.err.println("\nNode: " + n.getClass().getName() + " - TYPE1 :" + a_lhs.toString());
 			} 
                         /*=else if (tmp.type.toString().contains("%class") && tmp.type.toString().contains("*")) {
                             LlvmType conv_type = new LlvmClassType(tmp.type.toString().substring(7, tmp.type.toString().length()-2));
@@ -434,10 +436,13 @@ public class Codegen extends VisitorAdapter {
                             LlvmValue fix = new LlvmNamedValue(this.calledArgument, new LlvmPointer(fix_type));
                             this.calledArgument = null;
                             args.add(fix);
+                            System.err.println("\nNode: " + n.getClass().getName() + " - TYPE2 :" + fix.toString());
                         }
                             
-                        else
+                        else  {
                             args.add(tmp);
+                            System.err.println("\nNode: " + n.getClass().getName() + " - TYPE3 :" + tmp.toString());   
+                        }
 		}
 
 		/* Add the types in the type Array */

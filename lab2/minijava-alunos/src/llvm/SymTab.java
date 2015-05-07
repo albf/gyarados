@@ -237,6 +237,11 @@ public class SymTab extends VisitorAdapter {
 			 * of locals
 			 */
 			LlvmValue v = vec.head.accept(this);
+                        
+                        /* Checks if is an object */
+			if (v.type.toString().contains("%class."))
+				v.type = new LlvmPointer(v.type);
+                        
 			vList.add(v);
 			vMap.put(vec.head.name.s, v);
 			System.err.println("SymTab Visit: " + n.getClass().getName() + " - Adding VarDecl : " + v.toString());
