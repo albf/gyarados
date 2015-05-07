@@ -415,7 +415,7 @@ public class Codegen extends VisitorAdapter {
                 //}
                 
 		/* The remaining arguments */
-                int counter = 0;
+                int counter = 1;
 		for (util.List<Exp> vec = n.actuals; vec != null; vec = vec.tail) {
 			/* Issues the instructions to deal with formals */
 			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Argument");
@@ -446,19 +446,61 @@ public class Codegen extends VisitorAdapter {
                             LlvmValue fix = new LlvmNamedValue(this.calledArgument, new LlvmPointer(fix_type));
                             this.calledArgument = null;
                             
-                            //if(fix.type.toString() != methodNode)
+                            // Want father.
+                            System.err.println("\nNode: " + n.getClass().getName() + " - fix.type.toString() :" + fix.type.toString());
+                            System.err.println("\nNode: " + n.getClass().getName() + " - methodNode.fList.get(counter).type.toString() :" + methodNode.fList.get(counter).type.toString());
                             
-                            
-                            args.add(fix);
-                            System.err.println("\nNode: " + n.getClass().getName() + " - TYPE2 :" + fix.toString());
+                            if(!fix.type.toString().equals(methodNode.fList.get(counter).type.toString())) {
+                                System.err.println("\nNode: " + n.getClass().getName() + " - WANT FATHER TYP2:");
+                                ClassNode argNode = symTab.classes.get(fix.type.toString().substring(7, fix.type.toString().indexOf(" ")-1));
+                                ClassNode fatherNode = symTab.classes.get(argNode.superName);
+                                boolean more = true;
+                                while(more) {
+                                    if((new LlvmPointer(fatherNode.type)).toString().equals(methodNode.fList.get(counter).toString())) {
+                                        more=false;
+                                        LlvmValue PaiReg = new LlvmRegister(new LlvmPointer(fatherNode.type));
+                                        assembler.add(new LlvmBitcast(PaiReg, fix, PaiReg.type));
+                                        args.add(PaiReg);
+                                    }
+                                     else {
+                                        fatherNode = symTab.classes.get(fatherNode.superName);
+                                    }
+                                }
+                            }
+                            else {
+                                args.add(fix);
+                                System.err.println("\nNode: " + n.getClass().getName() + " - TYPE2 :" + fix.toString());
+                            }
                         }
                             
                         else  {
+                            // Want father.
+                            System.err.println("\nNode: " + n.getClass().getName() + " - tmp.type.toString() :" + tmp.type.toString());
+                            System.err.println("\nNode: " + n.getClass().getName() + " - methodNode.fList.get(counter).type.toString() :" + methodNode.fList.get(counter).type.toString());
+                            
+                            if(!tmp.type.toString().equals(methodNode.fList.get(counter).type.toString())) {
+                                System.err.println("\nNode: " + n.getClass().getName() + " - WANT FATHER TYPE3 :" + tmp.type.toString().substring(7, tmp.type.toString().indexOf(" ")));
+                                ClassNode argNode = symTab.classes.get(tmp.type.toString().substring(7, tmp.type.toString().indexOf(" ")-1));
+                                ClassNode fatherNode = symTab.classes.get(argNode.superName);
+                                boolean more = true;
+                                while(more) {
+                                    if(fatherNode == null) {
+                                        System.err.println("\nNode: " + n.getClass().getName() + " - NULL FATHER? TYPE3 :");
+                                    }
+                                    if((new LlvmPointer(fatherNode.type)).toString().equals(methodNode.fList.get(counter).toString())) {
+                                        more=false;
+                                        LlvmValue PaiReg = new LlvmRegister(new LlvmPointer(fatherNode.type));
+                                        assembler.add(new LlvmBitcast(PaiReg, tmp, PaiReg.type));
+                                        args.add(PaiReg);
+                                    }
+                                    else {
+                                        fatherNode = symTab.classes.get(fatherNode.superName);
+                                    }
+                                }
+                            }
+                            else {
                             args.add(tmp);
-                            
-                            
-                            
-                            
+                            }
                             System.err.println("\nNode: " + n.getClass().getName() + " - TYPE3 :" + tmp.toString());   
                         }
                         counter ++;
