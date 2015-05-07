@@ -449,9 +449,34 @@ public class Codegen extends VisitorAdapter {
 		for (LlvmValue val : methodNode.fList)
 			args_t.add(val.type);
 
+                // Get reference from vTable
+                int counter = 0;
+                for (Map.Entry<String, MethodNode> entry : classNode.mList.entrySet()) {
+                    if(entry.getValue().mName.equals(methodNode.mName)) {
+                        break;
+                    }
+                    counter++;
+                }
+                
+                LlvmValue vTable = new LlvmRegister(LlvmPrimitiveType.VTable);
+                assembler.add(new LlvmBitcast(vTable, objReff, LlvmPrimitiveType.VTable));
+                
+                LlvmValue g_Function = new LlvmRegister(new LlvmPointer(new LlvmPointer(LlvmPrimitiveType.I8)));
+                LlvmValue l_Function = new LlvmRegister(new LlvmPointer(LlvmPrimitiveType.I8));
+                LlvmValue function = new LlvmRegister(new LlvmClassPointer(clTypeName, methodNode.rType, methodNode.fList ));
+                
+                
+                List<LlvmValue> offsets = new LinkedList<LlvmValue>();
+		offsets.add(new LlvmIntegerLiteral(0));
+                offsets.add(new LlvmIntegerLiteral(counter));
+		assembler.add(new LlvmGetElementPointer(g_Function, vTable, offsets));
+                assembler.add(new LlvmLoad(l_Function, g_Function));
+                assembler.add(new LlvmBitcast(function, l_Function, function.type));
+                
 		/* Declares the name of the function */
-		String fnName = "@__" + methodNode.mName + "__" + clTypeName;
-
+		//String fnName = "@__" + methodNode.mName + "__" + clTypeName;
+                String fnName = function.toString();
+                
 		/* Issues the call instruction to the method */
 		LlvmRegister lhs = new LlvmRegister(methodNode.rType);
 		assembler.add(new LlvmCall(lhs, methodNode.rType, fnName, args));
@@ -488,11 +513,9 @@ public class Codegen extends VisitorAdapter {
 
 		/* Deal with the instructions for the methods */
 		for (util.List<MethodDecl> met = n.methodList; met != null; met = met.tail) {
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Accepting Method");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Accepting Method");
 			met.head.accept(this);
-			System.err.println("\nNode: " + n.getClass().getName()
-					+ " - Returning from Method");
+			System.err.println("\nNode: " + n.getClass().getName() + " - Returning from Method");
 		}
 
 		return null;
@@ -572,8 +595,7 @@ public class Codegen extends VisitorAdapter {
                 this.calledArgument = addr.toString() + "_tmp";
 
 		/* Issues the Instruction */
-		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue(addr + "_tmp",
-				new LlvmPointer(addr.type))));
+		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue(addr + "_tmp", new LlvmPointer(addr.type))));
 
 		return lhs;
 	}
