@@ -463,6 +463,7 @@ public class Codegen extends VisitorAdapter {
 		classEnv = symTab.classes.get(n.name.toString());
 
 
+                System.err.println("Node: " + n.getClass().getName() + " - classEnv.mList.size(): " + classEnv.mList.size());
                 String vTableName = "[" + classEnv.mList.size() + " x i8 *]";
                 String attr;
                 
@@ -808,10 +809,27 @@ public class Codegen extends VisitorAdapter {
 		/* Return */
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rValue");
 		LlvmValue rValue = n.returnExp.accept(this);
-                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue.type: " + rValue.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue: " + rValue.toString());
                 System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue.type: " + rValue.type.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - n.returnType.toString(): " + n.returnType.toString());
+                System.err.println("\nNode: " + n.getClass().getName() + " - mName: " + mName);
+                System.err.println("\nNode: " + n.getClass().getName() + " - rValue.type.toString().contains(\"*\"): " + rValue.type.toString().contains("*"));
+                if(this.calledArgument != null)
+                System.err.println("\nNode: " + n.getClass().getName() + " - this.calledArgument: " + this.calledArgument);
                 
-                if(rValue.type.toString().contains("%class.") && (this.calledArgument != null)) {
+                
+                
+                if(((this.calledArgument != null) && (this.calledArgument == "this"))) {
+                    System.err.println("\nNode: " + n.getClass().getName() + " - TYPE 0.THIS RETURN TYPE");
+                    LlvmType retType = new LlvmClassType(rValue.type.toString().substring(7));
+                    LlvmValue ret = new LlvmNamedValue("%" + this.calledArgument, retType);
+                    
+                    assembler.add(new LlvmRet(ret));
+                    this.calledArgument = null;
+                }
+                
+                else if((rValue.type.toString().contains("%class.")) && (rValue.type.toString().contains("*")) && ((this.calledArgument != null)))
+                {
                                     //
                 
                     //List<LlvmValue> offsets = new LinkedList<LlvmValue>();
@@ -820,18 +838,44 @@ public class Codegen extends VisitorAdapter {
                     //LlvmRegister lhs = new LlvmRegister(new LlvmPointer(rValue.type));
                     //assembler.add(new LlvmGetElementPointer(lhs, rValue, offsets));
                     //assembler.add(new LlvmRet(lhs));
-                                    
+                    
+                    /* if(n.returnType.toString().equals(rValue.type.toString())) {
                     LlvmType retType = new LlvmClassType(rValue.type.toString().substring(7));
                     LlvmValue ret = new LlvmNamedValue(this.calledArgument, new LlvmPointer(retType));
                     assembler.add(new LlvmRet(ret));
+                    this.calledArgument = null; 
+                    }
+                    
+                    else { */
+                    System.err.println("\nNode: " + n.getClass().getName() + " - TYPE 1 RETURN TYPE");
+                    LlvmType retType = new LlvmClassType(rValue.type.toString().substring(7));
+                    LlvmValue ret = new LlvmNamedValue(this.calledArgument, new LlvmPointer(retType));
+                    LlvmRegister retLoad = new LlvmRegister(retType);
+                    assembler.add(new LlvmLoad(retLoad, ret));
+                    
+                    assembler.add(new LlvmRet(retLoad));
                     this.calledArgument = null;
-                //
+                    //}
                 
                 }
+                
                 else {
-                assembler.add(new LlvmRet(rValue));
+                    //if((this.calledArgument != null) && (this.calledArgument == "this")) {
+                        
+                    //}
+                    if(rValue.type.toString().contains(("%class."))) {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - TYPE 2 RETURN TYPE");
+                        LlvmType retType = new LlvmClassType(rValue.type.toString().substring(7));
+                        LlvmValue ret = new LlvmNamedValue(this.calledArgument, new LlvmPointer(retType));
+                        assembler.add(new LlvmRet(ret));
+                        this.calledArgument = null; 
+                    }
+                    else {
+                        System.err.println("\nNode: " + n.getClass().getName() + " - TYPE 3 RETURN TYPE");
+                        assembler.add(new LlvmRet(rValue));
+                    }
                 }
-
+                this.calledArgument = null;
                 
 		/* Close the method */
 		assembler.add(new LlvmCloseDefinition());
@@ -997,6 +1041,8 @@ public class Codegen extends VisitorAdapter {
 				classEnv.className)));
 		assembler.add(new LlvmLoad(lhs, new LlvmNamedValue("%this_tmp",
 				new LlvmPointer(lhs.type))));
+                
+                this.calledArgument = "this";
 
 		return lhs;
 	}
