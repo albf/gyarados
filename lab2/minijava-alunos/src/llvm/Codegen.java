@@ -1025,6 +1025,7 @@ public class Codegen extends VisitorAdapter {
 
 		/* Return */
                 System.err.println("\nNode: " + n.getClass().getName() + " - Accepting rValue");
+                this.calledArgument = null;
 		LlvmValue rValue = n.returnExp.accept(this);
                 System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue: " + rValue.toString());
                 System.err.println("\nNode: " + n.getClass().getName() + " - Returning from rValue.type: " + rValue.type.toString());
@@ -1038,6 +1039,7 @@ public class Codegen extends VisitorAdapter {
                 
                 if(((this.calledArgument != null) && (this.calledArgument == "this"))) {
                     System.err.println("\nNode: " + n.getClass().getName() + " - TYPE 0.THIS RETURN TYPE");
+                    System.err.println("\nNode: " + n.getClass().getName() + " - rValue.type.toString()" + rValue.type.toString());
                     LlvmType retType = new LlvmClassType(rValue.type.toString().substring(7));
                     LlvmValue ret = new LlvmNamedValue("%" + this.calledArgument, retType);
                     
