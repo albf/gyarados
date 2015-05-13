@@ -970,8 +970,8 @@ public class Codegen extends VisitorAdapter {
                 String superName = classEnv.superName;
                 while(is_parent) {
                     ClassNode classPai = symTab.classes.get(superName);
-                    
-                    counter = 0;
+                    //int counter2 = 0;
+                    counter = 1;
                     for(LlvmValue classvar: classPai.varList) {
                         if(MyClassVars.get(classvar.toString()) == null) {
                             MyClassVars.put(classvar.toString(), classPai.toString());
@@ -989,7 +989,7 @@ public class Codegen extends VisitorAdapter {
                             
                             LinkedList<LlvmValue> offset = new LinkedList<LlvmValue>();
                             LlvmValue offset1 = new LlvmNamedValue("0", LlvmPrimitiveType.I32);
-                            counter = counter+1;
+                            //counter = counter+1;
                             LlvmValue offset2 = new LlvmNamedValue(Integer.toString(counter), LlvmPrimitiveType.I32);
 
                             offset.add(offset1);
@@ -1002,13 +1002,13 @@ public class Codegen extends VisitorAdapter {
                         //assembler.add(new LlvmBitcast(objPai, , objPai.type));
                         // bitCast
                             
-                        if(classPai.isExtended) {
-                            superName = classPai.superName;
-                        }
-                        else {
-                            is_parent = false;
-                        }
+                    if(classPai.isExtended) {
+                       superName = classPai.superName;
                     }
+                    else {
+                        is_parent = false;
+                    }
+                }
                
                 
                 // Debug
