@@ -17,6 +17,7 @@
 using namespace llvm;
 using namespace std;
 
+#define debug true
 
 namespace {
     class VecI {                        // Instruction vectors.
@@ -29,7 +30,7 @@ namespace {
 
     class VecB : public VecI {          // Block vectors.
         public:
-            vector<BasicBlock*> sucessors;
+            vector<BasicBlock*> suc;
     };
 
     class VecL {                        // Live vectors.    
@@ -57,7 +58,7 @@ namespace {
 
                 for(succ_iterator succesor = succ_begin(block); succesor != succ_end(block); succesor++) {
                     BasicBlock* Succ = *succesor;
-                    b_vecs[block]->sucessors.push_back(Succ);
+                    b_vecs[block]->suc.push_back(Succ);
                 }
             }
 
@@ -130,6 +131,7 @@ namespace {
             bool redoIn = true;
             Value * aValue;
             Instruction * aInstruction; 
+            VecB * b, * succ;
 
             // Part 1: Find .use and .def vectors for Blocks.
            
@@ -144,7 +146,7 @@ namespace {
             }  
 
             for (Function::iterator i = func->begin(), e = func->end(); i != e; ++i) {
-                VecB * b = allVecs.b_vecs[&*i];
+                b = allVecs.b_vecs[&*i];
                 for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
                     operands = j->getNumOperands();
 
@@ -179,10 +181,10 @@ namespace {
 
                 while (fe != func->begin()) {
                     fe--;
-                    VecB * b = allVecs.b_vecs[&*fe];
+                    b = allVecs.b_vecs[&*fe];
 
-                    for (unsigned int s = 0; s < b->sucessors.size(); s++) {    // get successors.
-                        VecB * succ = allVecs.b_vecs[b->sucessors[s]];
+                    for (unsigned int s = 0; s < b->suc.size(); s++) {    // get successors.
+                        succ = allVecs.b_vecs[b->suc[s]];
 
                         for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {   // Join .in vectors.
                             if(find(b->out.begin(), b->out.end(), *elem) == b->out.end()) {
@@ -216,10 +218,10 @@ namespace {
                         operands = j->getNumOperands();
 
                         for(unsigned int k = 0; k < operands; k++) {
-                            Value* v = j->getOperand(k);
+                            aValue = j->getOperand(k);
 
-                            if(isa<Instruction>(v)) {
-                                Instruction* op = cast<Instruction>(v);
+                            if(isa<Instruction>(aValue)) {
+                                Instruction* op = cast<Instruction>(aValue);
 
                                 if(find(allVecs.i_vecs[&*j]->def.begin(), allVecs.i_vecs[&*j]->def.end(), op) == allVecs.i_vecs[&*j]->def.end()) {
                                     allVecs.i_vecs[&*j]->use.push_back(op);
@@ -242,13 +244,13 @@ namespace {
 
                 // .IN = .USE U (.OUT - .DEF)
                 allVecs.i_vecs[&*j]->in = UnionOfDifference (allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
-                BasicBlock::iterator aux;   // Other i_vecs 
+                BasicBlock::iterator k; 
 
                 while(j != i->begin()) {    // All but last instruction
-                    aux = j;
+                    k = j;
                     j--;
 
-                    allVecs.i_vecs[&*j]->out = allVecs.i_vecs[&*aux]->in;
+                    allVecs.i_vecs[&*j]->out = allVecs.i_vecs[&*k]->in;
 
                     // .IN = .USE U (.OUT - .DEF)
                     allVecs.i_vecs[&*j]->in = UnionOfDifference(allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
@@ -257,13 +259,19 @@ namespace {
         } 
 
         virtual bool runOnFunction(Function &F) {
-            errs() << "Optimization done at " << F.getName().str() << "\n";
             bool changed = false;
             VecL allVecs;
-            vector<Instruction*> toDelete;
+            vector<Instruction*> removal;
+
+            if(debug) {
+                errs() << "Function: " << F.getName().str() << "\n";
+            }
 
             livenessAnalysis(&F, allVecs);
-            errs() << "Live analysis finished.\n";
+
+            if(debug) {
+                errs() << "Live analysis finished.\n";
+            }
 
             for(Function::iterator i = F.begin(); i != F.end(); i++) {                      // Loop in Basic Blocks 
                 for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {              // Loop in Instructions  
@@ -271,23 +279,26 @@ namespace {
                          &&(!isa<TerminatorInst>(*j)) && (!isa<LandingPadInst>(*j))         // Check if may damage. 
                          &&(!j->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*j))       // Check if out = 0.
                          &&(find(allVecs.i_vecs[&*j]->out.begin(), allVecs.i_vecs[&*j]->out.end(), &*j) == allVecs.i_vecs[&*j]->out.end())) {
-                            errs() << "RemovingBF: " << *j << "\n";
-                            toDelete.push_back(&*j);
+                            removal.push_back(&*j);
                     }
                 }
             }
 
-            errs() << "Instruções deletadas: " << toDelete.size() << "\n";
-            for(vector<Instruction*>::iterator elem = toDelete.begin(); elem != toDelete.end(); elem++) {
-                errs() << "Removing: " << *(*elem) << "\n";
+            for(vector<Instruction*>::iterator elem = removal.begin(); elem != removal.end(); elem++) {
+                if(debug) {
+                    errs() << "Removing: " << *(*elem) << "\n";
+                }
                 (*elem)->eraseFromParent();
             }
 
-            if(toDelete.size()>0) { 
+            if(debug) {
+                errs() << "Instructions removed: " << removal.size() << "\n";
+            }
+
+            if(removal.size()>0) { 
                 changed = true;
             }
 
-            errs() << "Exiting " << toDelete.size() << "\n";
             return changed;
         } 
     }; 
