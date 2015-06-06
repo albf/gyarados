@@ -17,61 +17,52 @@
 using namespace llvm;
 using namespace std;
 
-// =============================
-// Liveness Data
-// =============================
 
 namespace {
-    class BasicBlockData {
+    class VecI {                        // Instruction vectors.
+        public:
+            vector<Instruction*> use; 
+            vector<Instruction*> def; 
+            vector<Instruction*> in; 
+            vector<Instruction*> out; 
+    };
+
+    class VecB : public VecI {          // Block vectors.
         public:
             vector<BasicBlock*> sucessors;
-            vector<Instruction*> use; 
-            vector<Instruction*> def; 
-            vector<Instruction*> in; 
-            vector<Instruction*> out; 
     };
 
-    class InstructionData {
+    class VecL {                        // Live vectors.    
         public:
-            vector<Instruction*> use; 
-            vector<Instruction*> def; 
-            vector<Instruction*> in; 
-            vector<Instruction*> out; 
-    };
-
-    // This class contains all data we'll need in liveness analysis 
-    class LivenessData {
-        public:
-            // These vectors contains all data we'll need
-            DenseMap< BasicBlock*, BasicBlockData* > blocks;
-            DenseMap< Instruction*, InstructionData* > instructions;
+            DenseMap<BasicBlock*, VecB*> b_vecs;
+            DenseMap<Instruction*, VecI*> i_vecs;
 
             // Destructor
-            ~LivenessData() {
-                for(DenseMap< BasicBlock*, BasicBlockData* >::iterator i = blocks.begin();  i != blocks.end(); i++) 
+            ~VecL() {
+                for(DenseMap< BasicBlock*, VecB* >::iterator i = b_vecs.begin();  i != b_vecs.end(); i++) { 
                     delete i->second;
+                }
 
-                for(DenseMap< Instruction*, InstructionData* >::iterator i = instructions.begin();  i != instructions.end(); i++) 
+                b_vecs.clear();
+
+                for(DenseMap< Instruction*, VecI* >::iterator i = i_vecs.begin();  i != i_vecs.end(); i++) {
                     delete i->second;
+                }
 
-                blocks.clear();
-                instructions.clear();
+                i_vecs.clear();
             }
 
-            // This method stores a new BasicBlock
-            void addBasicBlock(BasicBlock* block) {
-                blocks[block] = new BasicBlockData();
+            void bAdd(BasicBlock* block) {
+                b_vecs[block] = new VecB();
 
-                // Adding sucessors
                 for(succ_iterator succesor = succ_begin(block); succesor != succ_end(block); succesor++) {
                     BasicBlock* Succ = *succesor;
-                    blocks[block]->sucessors.push_back(Succ);
+                    b_vecs[block]->sucessors.push_back(Succ);
                 }
             }
 
-            // This method stores a new Instruction
-            void addInstruction(Instruction* inst) {
-                instructions[inst] = new InstructionData();
+            void iAdd(Instruction* inst) {
+                i_vecs[inst] = new VecI();
             }
     };
 
@@ -125,55 +116,46 @@ namespace {
                     u.push_back(*elem);
                 }
             }
-
             for(vector<Instruction*>::iterator elem = vec_0.begin(); elem != vec_0.end(); elem++) {
                 if(find(u.begin(), u.end(), *elem) == u.end()) {
                     u.push_back(*elem);
                 }
             }
-
            return u; 
         }
 
-        // =============================
-        // Liveness analysis
-        // =============================
-        void computeLiveness(Function* func, LivenessData& data) {
-            // ===========================================
-            // Step 0: Store all BasicBlocks and
-            //         Instructions in LivenessData
-            // ===========================================
-           
-            // Iterating on all blocks of the function
-            for(Function::iterator i = func->begin(); i != func->end(); ++i) {
-                data.addBasicBlock(&*i);
+        // Perform liveness analisys and save results in allVecs.
+        void livenessAnalysis(Function* func, VecL& allVecs) {
+            unsigned operands, opr, last_size;
+            bool redoIn = true;
+            Value * aValue;
+            Instruction * aInstruction; 
 
-                // Iterating on all instructions of the block
-                for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
-                    if (isa < Instruction >(*j)) {
-                        data.addInstruction(&*j);
+            // Part 1: Find .use and .def vectors for Blocks.
+           
+            for(Function::iterator it = func->begin(); it != func->end(); ++it) {           // Iterate in b_vecs
+                allVecs.bAdd(&*it);
+
+                for (BasicBlock::iterator jt = it->begin(); jt != it->end(); ++jt) {        // Iterate in i_vecs
+                    if (isa < Instruction >(*jt)) {
+                        allVecs.iAdd(&*jt);
                     }
                 }
             }  
 
-            // ===========================================
-            // Step 1: Compute use/def for all BasicBLocks
-            // ===========================================
-            unsigned numOp, opr;
             for (Function::iterator i = func->begin(), e = func->end(); i != e; ++i) {
-                BasicBlockData * b = data.blocks[&*i];
-                Value * vv;
+                VecB * b = allVecs.b_vecs[&*i];
                 for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
-                    numOp = j->getNumOperands();
+                    operands = j->getNumOperands();
 
-                    for (opr = 0; opr < numOp; opr++) {
-                        vv = j->getOperand (opr);
-                        if (isa < Instruction > (*vv)) {
-                            Instruction * vvv = cast < Instruction > (&*vv);
+                    for (opr = 0; opr < operands; opr++) {
+                        aValue = j->getOperand (opr);
+                        if (isa <Instruction> (*aValue)) {
+                            aInstruction = cast < Instruction > (&*aValue);
                             
-                            if((find(b->def.begin(), b->def.end(), (&*vvv)) == b->def.end())
-                                && (find(b->use.begin(), b->use.end(), (&*vvv)) == b->use.end())) {
-                                b->use.push_back(&*vvv);
+                            if((find(b->def.begin(), b->def.end(), (&*aInstruction)) == b->def.end())
+                                && (find(b->use.begin(), b->use.end(), (&*aInstruction)) == b->use.end())) {
+                                b->use.push_back(&*aInstruction);
                             }
                         }
                     }
@@ -187,51 +169,33 @@ namespace {
                         }
                     }
                 }
-
             }
 
-            // ===========================================
-            // Step 2: Compute in/out for all BasicBlocks
-            // ===========================================
+            // Part2: Find .IN, .OUT, .DEF and .USE.
 
-            // Reversely iterating on blocks
-            bool inChanged = true;
-            unsigned int last_size;
+            while (redoIn == true) {                 // Loop until IN remain unchanged.
+                redoIn = false;
+                Function::iterator fe = func->end();    // Start at the end.
 
-            while (inChanged == true) {
-                //LOGC2 ("Loop until every IN isn't changed...\n");
-                inChanged = false;
-                Function::iterator fe = func->end();
-
-                //for (Function::iterator i = fe, e = func->begin(); i != e;)
                 while (fe != func->begin()) {
                     fe--;
-                    BasicBlockData * b = data.blocks[&*fe];
+                    VecB * b = allVecs.b_vecs[&*fe];
 
-                    // For each successor
-                    for (unsigned int s = 0; s < b->sucessors.size(); s++) {
-                        BasicBlockData * succ = data.blocks[b->sucessors[s]];
+                    for (unsigned int s = 0; s < b->sucessors.size(); s++) {    // get successors.
+                        VecB * succ = allVecs.b_vecs[b->sucessors[s]];
 
-                        // Union in[S]
-                        for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {
+                        for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {   // Join .in vectors.
                             if(find(b->out.begin(), b->out.end(), *elem) == b->out.end()) {
                                 b->out.push_back(*elem);
                             }
                         }
                     }
 
-                    // Used to verify if IN will change
-                    last_size = b->in.size();
+                    last_size = b->in.size();           // Use to check if IN has changed.
 
+                    // IN = USE U (OUT - DEF)
                     b->in = b->use;
-
-                    // tmp = out - def
-                    vector<Instruction *> tmp;
-
-                    // Out[B] - defB
-                    tmp = Difference(b->out, b->def);
-
-                    // use[B] U (out[B] - def[B])
+                    vector<Instruction *> tmp = Difference(b->out, b->def);
 
                     for(vector<Instruction*>::iterator elem = tmp.begin(); elem != tmp.end(); elem++) {
                         if(find(b->in.begin(), b->in.end(), *elem) == b->in.end()) {
@@ -239,99 +203,74 @@ namespace {
                         }
                     }
 
-                    //b->in.insert(b->in.end(), tmp.begin(), tmp.end());
-
-                    // If some IN changed
-                    if (last_size != b->in.size()) {
-                        inChanged = true;
+                    if (last_size != b->in.size()) {    // Check if IN has changed.
+                        redoIn = true;
                     }
                 }
             }
 
-            // ===========================================
-            // Step 3: Use data from BasicBlocks to
-            //         compute all Instructions use/def
-            // ===========================================
 
             for(Function::iterator i = func->begin(); i != func->end(); i++) {
-                // For every Instruction inside a BasicBlock...
                 for (BasicBlock::iterator j = i->begin(); j != i->end(); j++) {
                     if(isa<Instruction>(*j)) {
-                        unsigned int n = j->getNumOperands();
+                        operands = j->getNumOperands();
 
-                        for(unsigned int k = 0; k < n; k++) {
+                        for(unsigned int k = 0; k < operands; k++) {
                             Value* v = j->getOperand(k);
 
                             if(isa<Instruction>(v)) {
                                 Instruction* op = cast<Instruction>(v);
 
-                                if(find(data.instructions[&*j]->def.begin(), data.instructions[&*j]->def.end(), op) == data.instructions[&*j]->def.end()) {
-                                    data.instructions[&*j]->use.push_back(op);
+                                if(find(allVecs.i_vecs[&*j]->def.begin(), allVecs.i_vecs[&*j]->def.end(), op) == allVecs.i_vecs[&*j]->def.end()) {
+                                    allVecs.i_vecs[&*j]->use.push_back(op);
                                 }
                             }
                         }
 
-                        if ((j->hasName()) && (find(data.instructions[&*j]->use.begin(), data.instructions[&*j]->use.end(), &*j) == data.instructions[&*j]->use.end())) {
-                            data.instructions[&*j]->def.push_back(&*j);
+                        if ((j->hasName()) && (find(allVecs.i_vecs[&*j]->use.begin(), allVecs.i_vecs[&*j]->use.end(), &*j) == allVecs.i_vecs[&*j]->use.end())) {
+                            allVecs.i_vecs[&*j]->def.push_back(&*j);
                         }
                     }
                 }
 
             }
 
-            // ===========================================
-            // Step 4: Use data from BasicBLocks to
-            //         compute all Instructions in/out
-            // ===========================================
-
             for(Function::iterator i = func->begin(); i != func->end(); i++) {
-                // Last instruction of the block
                 BasicBlock::iterator j = i->end();
                 j--;
-                data.instructions[&*j]->out = data.blocks[&*i]->out;
+                allVecs.i_vecs[&*j]->out = allVecs.b_vecs[&*i]->out;
 
-                // in = use U (out - def)
-                //data.instructions[&*j]->in = Union(data.instructions[&*j]->use, Difference(data.instructions[&*j]->out, data.instructions[&*j]->def));
-                data.instructions[&*j]->in = UnionOfDifference (data.instructions[&*j]->use, data.instructions[&*j]->out, data.instructions[&*j]->def);
+                // .IN = .USE U (.OUT - .DEF)
+                allVecs.i_vecs[&*j]->in = UnionOfDifference (allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
+                BasicBlock::iterator aux;   // Other i_vecs 
 
-                // Other instructions
-                BasicBlock::iterator aux;
-
-                // for each instruction other than the last one
-                while(j != i->begin()) {
+                while(j != i->begin()) {    // All but last instruction
                     aux = j;
                     j--;
 
-                    data.instructions[&*j]->out = data.instructions[&*aux]->in;
+                    allVecs.i_vecs[&*j]->out = allVecs.i_vecs[&*aux]->in;
 
-                    // in = use U (out - def)
-                    //data.instructions[&*j]->in = Union(data.instructions[&*j]->use, Difference(data.instructions[&*j]->out, data.instructions[&*j]->def));
-                    data.instructions[&*j]->in = UnionOfDifference(data.instructions[&*j]->use, data.instructions[&*j]->out, data.instructions[&*j]->def);
+                    // .IN = .USE U (.OUT - .DEF)
+                    allVecs.i_vecs[&*j]->in = UnionOfDifference(allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
                 } 
             }
         } 
 
-        // =============================
-        // Optimization
-        // =============================
-
         virtual bool runOnFunction(Function &F) {
             errs() << "Optimization done at " << F.getName().str() << "\n";
             bool changed = false;
-            LivenessData data;
+            VecL allVecs;
             vector<Instruction*> toDelete;
 
-            computeLiveness(&F, data);
+            livenessAnalysis(&F, allVecs);
             errs() << "Live analysis finished.\n";
 
-            ////errs() << "Tamanho do DenseMap: " << data.instructions.size() << "\n";
-            
             for(Function::iterator i = F.begin(); i != F.end(); i++) {                      // Loop in Basic Blocks 
                 for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {              // Loop in Instructions  
                     if ((isa<Instruction>(*j))                                             // Check if it's a instruction
                          &&(!isa<TerminatorInst>(*j)) && (!isa<LandingPadInst>(*j))         // Check if may damage. 
                          &&(!j->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*j))       // Check if out = 0.
-                         &&(find(data.instructions[&*j]->out.begin(), data.instructions[&*j]->out.end(), &*j) == data.instructions[&*j]->out.end())) {
+                         &&(find(allVecs.i_vecs[&*j]->out.begin(), allVecs.i_vecs[&*j]->out.end(), &*j) == allVecs.i_vecs[&*j]->out.end())) {
                             errs() << "RemovingBF: " << *j << "\n";
                             toDelete.push_back(&*j);
                     }

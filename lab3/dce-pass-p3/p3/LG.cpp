@@ -231,7 +231,6 @@ namespace
             for (Function::iterator i = func->begin(), e = func->end(); i != e; ++i)
             {
                 BasicBlockData * b = data.blocks[ &*i ];
-                errs() << "B changed" << "\n";
                 Value * vv;
                 for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j)
                 {
@@ -247,10 +246,6 @@ namespace
                             if ( b->def.find ( &*vvv ) == b->def.end() )
                             {
                                 b->use.insert ( &*vvv );
-                                errs() << "- new b->use: " << *vvv << "\n";
-                                errs() << "-- b->use.size: " << b->use.size() << "\n";
-                                errs() << "-- opr: " << opr << "\n";
-                                errs() << "-- j: " << j << "\n";
 
                             }
                         }
@@ -325,13 +320,8 @@ namespace
                     {
                         BasicBlockData * succ = data.blocks[ b->sucessors[s] ];
 
-                        errs() << "b: " << b << "\n";
-                        errs() << "b->out.size before. " << b->out.size() << "\n";
-                        errs() << "succ->in.size before. " << succ->in.size() << "\n";
-
                         // Union in[S]
                         b->out.insert ( succ->in.begin(), succ->in.end() );
-                        errs() << "b->out.size after. " << b->out.size() << "\n";
                     }
 
                     // Used to verify if IN will change
@@ -377,10 +367,7 @@ namespace
                     //LOGC ( " }\n" ); 
 
                     // use[B] U ( out[B] - def[B] )
-                    errs() << "b->in.size before. " << b->in.size() << "\n";
-                    errs() << "tmp.size before. " << tmp.size() << "\n";
                     b->in.insert ( tmp.begin(), tmp.end() );
-                    errs() << "b->in.size after. " << b->in.size() << "\n";
 
 
                     /*
@@ -404,19 +391,10 @@ namespace
                     //LOGC ( " }\n" ); 
                     */
 
-                    errs() << "--loop\n";
-                    errs() << "b->in.size() " << b->in.size() << "\n";
-                    errs() << "b->out.size() " << b->out.size() << "\n";
-                    errs() << "b->def.size() " << b->def.size() << "\n";
-                    errs() << "b->use.size() " << b->use.size() << "\n";
-                    errs() << "tmp.size() " << tmp.size() << "\n";
 
                     // If some IN changed
                     if ( old.size() != b->in.size() )
                     {
-                        errs() << "-------- EXIT ------ \n";
-                        errs() << "InSize " << b->in.size() << "\n";
-            
                         inChanged = true;
                     }
                     /*
@@ -467,9 +445,6 @@ namespace
 
             //errs() << "Function: " << func->getName().str() << " :D:D:D:D Step 3                   \t\t\t\r";
             //LOGC2("\n++++++++Step 3\n");
-
-            errs() << "Loop" << loop <<  "\n";
-            errs() << "Done Step 2\n";
 
 
             // ===========================================
@@ -687,16 +662,18 @@ namespace
                         {
                             toDelete.push( &*j );
                             changed = true;
-                            errs() << "RemovingBF: " << *j << "\n";
+                            //errs() << "RemovingBF: " << *j << "\n";
                         }
                     }
                 }
             }
 
+            errs() << "Optimization done at " << F.getName().str() << "                                       \n";
+
             // Deleting
             if ( toDelete.size() )
             {
-                //errs() << "Instruções deletadas: " << toDelete.size() << "\n";
+                errs() << "Instruções deletadas: " << toDelete.size() << "\n";
             }
 
             while( toDelete.size() > 0 ) 
@@ -707,7 +684,6 @@ namespace
                 deadInst->eraseFromParent();
             }
 
-            //errs() << "Optimization done at " << F.getName().str() << "                                       \n";
             // Return
             return changed;
         }
