@@ -129,9 +129,10 @@ namespace {
             bool changed = false;
             bool redoIn = true;
             unsigned operands, opIt, last_size;
+            unsigned int l, su;
             Value * aValue;
             Instruction * aInstruction; 
-            VecB * b, * succ;
+            VecB * aVecB, * succ;
             VecL allVecs;
             vector<Instruction*> removal;
 
@@ -152,7 +153,7 @@ namespace {
             }  
 
             for(Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {
-                b = allVecs.b_vecs[&*i];
+                aVecB = allVecs.b_vecs[&*i];
                 for(BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
                     operands = j->getNumOperands();
 
@@ -161,18 +162,18 @@ namespace {
                         if (isa <Instruction> (*aValue)) {
                             aInstruction = cast <Instruction> (&*aValue);
                             
-                            if((find(b->def.begin(), b->def.end(), (&*aInstruction)) == b->def.end())
-                                && (find(b->use.begin(), b->use.end(), (&*aInstruction)) == b->use.end())) {
-                                b->use.push_back(&*aInstruction);
+                            if((find(aVecB->def.begin(), aVecB->def.end(), (&*aInstruction)) == aVecB->def.end())
+                                && (find(aVecB->use.begin(), aVecB->use.end(), (&*aInstruction)) == aVecB->use.end())) {
+                                aVecB->use.push_back(&*aInstruction);
                             }
                         }
                     }
 
                     if (j->hasName()) {
                         if (isa<Instruction>(*j)) {
-                            if((find(b->use.begin(), b->use.end(), (&*j)) == b->use.end()) 
-                                && (find(b->def.begin(), b->def.end(), (&*j)) == b->def.end())) {
-                                b->def.push_back(&*j);
+                            if((find(aVecB->use.begin(), aVecB->use.end(), (&*j)) == aVecB->use.end()) 
+                                && (find(aVecB->def.begin(), aVecB->def.end(), (&*j)) == aVecB->def.end())) {
+                                aVecB->def.push_back(&*j);
                             }
                         }
                     }
@@ -187,31 +188,31 @@ namespace {
 
                 while (fe != F.begin()) {
                     fe--;
-                    b = allVecs.b_vecs[&*fe];
+                    aVecB = allVecs.b_vecs[&*fe];
 
-                    for(unsigned int s = 0; s < b->suc.size(); s++) {    // get successors.
-                        succ = allVecs.b_vecs[b->suc[s]];
+                    for(su = 0; su < aVecB->suc.size(); su++) {    // get successors.
+                        succ = allVecs.b_vecs[aVecB->suc[su]];
 
                         for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {   // Join .in vectors.
-                            if(find(b->out.begin(), b->out.end(), *elem) == b->out.end()) {
-                                b->out.push_back(*elem);
+                            if(find(aVecB->out.begin(), aVecB->out.end(), *elem) == aVecB->out.end()) {
+                                aVecB->out.push_back(*elem);
                             }
                         }
                     }
 
-                    last_size = b->in.size();           // Use to check if IN has changed.
+                    last_size = aVecB->in.size();           // Use to check if IN has changed.
 
                     // IN = USE U (OUT - DEF)
-                    b->in = b->use;
-                    vector<Instruction *> tmp = Difference(b->out, b->def);
+                    aVecB->in = aVecB->use;
+                    vector<Instruction *> OutDiffDef = Difference(aVecB->out, aVecB->def);
 
-                    for(vector<Instruction*>::iterator elem = tmp.begin(); elem != tmp.end(); elem++) {
-                        if(find(b->in.begin(), b->in.end(), *elem) == b->in.end()) {
-                            b->in.push_back(*elem);
+                    for(vector<Instruction*>::iterator elem = OutDiffDef.begin(); elem != OutDiffDef.end(); elem++) {
+                        if(find(aVecB->in.begin(), aVecB->in.end(), *elem) == aVecB->in.end()) {
+                            aVecB->in.push_back(*elem);
                         }
                     }
 
-                    if (last_size != b->in.size()) {    // Check if IN has changed.
+                    if (last_size != aVecB->in.size()) {    // Check if IN has changed.
                         redoIn = true;
                     }
                 }
@@ -222,8 +223,8 @@ namespace {
                     if(isa<Instruction>(*j)) {
                         operands = j->getNumOperands();
 
-                        for(unsigned int k = 0; k < operands; k++) {
-                            aValue = j->getOperand(k);
+                        for(l = 0; l < operands; l++) {
+                            aValue = j->getOperand(l);
 
                             if(isa<Instruction>(aValue)) {
                                 Instruction* op = cast<Instruction>(aValue);
