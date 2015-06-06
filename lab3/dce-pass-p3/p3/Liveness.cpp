@@ -26,7 +26,6 @@ namespace {
                 u.push_back(*elem);
             }
         }
-       //errs() << "u_size : " << u.size() << "\n";
        return u; 
     }
 
