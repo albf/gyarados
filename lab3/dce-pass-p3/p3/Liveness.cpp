@@ -1,19 +1,18 @@
-#include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/BasicBlock.h"
-#include "llvm/IR/Instruction.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/InstIterator.h"
-#include "llvm/IR/IntrinsicInst.h"
-#include "llvm/ADT/DenseMap.h"
-#include <vector>
-//#include <set>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#include <queue>
+#include <vector>
+
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/IntrinsicInst.h"
+#include "llvm/Pass.h"
+#include "llvm/Support/CFG.h"
+#include "llvm/Support/InstIterator.h"
+#include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
 using namespace std;
@@ -54,10 +53,10 @@ namespace
             // Destructor
             ~LivenessData() 
             {
-                for( DenseMap< BasicBlock*, BasicBlockData* >::iterator i = blocks.begin();  i != blocks.end(); i++ ) 
+                for(DenseMap< BasicBlock*, BasicBlockData* >::iterator i = blocks.begin();  i != blocks.end(); i++) 
                     delete i->second;
 
-                for( DenseMap< Instruction*, InstructionData* >::iterator i = instructions.begin();  i != instructions.end(); i++ ) 
+                for(DenseMap< Instruction*, InstructionData* >::iterator i = instructions.begin();  i != instructions.end(); i++) 
                     delete i->second;
 
                 blocks.clear();
@@ -65,20 +64,20 @@ namespace
             }
 
             // This method stores a new BasicBlock
-            void addBasicBlock( BasicBlock* block ) 
+            void addBasicBlock(BasicBlock* block) 
             {
                 blocks[block] = new BasicBlockData();
 
                 // Adding sucessors
-                for( succ_iterator succesor = succ_begin(block); succesor != succ_end(block); succesor++ ) 
+                for(succ_iterator succesor = succ_begin(block); succesor != succ_end(block); succesor++) 
                 {
                     BasicBlock* Succ = *succesor;
-                    blocks[block]->sucessors.push_back( Succ );
+                    blocks[block]->sucessors.push_back(Succ);
                 }
             }
 
             // This method stores a new Instruction
-            void addInstruction( Instruction* inst ) 
+            void addInstruction(Instruction* inst) 
             {
                 instructions[inst] = new InstructionData();
             }
@@ -87,36 +86,15 @@ namespace
     struct dcep3 : public FunctionPass 
     {
         static char ID;
-        ofstream log;
 
-        // Constructor
         dcep3() : FunctionPass(ID) {
         }
 
-        // Destructor
         ~dcep3()
         {
         }
 
-        // =============================
-        // Set operations
-        // =============================
-
-        /*set< Instruction* > getSetUnion( const set< Instruction* >& s1, const set< Instruction* >& s2 ) 
-        {
-            set< Instruction* > ret;
-            set_union( s1.begin(), s1.end(), s2.begin(), s2.end(), inserter( ret, ret.begin() ) );
-            return ret;
-        }
-
-        set< Instruction* > getSetDifference( const set< Instruction* >& s1, const set< Instruction* >& s2 ) 
-        {
-            set< Instruction* > ret;
-            set_difference( s1.begin(), s1.end(), s2.begin(), s2.end(), inserter( ret, ret.begin() ) );
-            return ret;
-        }*/
-
-        string newInst ( )
+        string newInst ()
         {
             static int ni = 0;
             std::stringstream ss;
@@ -175,23 +153,10 @@ namespace
            return u; 
         }
 
-        // Insert all elements no present in vector 2 in 1.
-        bool Insert(vector<Instruction *>& vec_1, vector<Instruction *>& vec_2) {
-            bool added = false;
-            for(vector<Instruction*>::iterator elem = vec_2.begin(); elem != vec_2.end(); elem++) {
-                if(find(vec_1.begin(), vec_1.end(), *elem) == vec_1.end()) {
-                    vec_1.push_back(*elem);
-                    added = true;
-                }
-            }
-            errs() << "Added " << added << "\n";
-            return added;
-        }
-
         // =============================
         // Liveness analysis
         // =============================
-        void computeLiveness( Function* func, LivenessData& data ) 
+        void computeLiveness(Function* func, LivenessData& data) 
         {
             // ===========================================
             // Step 0: Store all BasicBlocks and
@@ -199,16 +164,13 @@ namespace
             // ===========================================
            
             // Iterating on all blocks of the function
-            for( Function::iterator i = func->begin(); i != func->end(); ++i )
-            {
-                data.addBasicBlock( &*i );
+            for(Function::iterator i = func->begin(); i != func->end(); ++i) {
+                data.addBasicBlock(&*i);
 
                 // Iterating on all instructions of the block
-                for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j)
-                {
-                    if ( isa < Instruction >( *j ) )
-                    {
-                        data.addInstruction( &*j );
+                for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
+                    if (isa < Instruction >(*j)) {
+                        data.addInstruction(&*j);
                     }
                 }
             }  
@@ -217,39 +179,28 @@ namespace
             // Step 1: Compute use/def for all BasicBLocks
             // ===========================================
             unsigned numOp, opr;
-            for (Function::iterator i = func->begin(), e = func->end(); i != e; ++i)
-            {
-                BasicBlockData * b = data.blocks[ &*i ];
-                //errs() << "B changed" << "\n";
+            for (Function::iterator i = func->begin(), e = func->end(); i != e; ++i) {
+                BasicBlockData * b = data.blocks[&*i];
                 Value * vv;
-                for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j)
-                {
+                for (BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
                     numOp = j->getNumOperands();
 
-                    for ( opr = 0; opr < numOp; opr++ )
-                    {
-                        vv = j->getOperand ( opr );
-                        if ( isa < Instruction > ( *vv ) )
-                        {
+                    for (opr = 0; opr < numOp; opr++) {
+                        vv = j->getOperand (opr);
+                        if (isa < Instruction > (*vv)) {
                             Instruction * vvv = cast < Instruction > (&*vv);
                             
-                            if( (find(b->def.begin(), b->def.end(), (&*vvv)) == b->def.end())
-                                && (find(b->use.begin(), b->use.end(), (&*vvv)) == b->use.end()) ) {
+                            if((find(b->def.begin(), b->def.end(), (&*vvv)) == b->def.end())
+                                && (find(b->use.begin(), b->use.end(), (&*vvv)) == b->use.end())) {
                                 b->use.push_back(&*vvv);
-                                errs() << "- new b->use: " << *vvv << "\n";
-                                errs() << "-- b->use.size: " << b->use.size() << "\n";
-                                errs() << "-- opr: " << opr << "\n";
-                                errs() << "-- j: " << j << "\n";
                             }
                         }
                     }
 
-                    if (j->hasName())
-                    {
-                        if (isa<Instruction>(*j))
-                        {
-                            if( (find(b->use.begin(), b->use.end(), (&*j)) == b->use.end()) 
-                                && (find(b->def.begin(), b->def.end(), (&*j)) == b->def.end()) ) {
+                    if (j->hasName()) {
+                        if (isa<Instruction>(*j)) {
+                            if((find(b->use.begin(), b->use.end(), (&*j)) == b->use.end()) 
+                                && (find(b->def.begin(), b->def.end(), (&*j)) == b->def.end())) {
                                 b->def.push_back(&*j);
                             }
                         }
@@ -258,36 +209,33 @@ namespace
 
             }
 
-            errs() << "Done Step 1\n";
             // ===========================================
             // Step 2: Compute in/out for all BasicBlocks
             // ===========================================
 
             // Reversely iterating on blocks
             bool inChanged = true;
-            unsigned int last_size
+            unsigned int last_size;
 
             while (inChanged == true)
             {
-                //LOGC2 ( "Loop until every IN isn't changed...\n" );
+                //LOGC2 ("Loop until every IN isn't changed...\n");
                 inChanged = false;
                 Function::iterator fe = func->end();
 
                 //for (Function::iterator i = fe, e = func->begin(); i != e;)
-                while ( fe != func->begin() )
+                while (fe != func->begin())
                 {
-                    loop++;
                     fe--;
-                    BasicBlockData * b = data.blocks[ &*fe ];
+                    BasicBlockData * b = data.blocks[&*fe];
 
                     // For each successor
-                    for ( unsigned int s = 0; s < b->sucessors.size(); s++ )
+                    for (unsigned int s = 0; s < b->sucessors.size(); s++)
                     {
-                        BasicBlockData * succ = data.blocks[ b->sucessors[s] ];
+                        BasicBlockData * succ = data.blocks[b->sucessors[s]];
 
                         // Union in[S]
                         //b->out.insert(b->out.end(), succ->in.begin(), succ->in.end());
-                        //Insert(b->out, succ->in);
                         for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {
                             if(find(b->out.begin(), b->out.end(), *elem) == b->out.end()) {
                                 b->out.push_back(*elem);
@@ -307,10 +255,7 @@ namespace
                     // Out[B] - defB
                     tmp = Difference(b->out, b->def);
 
-                    // use[B] U ( out[B] - def[B] )
-
-                    //bool changed = Insert(b->in, tmp);
-                    //bool changed = false;
+                    // use[B] U (out[B] - def[B])
 
                     for(vector<Instruction*>::iterator elem = tmp.begin(); elem != tmp.end(); elem++) {
                         if(find(b->in.begin(), b->in.end(), *elem) == b->in.end()) {
@@ -338,20 +283,20 @@ namespace
                 // For every Instruction inside a BasicBlock...
                 for (BasicBlock::iterator j = i->begin(); j != i->end(); j++) 
                 {
-                    if(isa<Instruction>( *j )) 
+                    if(isa<Instruction>(*j)) 
                     {
                         unsigned int n = j->getNumOperands();
 
                         for(unsigned int k = 0; k < n; k++)
                         {
-                            Value* v = j->getOperand( k );
+                            Value* v = j->getOperand(k);
 
                             if(isa<Instruction>(v)) 
                             {
-                                Instruction* op = cast<Instruction>( v );
+                                Instruction* op = cast<Instruction>(v);
 
                                 if(find(data.instructions[&*j]->def.begin(), data.instructions[&*j]->def.end(), op) == data.instructions[&*j]->def.end()) {
-                                //if ( !data.instructions[&*j]->def.count(op) ) 
+                                //if (!data.instructions[&*j]->def.count(op)) 
                                     data.instructions[&*j]->use.push_back(op);
                                 }
                             }
@@ -359,7 +304,7 @@ namespace
 
                         if (j->hasName())
                         if(find(data.instructions[&*j]->use.begin(), data.instructions[&*j]->use.end(), &*j) == data.instructions[&*j]->use.end()) {
-                        //if ( !data.instructions[&*j]->use.count(&*j) )
+                        //if (!data.instructions[&*j]->use.count(&*j))
                             data.instructions[&*j]->def.push_back(&*j);
                         }
                     }
@@ -373,31 +318,31 @@ namespace
             //         compute all Instructions in/out
             // ===========================================
 
-            for( Function::iterator i = func->begin(); i != func->end(); i++ ) 
+            for(Function::iterator i = func->begin(); i != func->end(); i++) 
             {
                 // Last instruction of the block
                 BasicBlock::iterator j = i->end();
                 j--;
-                data.instructions[ &*j ]->out = data.blocks[ &*i ]->out;
+                data.instructions[&*j]->out = data.blocks[&*i]->out;
 
-                // in = use U ( out - def )
-                //data.instructions[ &*j ]->in = Union( data.instructions[ &*j ]->use, Difference( data.instructions[ &*j ]->out, data.instructions[ &*j ]->def ) );
-                data.instructions[ &*j ]->in = UnionOfDifference (data.instructions[ &*j ]->use, data.instructions[ &*j ]->out, data.instructions[ &*j ]->def );
+                // in = use U (out - def)
+                //data.instructions[&*j]->in = Union(data.instructions[&*j]->use, Difference(data.instructions[&*j]->out, data.instructions[&*j]->def));
+                data.instructions[&*j]->in = UnionOfDifference (data.instructions[&*j]->use, data.instructions[&*j]->out, data.instructions[&*j]->def);
 
                 // Other instructions
                 BasicBlock::iterator aux;
 
                 // for each instruction other than the last one
-                while( j != i->begin() )
+                while(j != i->begin())
                 {
                     aux = j;
                     j--;
 
-                    data.instructions[ &*j ]->out = data.instructions[ &*aux ]->in;
+                    data.instructions[&*j]->out = data.instructions[&*aux]->in;
 
-                    // in = use U ( out - def )
-                    //data.instructions[ &*j ]->in = Union(data.instructions[ &*j ]->use, Difference(data.instructions[ &*j ]->out, data.instructions[ &*j ]->def ));
-                    data.instructions[ &*j ]->in = UnionOfDifference(data.instructions[ &*j ]->use, data.instructions[ &*j ]->out, data.instructions[ &*j ]->def );
+                    // in = use U (out - def)
+                    //data.instructions[&*j]->in = Union(data.instructions[&*j]->use, Difference(data.instructions[&*j]->out, data.instructions[&*j]->def));
+                    data.instructions[&*j]->in = UnionOfDifference(data.instructions[&*j]->use, data.instructions[&*j]->out, data.instructions[&*j]->def);
                 } 
             }
         } 
@@ -406,39 +351,31 @@ namespace
         // Optimization
         // =============================
 
-
-
-
-
-
-        virtual bool runOnFunction( Function &F ) 
+        virtual bool runOnFunction(Function &F) 
         {
             errs() << "Optimization done at " << F.getName().str() << "\n";
             bool changed = false;
             LivenessData data;
             vector<Instruction*> toDelete;
 
-            computeLiveness( &F, data );
-            errs() << "Done Live\n";
+            computeLiveness(&F, data);
+            errs() << "Live analysis finished.\n";
 
             ////errs() << "Tamanho do DenseMap: " << data.instructions.size() << "\n";
             
             for(Function::iterator i = F.begin(); i != F.end(); i++) {                      // Loop in Basic Blocks 
                 for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {              // Loop in Instructions  
-                    if ( (isa<Instruction>(*j))                                             // Check if it's a instruction
+                    if ((isa<Instruction>(*j))                                             // Check if it's a instruction
                          &&(!isa<TerminatorInst>(*j)) && (!isa<LandingPadInst>(*j))         // Check if may damage. 
-                         &&(!j->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*j))    
-                         //&&(data.instructions[&*j]->out.count(&*j) == 0) ) {                // Check if out = 0.
-                         &&(find(data.instructions[&*j]->out.begin(), data.instructions[&*j]->out.end(), &*j) == data.instructions[&*j]->out.end()) ) {
+                         &&(!j->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*j))       // Check if out = 0.
+                         &&(find(data.instructions[&*j]->out.begin(), data.instructions[&*j]->out.end(), &*j) == data.instructions[&*j]->out.end())) {
                             errs() << "RemovingBF: " << *j << "\n";
                             toDelete.push_back(&*j);
                     }
                 }
             }
 
-
             errs() << "Instruções deletadas: " << toDelete.size() << "\n";
-            errs() << "Done filling up toDelete\n";
             for(vector<Instruction*>::iterator elem = toDelete.begin(); elem != toDelete.end(); elem++) {
                 errs() << "Removing: " << *(*elem) << "\n";
                 (*elem)->eraseFromParent();
@@ -446,7 +383,6 @@ namespace
 
             if(toDelete.size()>0) { 
                 changed = true;
-                //errs() << "Instruções deletadas: " << toDelete.size() << "\n";
             }
 
             errs() << "Exiting " << toDelete.size() << "\n";
@@ -456,4 +392,4 @@ namespace
 }
 
 char dcep3::ID = 0;
-static RegisterPass<dcep3> X( "dce-p3", "Dead Code Elimination Pass", false, false );
+static RegisterPass<dcep3> X("dce-p3", "Dead Code Elimination Pass", false, false);
