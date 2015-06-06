@@ -70,8 +70,10 @@ namespace {
     struct dcep3 : public FunctionPass
     {
         static char ID;
+        int removalCount;
 
         dcep3() : FunctionPass(ID) {
+            removalCount=0;
         }
 
         ~dcep3() {
@@ -291,8 +293,11 @@ namespace {
                 (*elem)->eraseFromParent();
             }
 
+            removalCount += removal.size();
+
             if(debug) {
-                errs() << "Instructions removed: " << removal.size() << "\n";
+                errs() << "Instructions removed from function: " << removal.size() << "\n";
+                errs() << "Instructions removed so far: " << removalCount << "\n";
             }
 
             if(removal.size()>0) { 
