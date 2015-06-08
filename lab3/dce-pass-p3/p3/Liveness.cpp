@@ -187,8 +187,7 @@ namespace {
                 Function::iterator fe = F.end();    // Start at the end.
 
                 while (fe != F.begin()) {
-                    fe--;
-                    aVecB = allVecs.b_vecs[&*fe];
+                    aVecB = allVecs.b_vecs[&*--fe];
 
                     for(su = 0; su < aVecB->suc.size(); su++) {    // get successors.
                         succ = allVecs.b_vecs[aVecB->suc[su]];
@@ -243,6 +242,8 @@ namespace {
 
             }
 
+            // Part 3 : Verify which elements can be safely removed and remove them.
+
             for(Function::iterator i = F.begin(); i != F.end(); i++) {
                 BasicBlock::iterator j = i->end();
                 j--;
@@ -261,17 +262,13 @@ namespace {
                     // .IN = .USE U (.OUT - .DEF)
                     allVecs.i_vecs[&*j]->in = UnionOfDifference(allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
                 } 
-            }
 
-            // Part 3 : Verify which elements can be safely removed and remove them.
-
-            for(Function::iterator i = F.begin(); i != F.end(); i++) {                      // Loop in Basic Blocks 
-                for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {              // Loop in Instructions  
-                    if ((isa<Instruction>(*j))                                             // Check if it's a instruction
-                         &&(!isa<TerminatorInst>(*j)) && (!isa<LandingPadInst>(*j))         // Check if may damage. 
-                         &&(!j->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*j))       // Check if out = 0.
-                         &&(find(allVecs.i_vecs[&*j]->out.begin(), allVecs.i_vecs[&*j]->out.end(), &*j) == allVecs.i_vecs[&*j]->out.end())) {
-                            removal.push_back(&*j);
+                for(BasicBlock::iterator jt = i->begin(); jt != i->end(); jt++) {           // Loop in Instructions  
+                    if ((isa<Instruction>(*jt))                                             // Check if it's a instruction
+                         &&(!isa<TerminatorInst>(*jt)) && (!isa<LandingPadInst>(*jt))       // Check if may damage. 
+                         &&(!jt->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*jt))     // Check if out = 0.
+                         &&(find(allVecs.i_vecs[&*jt]->out.begin(), allVecs.i_vecs[&*jt]->out.end(), &*jt) == allVecs.i_vecs[&*jt]->out.end())) {
+                            removal.push_back(&*jt);
                     }
                 }
             }
