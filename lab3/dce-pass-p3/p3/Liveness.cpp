@@ -97,18 +97,6 @@ namespace {
 
                 i_vecs.clear();
             }
-
-            void iAdd(Instruction* new_i) {
-                i_vecs[new_i] = new VecI();
-            }
-
-            void bAdd(BasicBlock* new_b) {
-                b_vecs[new_b] = new VecB();
-
-                for(succ_iterator succ = succ_begin(new_b); succ != succ_end(new_b); succ++) {
-                    b_vecs[new_b]->suc.push_back((BasicBlock *) *succ);
-                }
-            }
     };
 
     struct livinessP3 : public FunctionPass
@@ -141,21 +129,36 @@ namespace {
             }
 
             // Part 1: Find .use and .def vectors for Blocks.
-           
-            for(Function::iterator it = F.begin(); it != F.end(); ++it) {           // Iterate in b_vecs
-                allVecs.bAdd(&*it);
 
-                for(BasicBlock::iterator jt = it->begin(); jt != it->end(); ++jt) {        // Iterate in i_vecs
+            // Allocate memory for DenseMap           
+            for(Function::iterator it = F.begin(); it != F.end(); ++it) {                   // Iterate in b_vecs
+                allVecs.b_vecs[&*it] = new VecB();
+
+                // Add successors to it vector.
+                for(succ_iterator succ = succ_begin(&*it); succ != succ_end(&*it); succ++) {
+                    allVecs.b_vecs[&*it]->suc.push_back((BasicBlock *) *succ);
+                }
+
+                for(BasicBlock::iterator jt = it->begin(); jt != it->end(); ++jt) {         // Iterate in i_vecs
                     if (isa <Instruction>(*jt)) {
-                        allVecs.iAdd(&*jt);
+                        allVecs.i_vecs[&*jt] = new VecI();
                     }
                 }
             }  
 
-            for(Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {
+            for(Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {               // Find .USE and .DEF vectors.
                 aVecB = allVecs.b_vecs[&*i];
                 for(BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
                     operands = j->getNumOperands();
+
+                    if (j->hasName()) {
+                        if (isa<Instruction>(*j)) {
+                            if((find(aVecB->use.begin(), aVecB->use.end(), (&*j)) == aVecB->use.end()) 
+                                && (find(aVecB->def.begin(), aVecB->def.end(), (&*j)) == aVecB->def.end())) {
+                                aVecB->def.push_back(&*j);
+                            }
+                        }
+                    }
 
                     for(opIt = 0; opIt < operands; opIt++) {
                         aValue = j->getOperand (opIt);
@@ -168,28 +171,19 @@ namespace {
                             }
                         }
                     }
-
-                    if (j->hasName()) {
-                        if (isa<Instruction>(*j)) {
-                            if((find(aVecB->use.begin(), aVecB->use.end(), (&*j)) == aVecB->use.end()) 
-                                && (find(aVecB->def.begin(), aVecB->def.end(), (&*j)) == aVecB->def.end())) {
-                                aVecB->def.push_back(&*j);
-                            }
-                        }
-                    }
                 }
             }
 
             // Part2: Find .IN, .OUT, .DEF and .USE.
 
-            while (redoIn == true) {                 // Loop until IN remain unchanged.
+            while (redoIn == true) {                    // Loop until IN remain unchanged.
                 redoIn = false;
-                Function::iterator fe = F.end();    // Start at the end.
+                Function::iterator fe = F.end();        // Start at the end.
 
                 while (fe != F.begin()) {
                     aVecB = allVecs.b_vecs[&*--fe];
 
-                    for(su = 0; su < aVecB->suc.size(); su++) {    // get successors.
+                    for(su = 0; su < aVecB->suc.size(); su++) {     // get successors.
                         succ = allVecs.b_vecs[aVecB->suc[su]];
 
                         for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {   // Join .in vectors.
@@ -199,7 +193,7 @@ namespace {
                         }
                     }
 
-                    last_size = aVecB->in.size();           // Use to check if IN has changed.
+                    last_size = aVecB->in.size();                   // Use to check if IN has changed.
 
                     // IN = USE U (OUT - DEF)
                     aVecB->in = aVecB->use;
@@ -211,7 +205,7 @@ namespace {
                         }
                     }
 
-                    if (last_size != aVecB->in.size()) {    // Check if IN has changed.
+                    if (last_size != aVecB->in.size()) {            // Check if IN has changed.
                         redoIn = true;
                     }
                 }
@@ -221,6 +215,10 @@ namespace {
                 for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {
                     if(isa<Instruction>(*j)) {
                         operands = j->getNumOperands();
+
+                        if ((j->hasName()) && (find(allVecs.i_vecs[&*j]->use.begin(), allVecs.i_vecs[&*j]->use.end(), &*j) == allVecs.i_vecs[&*j]->use.end())) {
+                            allVecs.i_vecs[&*j]->def.push_back(&*j);
+                        }
 
                         for(l = 0; l < operands; l++) {
                             aValue = j->getOperand(l);
@@ -233,13 +231,8 @@ namespace {
                                 }
                             }
                         }
-
-                        if ((j->hasName()) && (find(allVecs.i_vecs[&*j]->use.begin(), allVecs.i_vecs[&*j]->use.end(), &*j) == allVecs.i_vecs[&*j]->use.end())) {
-                            allVecs.i_vecs[&*j]->def.push_back(&*j);
-                        }
                     }
                 }
-
             }
 
             // Part 3 : Verify which elements can be safely removed and remove them.
