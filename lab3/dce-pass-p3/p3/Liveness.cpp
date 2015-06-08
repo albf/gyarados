@@ -239,8 +239,7 @@ namespace {
 
             for(Function::iterator i = F.begin(); i != F.end(); i++) {
                 BasicBlock::iterator j = i->end();
-                j--;
-                allVecs.i_vecs[&*j]->out = allVecs.b_vecs[&*i]->out;
+                allVecs.i_vecs[&*(--j)]->out = allVecs.b_vecs[&*i]->out;
 
                 // .IN = .USE U (.OUT - .DEF)
                 allVecs.i_vecs[&*j]->in = UnionOfDifference (allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
@@ -248,9 +247,8 @@ namespace {
 
                 while(j != i->begin()) {    // All but last instruction
                     k = j;
-                    j--;
 
-                    allVecs.i_vecs[&*j]->out = allVecs.i_vecs[&*k]->in;
+                    allVecs.i_vecs[&*(--j)]->out = allVecs.i_vecs[&*k]->in;
 
                     // .IN = .USE U (.OUT - .DEF)
                     allVecs.i_vecs[&*j]->in = UnionOfDifference(allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
