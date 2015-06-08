@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
+#include <map>
 
-#include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instruction.h"
@@ -79,19 +79,19 @@ namespace {
 
     class VecL {                        // Live vectors.    
         public:
-            DenseMap<Instruction*, VecI*> i_vecs;
-            DenseMap<BasicBlock*, VecB*> b_vecs;
+            map<Instruction*, VecI*> i_vecs;
+            map<BasicBlock*, VecB*> b_vecs;
 
             // Destructor
             ~VecL() {
                 // New/Alloc elements in second position of DenseMap.
-                for(DenseMap<BasicBlock*, VecB*>::iterator i = b_vecs.begin();  i != b_vecs.end(); i++) { 
+                for(map<BasicBlock*, VecB*>::iterator i = b_vecs.begin();  i != b_vecs.end(); i++) { 
                     delete i->second;
                 }
 
                 b_vecs.clear();
 
-                for(DenseMap<Instruction*, VecI*>::iterator i = i_vecs.begin();  i != i_vecs.end(); i++) {
+                for(map<Instruction*, VecI*>::iterator i = i_vecs.begin();  i != i_vecs.end(); i++) {
                     delete i->second;
                 }
 
