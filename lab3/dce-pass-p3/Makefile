@@ -1,4 +1,5 @@
-LLVM_CONFIG?=llvm-config-3.4
+#LLVM_CONFIG?=llvm-config-3.4
+LLVM_CONFIG?=llvm-config
 CXX=g++ -g
 
 SRC_DIR=./p3

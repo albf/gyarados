@@ -1,11 +1,13 @@
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
+//#include "llvm/Support/CFG.h" // for Gallo
+#include "llvm/IR/CFG.h" // for IC
 #include "llvm/IR/Function.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/InstIterator.h" // for IC
+//#include "llvm/Support/InstIterator.h" // for Gallo
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/InstIterator.h"
 #include "llvm/IR/IntrinsicInst.h"
 
 using namespace llvm;

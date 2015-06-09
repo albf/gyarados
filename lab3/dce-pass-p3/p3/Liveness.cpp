@@ -7,8 +7,10 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
-#include "llvm/Support/InstIterator.h"
+//#include "llvm/Support/CFG.h" // for Moco
+#include "llvm/IR/CFG.h" // for IC
+//#include "llvm/Support/InstIterator.h"
+#include "llvm/IR/InstIterator.h" // for IC
 #include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
@@ -288,4 +290,4 @@ namespace {
 }
 
 char livinessP3::ID = 0;
-static RegisterPass<livinessP3> X("la", "Liviness Analysis - DCE", false, false);
+static RegisterPass<livinessP3> X("dce-liveness", "Liviness Analysis - DCE", false, false);
