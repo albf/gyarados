@@ -26,9 +26,9 @@ namespace {
 
         for(Function::iterator i = F.begin(), e = F.end(); i != e; ++i)
             for (BasicBlock::iterator inst=i->begin(), tinst=i->end(); inst != tinst; ++inst)
-                if (!inst->getName().empty()) {
+                //if (!inst->getName().empty()) {
                     workList.push_back(inst);
-                }
+                //}
     }
 
     void addToList(Value * val, list<Value*> &workList) {
@@ -59,93 +59,102 @@ namespace {
     {
         static char ID;
         int removalCount;
-
+        vector<int> memRem, iterations;
+        
         DCE_SSA() : FunctionPass(ID) {
             removalCount=0;
         }
 
         ~DCE_SSA() {
+
+            // for (int i=0; i<memRem.size(); ++i) {
+            //     errs() << "\t" << memRem[i] << " Instructions removed!\n";
+            //     errs() << "\t" << iterations[i] << " Iterations performed!\n";
+            //     removalCount+=memRem[i];
+            // }
+
             errs() << "Total Instructions Removed: " << removalCount << "\n";
         }
 
         // Perform liveness analisys and remove Dead Instructions.
         virtual bool runOnFunction(Function &F) {
 
-            bool changed = false;
+            // int dce_count, instRemoved = 0;
+            bool changed;
 
-            errs() << "Function: " << F.getName().str() << "\n";
-
-            /* =================================================================
-             * Part 1: Get a list with all the variables
-             * ============================================================== */
-
-            list<Value*> workList;
-            fillWorkList(F, workList);
-
-            /* =================================================================
-             * Part 2: Check all the variables in the list
-             * ============================================================== */
-
-            /* Make the list processing */
-            while(!workList.empty()) {
-                Value *val = workList.front();
-
-                errs() << val->getName() << "\n";
-                //for (Value::use_iterator i=val->use_begin(), e=val->use_end(); i != e; ++i) {
-                /*for (User *U : val->users()) {
-                    if (Instruction *inst = dyn_cast<Instruction>(U)){
-                        errs() << *inst << "\n";
-                        //errs() << *inst << "\n";
-                    }
-                }*/
+            do {
 
                 /* =================================================================
-                 * Part 3: Take some variable V at the list and verify if it has
-                 * an empty use list
+                 * Part 1: Get a list with all the variables
+                 * ============================================================== */
+                changed = false;
+                list<Value*> workList;
+                fillWorkList(F, workList);
+
+                /* =================================================================
+                 * Part 2: Check all the variables in the list
                  * ============================================================== */
 
-                /* Check if the use list is empty */
-                if (val->use_empty()) {
+                /* Make the list processing */
+                while(!workList.empty()) {
+                    Value *val = workList.front();
 
                     /* =================================================================
-                     * Part 4: Check if the statement that defines V has other side
-                     * effects
+                     * Part 3: Take some variable V at the list and verify if it has
+                     * an empty use list
                      * ============================================================== */
 
-                    /* Check for side effects */
-                    if (!hasSideEffects(val)) {
-                        
+                    /* Check if the use list is empty */
+                    if (val->use_empty()) {
+
                         /* =================================================================
-                         * Part 5: Put the variables of statement in the list to be 
-                         * check for possible death and delete the statement 
-                         * from the program
+                         * Part 4: Check if the statement that defines V has other side
+                         * effects
                          * ============================================================== */
 
-                        /* Put the operands in the list */
-                        if (Instruction *inst = dyn_cast<Instruction>(val)) {
-                            /* Check for the operands */
-                            for (Instruction::op_iterator op = inst->op_begin(), oe = inst->op_end(); op != oe; ++op) {
-                                Value *v = *op;
+                        /* Check for side effects */
+                        if (!hasSideEffects(val)) {
+                            
+                            /* =================================================================
+                             * Part 5: Put the variables of statement in the list to be 
+                             * check for possible death and delete the statement 
+                             * from the program
+                             * ============================================================== */
 
-                                /* If it's defined by a instruction */
-                                if (isa<Instruction>(*v)) {
-                                    addToList(v, workList);
+                            /* Put the operands in the list */
+                            if (Instruction *inst = dyn_cast<Instruction>(val)) {
+                                /* Check for the operands */
+                                for (Instruction::op_iterator op = inst->op_begin(), oe = inst->op_end(); op != oe; ++op) {
+                                    Value *v = *op;
+
+                                    /* If it's defined by a instruction */
+                                    if (isa<Instruction>(*v)) {
+                                        addToList(v, workList);
+                                    }
                                 }
-                            }
 
-                            errs() << "Removing: " << *inst << "\n";
-                            inst->eraseFromParent();
-                            if (!changed) {
-                                changed = true;
+                                // errs() << "Removing: " << *inst << "\n";
+                                inst->eraseFromParent();
+                                if (!changed) {
+                                    changed = true;
+                                }
+                                // instRemoved++;
+                                removalCount++;
                             }
-                            removalCount++;
                         }
                     }
-                }
 
-                workList.pop_front();
-            }
-            return changed;
+                    workList.pop_front();
+                }
+                // memRem.push_back(instRemoved);
+                // instRemoved = 0;
+                // dce_count++;
+
+            } while(changed);
+
+            // iterations.push_back(dce_count);
+
+            return false;
         }
     };
 }
