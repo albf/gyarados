@@ -7,10 +7,10 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/Pass.h"
-//#include "llvm/Support/CFG.h" // for Moco
-#include "llvm/IR/CFG.h" // for IC
-//#include "llvm/Support/InstIterator.h"
-#include "llvm/IR/InstIterator.h" // for IC
+#include "llvm/Support/CFG.h" // for Moco
+//#include "llvm/IR/CFG.h" // for IC
+#include "llvm/Support/InstIterator.h"
+//#include "llvm/IR/InstIterator.h" // for IC
 #include "llvm/Support/raw_ostream.h"
 
 using namespace llvm;
@@ -86,7 +86,7 @@ namespace {
 
             // Destructor
             ~VecL() {
-                // New/Alloc elements in second position of DenseMap.
+                // New/Alloc elements in second position of Map.
                 for(map<BasicBlock*, VecB*>::iterator i = b_vecs.begin();  i != b_vecs.end(); i++) { 
                     delete i->second;
                 }
@@ -105,9 +105,11 @@ namespace {
     {
         static char ID;
         int removalCount;
+        bool changed;
 
         livinessP3() : FunctionPass(ID) {
             removalCount=0;
+            changed = false;
         }
 
         ~livinessP3() {
@@ -116,7 +118,6 @@ namespace {
 
         // Perform liveness analisys and remove Dead Instructions.
         virtual bool runOnFunction(Function &F) {
-            bool changed = false;
             bool redoIn = true;
             unsigned operands, opIt, last_size;
             unsigned int l, su;
@@ -125,164 +126,171 @@ namespace {
             VecB * aVecB, * succ;
             VecL allVecs;
             vector<Instruction*> removal;
+            //bool redoAll = false;
 
-            if(debug) {
-                errs() << "Function: " << F.getName().str() << "\n";
-            }
+            //do {
+                //redoAll = false;
+                //allVecs.clear();
 
-            // Part 1: Find .use and .def vectors for Blocks.
-
-            // Allocate memory for DenseMap           
-            for(Function::iterator it = F.begin(); it != F.end(); ++it) {                   // Iterate in b_vecs
-                allVecs.b_vecs[&*it] = new VecB();
-
-                // Add successors to it vector.
-                for(succ_iterator succ = succ_begin(&*it); succ != succ_end(&*it); succ++) {
-                    allVecs.b_vecs[&*it]->suc.push_back((BasicBlock *) *succ);
+                if(debug) {
+                    errs() << "Function: " << F.getName().str() << "\n";
                 }
 
-                for(BasicBlock::iterator jt = it->begin(); jt != it->end(); ++jt) {         // Iterate in i_vecs
-                    if (isa <Instruction>(*jt)) {
-                        allVecs.i_vecs[&*jt] = new VecI();
+                // Part 1: Find .use and .def vectors for Blocks.
+
+                // Allocate memory for DenseMap           
+                for(Function::iterator it = F.begin(); it != F.end(); ++it) {                   // Iterate in b_vecs
+                    allVecs.b_vecs[&*it] = new VecB();
+
+                    // Add successors to it vector.
+                    for(succ_iterator succ = succ_begin(&*it); succ != succ_end(&*it); succ++) {
+                        allVecs.b_vecs[&*it]->suc.push_back((BasicBlock *) *succ);
                     }
-                }
-            }  
 
-            for(Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {               // Find .USE and .DEF vectors.
-                aVecB = allVecs.b_vecs[&*i];
-                for(BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
-                    operands = j->getNumOperands();
-
-                    if (j->hasName()) {
-                        if (isa<Instruction>(*j)) {
-                            if((find(aVecB->use.begin(), aVecB->use.end(), (&*j)) == aVecB->use.end()) 
-                                && (find(aVecB->def.begin(), aVecB->def.end(), (&*j)) == aVecB->def.end())) {
-                                aVecB->def.push_back(&*j);
-                            }
+                    for(BasicBlock::iterator jt = it->begin(); jt != it->end(); ++jt) {         // Iterate in i_vecs
+                        if (isa <Instruction>(*jt)) {
+                            allVecs.i_vecs[&*jt] = new VecI();
                         }
                     }
+                }  
 
-                    for(opIt = 0; opIt < operands; opIt++) {
-                        aValue = j->getOperand (opIt);
-                        if (isa <Instruction> (*aValue)) {
-                            aInstruction = cast <Instruction> (&*aValue);
-                            
-                            if((find(aVecB->def.begin(), aVecB->def.end(), (&*aInstruction)) == aVecB->def.end())
-                                && (find(aVecB->use.begin(), aVecB->use.end(), (&*aInstruction)) == aVecB->use.end())) {
-                                aVecB->use.push_back(&*aInstruction);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Part2: Find .IN, .OUT, .DEF and .USE.
-
-            while (redoIn == true) {                    // Loop until IN remain unchanged.
-                redoIn = false;
-                Function::iterator fe = F.end();        // Start at the end.
-
-                while (fe != F.begin()) {
-                    aVecB = allVecs.b_vecs[&*--fe];
-
-                    for(su = 0; su < aVecB->suc.size(); su++) {     // get successors.
-                        succ = allVecs.b_vecs[aVecB->suc[su]];
-
-                        for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {   // Join .in vectors.
-                            if(find(aVecB->out.begin(), aVecB->out.end(), *elem) == aVecB->out.end()) {
-                                aVecB->out.push_back(*elem);
-                            }
-                        }
-                    }
-
-                    last_size = aVecB->in.size();                   // Use to check if IN has changed.
-
-                    // IN = USE U (OUT - DEF)
-                    aVecB->in = aVecB->use;
-                    vector<Instruction *> OutDiffDef = Difference(aVecB->out, aVecB->def);
-
-                    for(vector<Instruction*>::iterator elem = OutDiffDef.begin(); elem != OutDiffDef.end(); elem++) {
-                        if(find(aVecB->in.begin(), aVecB->in.end(), *elem) == aVecB->in.end()) {
-                            aVecB->in.push_back(*elem);
-                        }
-                    }
-
-                    if (last_size != aVecB->in.size()) {            // Check if IN has changed.
-                        redoIn = true;
-                    }
-                }
-            }
-
-            for(Function::iterator i = F.begin(); i != F.end(); i++) {
-                for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {
-                    if(isa<Instruction>(*j)) {
+                for(Function::iterator i = F.begin(), e = F.end(); i != e; ++i) {               // Find .USE and .DEF vectors.
+                    aVecB = allVecs.b_vecs[&*i];
+                    for(BasicBlock::iterator j = i->begin(), e = i->end(); j != e; ++j) {
                         operands = j->getNumOperands();
 
-                        if ((j->hasName()) && (find(allVecs.i_vecs[&*j]->use.begin(), allVecs.i_vecs[&*j]->use.end(), &*j) == allVecs.i_vecs[&*j]->use.end())) {
-                            allVecs.i_vecs[&*j]->def.push_back(&*j);
+                        if (j->hasName()) {
+                            if (isa<Instruction>(*j)) {
+                                if((find(aVecB->use.begin(), aVecB->use.end(), (&*j)) == aVecB->use.end()) 
+                                    && (find(aVecB->def.begin(), aVecB->def.end(), (&*j)) == aVecB->def.end())) {
+                                    aVecB->def.push_back(&*j);
+                                }
+                            }
                         }
 
-                        for(l = 0; l < operands; l++) {
-                            aValue = j->getOperand(l);
-
-                            if(isa<Instruction>(aValue)) {
-                                Instruction* op = cast<Instruction>(aValue);
-
-                                if(find(allVecs.i_vecs[&*j]->def.begin(), allVecs.i_vecs[&*j]->def.end(), op) == allVecs.i_vecs[&*j]->def.end()) {
-                                    allVecs.i_vecs[&*j]->use.push_back(op);
+                        for(opIt = 0; opIt < operands; opIt++) {
+                            aValue = j->getOperand (opIt);
+                            if (isa <Instruction> (*aValue)) {
+                                aInstruction = cast <Instruction> (&*aValue);
+                                
+                                if((find(aVecB->def.begin(), aVecB->def.end(), (&*aInstruction)) == aVecB->def.end())
+                                    && (find(aVecB->use.begin(), aVecB->use.end(), (&*aInstruction)) == aVecB->use.end())) {
+                                    aVecB->use.push_back(&*aInstruction);
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // Part 3 : Verify which elements can be safely removed and remove them.
+                // Part2: Find .IN, .OUT, .DEF and .USE.
 
-            for(Function::iterator i = F.begin(); i != F.end(); i++) {
-                BasicBlock::iterator j = i->end();
-                allVecs.i_vecs[&*(--j)]->out = allVecs.b_vecs[&*i]->out;
+                while (redoIn == true) {                    // Loop until IN remain unchanged.
+                    redoIn = false;
+                    Function::iterator fe = F.end();        // Start at the end.
 
-                // .IN = .USE U (.OUT - .DEF)
-                allVecs.i_vecs[&*j]->in = UnionOfDifference (allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
-                BasicBlock::iterator k; 
+                    while (fe != F.begin()) {
+                        aVecB = allVecs.b_vecs[&*--fe];
 
-                while(j != i->begin()) {    // All but last instruction
-                    k = j;
+                        for(su = 0; su < aVecB->suc.size(); su++) {     // get successors.
+                            succ = allVecs.b_vecs[aVecB->suc[su]];
 
-                    allVecs.i_vecs[&*(--j)]->out = allVecs.i_vecs[&*k]->in;
+                            for(vector<Instruction*>::iterator elem = succ->in.begin(); elem != succ->in.end(); elem++) {   // Join .in vectors.
+                                if(find(aVecB->out.begin(), aVecB->out.end(), *elem) == aVecB->out.end()) {
+                                    aVecB->out.push_back(*elem);
+                                }
+                            }
+                        }
 
-                    // .IN = .USE U (.OUT - .DEF)
-                    allVecs.i_vecs[&*j]->in = UnionOfDifference(allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
-                } 
+                        last_size = aVecB->in.size();                   // Use to check if IN has changed.
 
-                for(BasicBlock::iterator jt = i->begin(); jt != i->end(); jt++) {           // Loop in Instructions  
-                    if ((isa<Instruction>(*jt))                                             // Check if it's a instruction
-                         &&(!isa<TerminatorInst>(*jt)) && (!isa<LandingPadInst>(*jt))       // Check if may damage. 
-                         &&(!jt->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*jt))     // Check if out = 0.
-                         &&(find(allVecs.i_vecs[&*jt]->out.begin(), allVecs.i_vecs[&*jt]->out.end(), &*jt) == allVecs.i_vecs[&*jt]->out.end())) {
-                            removal.push_back(&*jt);
+                        // IN = USE U (OUT - DEF)
+                        aVecB->in = aVecB->use;
+                        vector<Instruction *> OutDiffDef = Difference(aVecB->out, aVecB->def);
+
+                        for(vector<Instruction*>::iterator elem = OutDiffDef.begin(); elem != OutDiffDef.end(); elem++) {
+                            if(find(aVecB->in.begin(), aVecB->in.end(), *elem) == aVecB->in.end()) {
+                                aVecB->in.push_back(*elem);
+                            }
+                        }
+
+                        if (last_size != aVecB->in.size()) {            // Check if IN has changed.
+                            redoIn = true;
+                        }
                     }
                 }
-            }
 
-            for(vector<Instruction*>::iterator elem = removal.begin(); elem != removal.end(); elem++) {
-                if(debug) {
-                    errs() << "Removing: " << *(*elem) << "\n";
+                for(Function::iterator i = F.begin(); i != F.end(); i++) {
+                    for(BasicBlock::iterator j = i->begin(); j != i->end(); j++) {
+                        if(isa<Instruction>(*j)) {
+                            operands = j->getNumOperands();
+
+                            if ((j->hasName()) && (find(allVecs.i_vecs[&*j]->use.begin(), allVecs.i_vecs[&*j]->use.end(), &*j) == allVecs.i_vecs[&*j]->use.end())) {
+                                allVecs.i_vecs[&*j]->def.push_back(&*j);
+                            }
+
+                            for(l = 0; l < operands; l++) {
+                                aValue = j->getOperand(l);
+
+                                if(isa<Instruction>(aValue)) {
+                                    Instruction* op = cast<Instruction>(aValue);
+
+                                    if(find(allVecs.i_vecs[&*j]->def.begin(), allVecs.i_vecs[&*j]->def.end(), op) == allVecs.i_vecs[&*j]->def.end()) {
+                                        allVecs.i_vecs[&*j]->use.push_back(op);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                (*elem)->eraseFromParent();
-            }
 
-            removalCount += removal.size();
+                // Part 3 : Verify which elements can be safely removed and remove them.
 
-            if(debug) {
-                errs() << "Instructions removed from function: " << removal.size() << "\n";
-                errs() << "Instructions removed so far: " << removalCount << "\n";
-            }
+                for(Function::iterator i = F.begin(); i != F.end(); i++) {
+                    BasicBlock::iterator j = i->end();
+                    allVecs.i_vecs[&*(--j)]->out = allVecs.b_vecs[&*i]->out;
 
-            if(removal.size()>0) { 
-                changed = true;
-            }
+                    // .IN = .USE U (.OUT - .DEF)
+                    allVecs.i_vecs[&*j]->in = UnionOfDifference (allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
+                    BasicBlock::iterator k; 
+
+                    while(j != i->begin()) {    // All but last instruction
+                        k = j;
+
+                        allVecs.i_vecs[&*(--j)]->out = allVecs.i_vecs[&*k]->in;
+
+                        // .IN = .USE U (.OUT - .DEF)
+                        allVecs.i_vecs[&*j]->in = UnionOfDifference(allVecs.i_vecs[&*j]->use, allVecs.i_vecs[&*j]->out, allVecs.i_vecs[&*j]->def);
+                    } 
+
+                    for(BasicBlock::iterator jt = i->begin(); jt != i->end(); jt++) {           // Loop in Instructions  
+                        if ((isa<Instruction>(*jt))                                             // Check if it's a instruction
+                             &&(!isa<TerminatorInst>(*jt)) && (!isa<LandingPadInst>(*jt))       // Check if may damage. 
+                             &&(!jt->mayHaveSideEffects()) && (!isa<DbgInfoIntrinsic>(*jt))     // Check if out = 0.
+                             &&(find(allVecs.i_vecs[&*jt]->out.begin(), allVecs.i_vecs[&*jt]->out.end(), &*jt) == allVecs.i_vecs[&*jt]->out.end())) {
+                                removal.push_back(&*jt);
+                        }
+                    }
+                }
+
+                for(vector<Instruction*>::iterator elem = removal.begin(); elem != removal.end(); elem++) {
+                    if(debug) {
+                        errs() << "Removing: " << *(*elem) << "\n";
+                    }
+                    (*elem)->eraseFromParent();
+                }
+
+                removalCount += removal.size();
+
+                if(debug) {
+                    errs() << "Instructions removed from function: " << removal.size() << "\n";
+                    errs() << "Instructions removed so far: " << removalCount << "\n";
+                }
+
+                if(removal.size()>0) { 
+                    changed = true;
+                    errs() << "Repeating function\n";
+                    return runOnFunction(F);
+                }
 
             return changed;
         } 
